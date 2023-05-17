@@ -1,0 +1,23 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using FirstCollection;
+
+public class SMB_AimPostprocess : SMB_MainParent
+{
+    [SerializeField] bool activateAimPostprocess;
+    bool _hasScope;
+
+    protected override void Init()
+    {
+        base.Init();
+        _hasScope = _currentWeapon.weaponDetail.scope;
+    }
+
+    public override void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+      //  GlobalEventManager.PlayerAiming(activateAimPostprocess);
+        if (!_hasScope) return;
+        _gm.postProcess.ShowDepth(activateAimPostprocess);
+    }
+}

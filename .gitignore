@@ -9,6 +9,11 @@
 /[Bb]uilds/
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
+/[Aa]ssets/Hands_Weapons_Animations_Pack_Update
+/[Aa]ssets/Anims/Mixamo
+/[Aa]ssets/Prefabs/backups
+/[Aa]ssets/Plugins
+/TODO.txt
 
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data

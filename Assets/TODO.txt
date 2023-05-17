@@ -1,0 +1,36 @@
+
+ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1
+	mouse sensitvity should be dependant of zoom (especially for sniper and maybe only for sniper)
+
+2
+	various weapons (implement all from asset pack?)
+
+3
+	more than 10 weapons - need new weapon select system (simplified toolbar like in doom4?)
+
+4
+	armor (with UI)
+
+5
+	sniper - fix aim_shoot animation - hands move to much backward -> impossible without IK
+
+6
+	attachments to weapons (silencers, optics...)
+
+7
+	two pistols
+
+8
+	finish pickup models/visuals
+

@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be30c7f2c7f18644b8c457cfd074822f, type: 3}
+  m_Name: hand grenade
+  m_EditorClassIdentifier: 
+  itemName: Hand Grenade
+  ordinalLookup: 5
+  weaponType: 4
+  ammoType: 7
+  has2ndAttack: 0
+  animEventForShooting: 1
+  canAim: 0
+  partialReload: 0
+  hasCrosshair: 0
+  minSpread: 100
+  spreadIncreaseWhileShooting: 90
+  damage: {x: 50, y: 120}
+  range: 50
+  rofModifier: 1
+  noOfPelletsPerShot: 1
+  areaOfEffect: 5
+  clipCapacity: 1

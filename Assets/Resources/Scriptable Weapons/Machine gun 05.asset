@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be30c7f2c7f18644b8c457cfd074822f, type: 3}
+  m_Name: Machine gun 05
+  m_EditorClassIdentifier: 
+  itemName: Machinegun 05
+  ordinalLookup: 3
+  weaponType: 1
+  ammoType: 3
+  has2ndAttack: 0
+  animEventForShooting: 0
+  canAim: 1
+  partialReload: 0
+  hasCrosshair: 1
+  startSpread: 50
+  damage: {x: 1, y: 3}
+  range: 30
+  rofModifier: 2
+  noOfPelletsPerShot: 1
+  areaOfEffect: 0
+  clipCapacity: 3000
+  weaponDetail:
+    flameArrester: 0
+    flashlight: 0
+    scope: 1
+    silencer: 0
