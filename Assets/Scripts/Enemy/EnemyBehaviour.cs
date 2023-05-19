@@ -10,13 +10,13 @@ using UnityEngine.Animations.Rigging;
 public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
 {
     [SerializeField] TextMeshPro _displayState;
-    public TextMeshProUGUI displaySpeed;
     [SerializeField]
     [BoxGroup("Colors for gizmo")]
     [HideLabel]
     Color[] gizmoColorsByState;
 
     [SerializeField] NavMeshAgent _agent;
+    Animator _anim;
     [SerializeField] Transform _movePoint;
     [SerializeField] Collider[] _colliders;
     [SerializeField] Transform lastKnowLocationTransform;
@@ -39,33 +39,47 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
         get => _enState;
         set
         {
-            _timerIdleRotate = _timerSearch = 0f;
+            _timerIdleRotate = _timerSearch = _timerAttack = 0f;
             _agent.ResetPath();
             _animClass.Attack(false);
             _agent.speed = _moveSpeed.x;
             _enState = value;
+            _animClass.SetSpeed(0);
             if (value != EnemyState.Attack) attackTarget = null;
             switch (value)
             {
                 case EnemyState.Idle:
                     break;
                 case EnemyState.Patrol:
+                    _animClass.SetSpeed(1);
                     break;
                 case EnemyState.Roam:
+                    _animClass.SetSpeed(1);
                     break;
                 case EnemyState.Search:
                     _agent.speed = _moveSpeed.y;
                     hasSearched = true;
+                    _animClass.SetSpeed(2);
                     break;
                 case EnemyState.Attack:
                     _agent.speed = _moveSpeed.y;
                     hasSearched = false;
+                    _timerAttack = Mathf.Infinity;
+                    _animClass.SetSpeed(2);
                     break;
                 case EnemyState.Follow:
                     break;
                 case EnemyState.MoveToPoint:
-                    if(_nextState == EnemyState.Search || _nextState == EnemyState.Attack) _agent.speed = _moveSpeed.y;
-                    else _agent.speed = _moveSpeed.x;
+                    if (_nextState == EnemyState.Search || _nextState == EnemyState.Attack)
+                    {
+                        _agent.speed = _moveSpeed.y;
+                        _animClass.SetSpeed(2);
+                    }
+                    else
+                    {
+                        _agent.speed = _moveSpeed.x;
+                        _animClass.SetSpeed(1);
+                    }
                     break;
             }
             _displayState.text = value.ToString();
@@ -78,9 +92,9 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
     Camera _cam;
     Vector3 _startPos;
     Quaternion _startRot;
+    bool _canUpdate;
 
-
-
+    #region//BEHAVIOURS SPECIFIC
     //idle
     [BoxGroup("Idle")]
     [SerializeField]
@@ -92,10 +106,10 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
     float _startRotY;
 
     //patrol
-    [BoxGroup("Patrol")]
-    [ShowIf("_startingState", EnemyState.Patrol)]
-    [GUIColor(0f, 1f, 0f, 1f)]
-    [SerializeField] Transform wpParent;
+    //[BoxGroup("Patrol")]
+    //[ShowIf("_startingState", EnemyState.Patrol)]
+    //[GUIColor(0f, 1f, 0f, 1f)]
+    //[SerializeField] Transform wpParent;
     Transform[] _wayPoints;
     int _counterWayPoints;
 
@@ -115,10 +129,12 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
     [SerializeField] SoItem _weaponUsed;
     [GUIColor(1f, 0f, 0f, 1f)]
     [BoxGroup("Attack")]
-    /*[HideInInspector]*/ public IFactionTarget attackTarget;
+    [HideInInspector] public IFactionTarget attackTarget;
     [GUIColor(1f, 0f, 0f, 1f)]
     [BoxGroup("Attack")]
     [SerializeField] float _attackRange = 5f;
+    float _attackRangeSquared;
+    float _timerAttack;
     [GUIColor(1f, 0f, 0f, 1f)]
     [BoxGroup("Attack")]
     [SerializeField] float _rof = 0.5f;
@@ -131,7 +147,13 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
     float _timerSearch;
     [HideInInspector] public bool hasSearched;
     [HideInInspector] public Vector3 lastKnowLocation;
+    #endregion
 
+    [BoxGroup("Animator")]
+    [HideLabel]
+    [GUIColor(0.27f, 0.53f, 0.77f, 1f)]
+    [SerializeField]
+    Transform _animTr;
     [BoxGroup("Animator")]
     [HideLabel]
     [GUIColor(0.27f, 0.53f, 0.77f, 1f)]
@@ -140,30 +162,37 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
 
     [Title("Debug only")]
     public bool consoleDisplay;
+    public bool haspath;
+    public bool agentGoingToDestination;
+    public NavMeshPathStatus pathStatus;
+    public float speedCurrent;
 
     #region//AWAKE -> UPDATE
     private void Awake()
     {
         _cam = GameManager.gm.mainCam;
         _fov.Init(this, this, _agent.transform, consoleDisplay);
+        _anim = GetComponent<Animator>();
         _animClass.Init(_moveSpeed);
         _attackClass = new AttackClass(_colliders, this);
         _attackClass.bulletSpawnPosition = muzzle.transform;
 
-        // Time.timeScale = 0.1f;
 
     }
     private void Start()
     {
+        _agent.updatePosition = false;
         _startPos = _agent.transform.position;
         _startRot = _agent.transform.rotation;
         EnState = _startingState;
+        _attackRangeSquared = _attackRange * _attackRange;
 
         //idle
         _startRotY = _agent.transform.eulerAngles.y;
 
         //patrol
-        _wayPoints = HelperScript.AllChildren(wpParent);
+         _wayPoints = HelperScript.AllChildren(GameManager.gm.wayPointParent);
+
         switch (EnState)
         {
             case EnemyState.Idle:
@@ -182,15 +211,22 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
             case EnemyState.MoveToPoint:
                 break;
         }
+
+        InvokeRepeating(nameof(CanUpdateMethod), Random.Range(0f, 1f), 0.2f);
     }
 
     private void Update()
     {
         _displayState.transform.LookAt(_cam.transform.position);
         _displayState.transform.Rotate(180 * Vector3.up, Space.Self);
-        displaySpeed.text = _agent.velocity.magnitude.ToString();
-        lastKnowLocationTransform.position = lastKnowLocation;
-        _animClass.SetSpeed(_agent.velocity.magnitude);
+
+        Vector3 worldDelatPos = _agent.nextPosition - transform.position;
+        if (worldDelatPos.magnitude > _agent.radius)
+        {
+            _agent.nextPosition = transform.position + 0.5f * worldDelatPos;
+        }
+
+        Debugs();
 
         switch (EnState)
         {
@@ -221,13 +257,41 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
     void FixedUpdate()
     {
         if (EnState == EnemyState.Attack) return;
-        attackTarget = _fov.FindFovTargets();
+        if (_canUpdate)
+        {
+            attackTarget = _fov.FindFovTargets();
+            _canUpdate = false;
+        }
     }
-    #endregion
+    void Debugs()
+    {
+        lastKnowLocationTransform.position = lastKnowLocation;
+        haspath = _agent.hasPath;
+        pathStatus = _agent.pathStatus;
+        speedCurrent = _agent.velocity.magnitude;
+    }
+    void CanUpdateMethod()
+    {
+        _canUpdate = true;
+    }
     void GoToTarget()
     {
-        _agent.SetDestination(_movePoint.position);
+        agentGoingToDestination = false;
+        if(!_agent.hasPath && !_agent.pathPending)
+        {
+            _animClass.Attack(false);
+            _agent.SetDestination(_movePoint.position);
+            agentGoingToDestination = true;
+        }
     }
+    void OnAnimatorMove()
+    {
+        Vector3 pos = _anim.rootPosition;
+        pos.y = _agent.nextPosition.y;
+        transform.position = pos;
+    }
+
+    #endregion
 
 
     #region//BEHAVIOURS
@@ -245,27 +309,28 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
     }
     void PatrolBehaviour()
     {
-        _movePoint.position = _wayPoints[_counterWayPoints].position;
-        if (_agent.hasPath && _agent.remainingDistance < 0.3f)
+        if (_agent.hasPath && _agent.remainingDistance <= _agent.radius)
         {
             _counterWayPoints = (1 + _counterWayPoints) % _wayPoints.Length;
+            _agent.ResetPath();
         }
+        _movePoint.position = _wayPoints[_counterWayPoints].position;
 
         GoToTarget();
     }
     void RoamBehaviour(Vector3 center)
     {
-        if (!_agent.hasPath) _movePoint.position = GetRdnPos(center);
+        if (!_agent.hasPath && !_agent.pathPending) _movePoint.position = GetRdnPos(center);
         GoToTarget();
     }
     void AttackBehaviour()
     {
-        _animClass.Attack(false);
         if (attackTarget == null)
         {
             _movePoint.SetPositionAndRotation(_startPos, _startRot);
             _nextState = _startingState;
             EnState = EnemyState.MoveToPoint;
+            GoToTarget();
             return;
         }
 
@@ -278,20 +343,35 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
             return;
         }
 
-        if (Vector3.SqrMagnitude(lastKnowLocation - _agent.transform.position) < _attackRange * _attackRange)
+       // _animClass.SetSpeed(Mathf.Infinity);
+        if (Vector3.SqrMagnitude(lastKnowLocation - _agent.transform.position) < _attackRangeSquared)
         {
             if (_agent.hasPath) _agent.ResetPath();
             _animClass.Attack(true);
-            _agent.transform.LookAt(attackTarget.MyTransform);
+            _animTr.LookAt(attackTarget.MyTransform);
+            _timerAttack = 0f;
         }
-        else GoToTarget();
+        else
+        {
+            _timerAttack += Time.deltaTime;
+            if (_timerAttack > 1f)
+            {
+                _timerAttack = 0f;
+                GoToTarget();
+            }
+        }
     }
 
     public void AE_Attacking()
     {
+        if (attackTarget == null)
+        {
+            EnState = EnemyState.Search;
+            return;
+        }
+
         muzzle.SetActive(false);
         muzzle.SetActive(true);
-        
         _animClass.SetAim(attackTarget.MyHead.position); //for some reason it doesn't work here, but works in AttackBehaviour()
         _attackClass.Attack(_weaponUsed);
     }
@@ -327,6 +407,7 @@ public class AnimClass
 {
     [SerializeField] Animator _anim;
     [SerializeField] EnemyBehaviour _enemyBehaviour;
+    [SerializeField] Rig rigAiming;
     [SerializeField] MultiAimConstraint _multiAimConstraintRightHand;
     Transform _aimIK;
     Vector2 _moveSpeed;
@@ -343,24 +424,24 @@ public class AnimClass
     public void Attack(bool isAttacking)
     {
         _anim.SetBool("attack", isAttacking);
+        rigAiming.weight = isAttacking ? 1 : 0;
     }
     public void SetAim(Vector3 pos)
     {
-        _multiAimConstraintRightHand.data.offset = new Vector3(Random.Range(-_spreadWeapon, _spreadWeapon), 0f, Random.Range(-_spreadWeapon, _spreadWeapon));
-        //Debug.Log(_multiAimConstraintRightHand.data.offset);
+      //  _multiAimConstraintRightHand.data.offset = new Vector3(Random.Range(-_spreadWeapon, _spreadWeapon), 0f, Random.Range(-_spreadWeapon, _spreadWeapon));
 
-        _aimIK.position = pos ;
+        _aimIK.position = pos;
     }
-    public void SetSpeed(float speed)
+    public void SetSpeed(int speed)
     {
-      //  float sp = speed <= (_moveSpeed.x * 1.2f) ? 0.1f : 1f;
-        float sp;
-        if (speed <= _moveSpeed.x) sp = 0f;
-        else if (speed < _moveSpeed.x * 1.2f) sp = 0.1f;
-        else sp = 1f;
+        //int sp = 0;
+        //if (speed  < _moveSpeed.x * 0.1f) sp = 0;
+        //else if (speed <= _moveSpeed.x) sp = 1;
+        //else sp = 2;
 
-        _targtSpeed = Mathf.MoveTowards(_targtSpeed, sp, 2f * Time.deltaTime);
-        _anim.SetFloat("moveSpeed", _targtSpeed);
+        _anim.SetInteger("movePhase", speed);
+        //_targtSpeed = Mathf.MoveTowards(_targtSpeed, sp, 2f * Time.deltaTime);
+        //_anim.SetFloat("moveSpeed", _targtSpeed);
     }
 }
 
@@ -378,9 +459,10 @@ public class FieldOvView
 
     Ray _ray;
     RaycastHit _hit;
-    RaycastHit[] _multipleHits = new RaycastHit[2];
     [SerializeField] LayerMask layerFOV;
     Collider[] _colls = new Collider[30];
+    RaycastHit[] _multipleHits = new RaycastHit[1];
+
     bool _conseoleDisplay;
     public void Init(IFactionTarget fovTarget, EnemyBehaviour enemyBehaviour, Transform agentTransform, bool consoleDis)
     {
@@ -412,21 +494,11 @@ public class FieldOvView
         {
             _ray.origin = _myTransform.position + (i + 0.7f) * Vector3.up;
 
-            int num = Physics.RaycastNonAlloc(_ray, _multipleHits, EffectiveRange(target.MyTransform.position), ~0, QueryTriggerInteraction.Ignore);
-            if (num == 0)
+            if (Physics.Raycast(_ray, out _hit, EffectiveRange(target.MyTransform.position), ~0, QueryTriggerInteraction.Ignore))
             {
-                return false;
+                if (_hit.collider == target.MyTransform.GetComponent<Collider>()) return true;
             }
-            if (_multipleHits[0].collider || _multipleHits[1].collider == target.MyTransform.GetComponent<Collider>()) return true;
         }
-
-        //_ray.origin = _myTransform.position + 1.7f * Vector3.up;
-        //_ray.direction = (target.position - _myTransform.position).normalized;
-        //if (Physics.Raycast(_ray, out _hit, EffectiveRange(target.position), ~0, QueryTriggerInteraction.Ignore))
-        //{
-        //    if (_hit.collider == target.GetComponent<Collider>()) return true;
-        //}
-
         return false;
     }
     public IFactionTarget FindFovTargets()
@@ -437,17 +509,17 @@ public class FieldOvView
 
         for (int i = 0; i < num; i++)
         {
-            IFactionTarget ifov = _colls[i].GetComponent<IFactionTarget>();
+            IFactionTarget ifact = _colls[i].GetComponent<IFactionTarget>();
 
-            if (ifov == null || ifov == _parentFovTraget) continue;
+            if (ifact == null || ifact == _parentFovTraget) continue;
 
-            if (!TargetStillVisible(ifov)) continue;
+            if (!TargetStillVisible(ifact)) continue;
 
-            switch (ifov.Fact)
+            switch (ifact.Fact)
             {
                 case Faction.Player:
                     _enemyBehaviour.EnState = EnemyState.Attack;
-                    return ifov;
+                    return ifact;
 
                 case Faction.Enemy:
                     if (_hit.collider.TryGetComponent(out EnemyBehaviour en))

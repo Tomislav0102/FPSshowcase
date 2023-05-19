@@ -13,14 +13,14 @@ public class UsingEvent_DifferentWay : MonoBehaviour
     [SerializeField] List<SomeClass> someClasses = new List<SomeClass>();
     private void Start()
     {
-        for (int i = 0; i < 50; i++)
-        {
-            var someClass = new SomeClass(GUID.Generate().ToString(), (int delay, string id, SomeClass klass) => 
-            { 
-                print($"delay is {delay}, id is {id}");
-                someClasses.Add(klass);
-            });
-        }
+        //for (int i = 0; i < 50; i++)
+        //{
+        //    var someClass = new SomeClass(GUID.Generate().ToString(), (int delay, string id, SomeClass klass) => 
+        //    { 
+        //        print($"delay is {delay}, id is {id}");
+        //        someClasses.Add(klass);
+        //    });
+        //}
     }
 
     [System.Serializable]

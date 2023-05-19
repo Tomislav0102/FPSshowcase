@@ -1,18 +1,20 @@
+using DG.Tweening;
 using FirstCollection;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class SimpleMovePlayerNavMesh : MonoBehaviour/*, IFactionTarget*/
+public class SimpleMovePlayerNavMesh : MonoBehaviour, IFactionTarget
 {
+    public Transform MyTransform { get => _agent.transform; set { } }
+    [field: SerializeField] public Faction Fact { get; set; }
+    public Transform MyHead { get => _agent.transform; set { } }
     Camera _cam;
     NavMeshAgent _agent;
     RaycastHit _hit;
-    //public Transform MyTransform { get => _agent.transform; set { } }
-
-    //[field:SerializeField] public Faction Fact { get; set; }
-    //public Transform MyHead { get ; set ; }
+    Animator _anim;
+    public bool hasPath;
 
     public float AgentSpeed()
     {
@@ -23,6 +25,8 @@ public class SimpleMovePlayerNavMesh : MonoBehaviour/*, IFactionTarget*/
     {
         _cam = Camera.main;
         _agent = GetComponent<NavMeshAgent>();
+        _anim = GetComponent<Animator>();
+        _agent.updatePosition = false;
     }
 
     private void Update()
@@ -36,6 +40,25 @@ public class SimpleMovePlayerNavMesh : MonoBehaviour/*, IFactionTarget*/
             }
         }
 
+        Vector3 worldDelatPos = _agent.nextPosition - transform.position;
+
+        if (worldDelatPos.magnitude > _agent.radius)
+        {
+            _agent.nextPosition = transform.position + 0.9f * worldDelatPos;
+        }
+
+        bool shouldMove = _agent.remainingDistance > _agent.radius;
+        if (!shouldMove && _agent.hasPath) _agent.ResetPath(); 
+
+        _anim.SetBool("move", shouldMove);
+        hasPath = _agent.hasPath;
+    }
+
+    void OnAnimatorMove()
+    {
+        Vector3 pos = _anim.rootPosition;
+        pos.y = _agent.nextPosition.y;
+        transform.position = pos;
     }
 
 }

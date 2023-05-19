@@ -10,7 +10,6 @@ using UnityEngine.UI;
 using DG.Tweening;
 using Sirenix.OdinInspector;
 using UnityEngine.Rendering.PostProcessing;
-using static UnityEditor.PlayerSettings;
 
 public class GameManager : MonoBehaviour
 {
@@ -23,6 +22,7 @@ public class GameManager : MonoBehaviour
     public PoolManager poolManager;
     public PostprocessMan postProcess;
 
+    public Transform wayPointParent;
     private void Awake()
     {
         gm = this;
@@ -31,6 +31,9 @@ public class GameManager : MonoBehaviour
         cameraBehaviour = mainCam.GetComponent<CameraBehaviour>();
         poolManager.Init();
         postProcess.Init();
+
+        Time.timeScale = 1f;
+
     }
     private void Update()
     {
@@ -249,7 +252,6 @@ public class AttackClass
         {
             damagable.TakeDamage(ElementType.Normal, HelperScript.Damage(weaponItem.damage), null, null);
         }
-
         if (col.TryGetComponent(out IMaterial iMat))
         {
             _gm.poolManager.GetImpactObject(iMat.MaterialType, hit);
@@ -679,8 +681,8 @@ public class Controls
 
         if (IsGrounded && Input.GetKey(KeyCode.Space))
         {
-            // _rigid.velocity = new Vector3(_rigid.velocity.x, jumpForce, _rigid.velocity.z);
-            _rigid.AddForce(jumpForce * Vector3.up, ForceMode.VelocityChange);
+             _rigid.velocity = new Vector3(_rigid.velocity.x, jumpForce, _rigid.velocity.z);
+           // _rigid.AddForce(jumpForce * Vector3.up, ForceMode.VelocityChange);
         }
 
         DefineLookRotation();

@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using FirstCollection;
 using Sirenix.OdinInspector;
-using DG.Tweening;
-using TMPro.EditorUtilities;
 
 public class Hands : GlobalEventManager
 {

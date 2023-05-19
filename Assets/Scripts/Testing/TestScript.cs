@@ -1,15 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.Progress;
 
 public class TestScript : MonoBehaviour
 {
-    public Collider collTarget;
     Ray _ray;
-    RaycastHit _hit;
-    [SerializeField]
-    Transform sightSphere;
+        RaycastHit[] _hits = new RaycastHit[10];
+    public int num;
+    public Transform sphere;
+   // public Collider[] colls = new Collider[5];
 
     private void Start()
     {
@@ -20,15 +19,15 @@ public class TestScript : MonoBehaviour
     private void FixedUpdate()
     {
         _ray.origin = transform.position;
-        _ray.direction = (collTarget.transform.position - transform.position).normalized;
-        if (Physics.Raycast(_ray, out _hit, sightSphere.localScale.x * 0.5f))
-        {
-            if (_hit.collider == collTarget)
-            {
-                Debug.DrawRay(_ray.origin, _ray.direction, Color.red);
-            }
-            else Debug.Log(_hit.collider.name);
+        _ray.direction = transform.forward;
 
+      //  num = Physics.OverlapSphereNonAlloc(transform.position, sphere.localScale.x * 0.5f, colls);
+
+
+        num = Physics.RaycastNonAlloc(_ray, _hits, sphere.localScale.x * 0.5f);
+        for (int i = 0; i < num; i++)
+        {
+            print(_hits[i].collider.name);
         }
     }
 
