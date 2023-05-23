@@ -24,7 +24,7 @@ public class SMB_Shooting : StateMachineBehaviour //not being used
 
         if (_normTime < stateInfo.normalizedTime)
         {
-            _enemyBehaviour.AE_Attacking();
+            _enemyBehaviour.PassFromAE_Attacking();
             _normTime++;
         }
     }

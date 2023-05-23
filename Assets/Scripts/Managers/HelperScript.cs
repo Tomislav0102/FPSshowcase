@@ -113,6 +113,13 @@ namespace FirstCollection
         Follow,
         MoveToPoint
     }
+
+    public enum EnemyWeaponUsed
+    {
+        Melee,
+        Pistol,
+        Rifle
+    }
     public enum ElementType
     {
         Normal,

@@ -14,6 +14,11 @@ using UnityEngine.Rendering.PostProcessing;
 public class GameManager : MonoBehaviour
 {
     public static GameManager gm;
+    
+    [BoxGroup("Colors for gizmo")]
+    [HideLabel]
+    public Color[] gizmoColorsByState;
+
     public Player player;
     public Camera mainCam;
     [HideInInspector] public Transform camTr, camRigTr;
@@ -234,12 +239,7 @@ public class AttackClass
         {
             r = ShootDirection();
             var allLayers = ~0;
-            if (Physics.Raycast(r, out _hit, weapon.range, allLayers, QueryTriggerInteraction.Ignore))
-            {
-                return true;
-            }
-
-            return false;
+            return Physics.Raycast(r, out _hit, weapon.range, allLayers, QueryTriggerInteraction.Ignore);
         }
     }
 
