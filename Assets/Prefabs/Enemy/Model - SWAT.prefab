@@ -570,7 +570,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Weight: 1
   m_Data:
-    m_ConstrainedObject: {fileID: 8235467050001574613}
+    m_ConstrainedObject: {fileID: 1462241272819904910}
     m_SourceObjects:
       m_Length: 1
       m_Item0:
@@ -597,7 +597,7 @@ MonoBehaviour:
       m_Item7:
         transform: {fileID: 0}
         weight: 0
-    m_Offset: {x: 20.1, y: 24.8, z: 12.5}
+    m_Offset: {x: 0, y: 0, z: 0}
     m_MinLimit: -180
     m_MaxLimit: 180
     m_AimAxis: 4
@@ -2712,6 +2712,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2114d486377bd404f9ca4b660bd7b483, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  weaponAnimType: 0
   <MyHead>k__BackingField: {fileID: 8235467050001574613}
   weaponUsed: {fileID: 11400000, guid: 35c2456c36a8ccc4cae192f629d1c724, type: 2}
   muzzle: {fileID: 0}

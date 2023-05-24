@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: axe 2 handed
   m_EditorClassIdentifier: 
   itemName: Two Handed Axe
-  ordinalLookup: 9
+  ordinalLookup: 3
   weaponType: 0
   ammoType: 0
   has2ndAttack: 0
@@ -21,11 +21,19 @@ MonoBehaviour:
   canAim: 0
   partialReload: 0
   hasCrosshair: 0
-  minSpread: 50
-  spreadIncreaseWhileShooting: 90
-  damage: {x: 8, y: 15}
+  startSpread: 50
+  damage: {x: 30, y: 60}
+  damageOverTime:
+    elementType: 0
+    damagePerTick: 0
+    effectDuration: 0
   range: 1.5
   rofModifier: 1
   noOfPelletsPerShot: 1
   areaOfEffect: 1.2
   clipCapacity: 0
+  weaponDetail:
+    flameArrester: 0
+    flashlight: 0
+    scope: 0
+    silencer: 0

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -42,12 +43,17 @@ public class EnemyAnim : MonoBehaviour
     {
         _anim.SetBool("attack", isAttacking);
         rigAiming.weight = isAttacking ? 1 : 0;
-        _offsetTar = new Vector3(Random.Range(-_spreadWeapon, _spreadWeapon), 0f, Random.Range(-_spreadWeapon, _spreadWeapon));
 
         switch (weaponAnimType)
         {
+            case EnemyWeaponUsed.Melee:
+                break;
             case EnemyWeaponUsed.Pistol:
                 rigLeftHand.weight = isAttacking ? 1 : 0;
+                _offsetTar = new Vector3(Random.Range(-_spreadWeapon, _spreadWeapon), 0f, Random.Range(-_spreadWeapon, _spreadWeapon));
+                break;
+            case EnemyWeaponUsed.Rifle:
+                _offsetTar = new Vector3(Random.Range(-_spreadWeapon, _spreadWeapon), 0f, Random.Range(-_spreadWeapon, _spreadWeapon));
                 break;
         }
     }
@@ -55,6 +61,8 @@ public class EnemyAnim : MonoBehaviour
     public void SetAim(Vector3 pos)
     {
         _aimIK.position = pos;
+        if (weaponAnimType == EnemyWeaponUsed.Melee) return;
+        
         multiAimConstraintRightHand.data.offset =
             Vector3.Lerp(multiAimConstraintRightHand.data.offset, _offsetTar, 0.3f *Time.deltaTime);
 

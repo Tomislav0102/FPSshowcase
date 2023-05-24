@@ -26,7 +26,8 @@ public class GameManager : MonoBehaviour
     public UImanager uiManager;
     public PoolManager poolManager;
     public PostprocessMan postProcess;
-
+    public LayerMask layFOV;
+    [HideInInspector] public int layerPl, layerEn;
     public Transform wayPointParent;
     private void Awake()
     {
@@ -38,7 +39,8 @@ public class GameManager : MonoBehaviour
         postProcess.Init();
 
         Time.timeScale = 1f;
-
+        layerPl = LayerMask.NameToLayer("Player");
+        layerEn = LayerMask.NameToLayer("Enemy");
     }
     private void Update()
     {
@@ -102,13 +104,13 @@ public class DamageOverTime
 [System.Serializable]
 public class PostprocessMan
 {
-    [SerializeField] PostProcessProfile _mainProfile;
+    [SerializeField] PostProcessProfile mainProfile;
     DepthOfField _depth;
     Vignette _vignette;
     public void Init()
     {
-        _depth = _mainProfile.GetSetting<DepthOfField>();
-        _vignette = _mainProfile.GetSetting<Vignette>();
+        _depth = mainProfile.GetSetting<DepthOfField>();
+        _vignette = mainProfile.GetSetting<Vignette>();
         _depth.active = false;
         _vignette.intensity.value = 0.4f;
     }
@@ -130,36 +132,55 @@ public class AttackClass
    // [ShowInInspector]
     GameObject projec; 
     Vector2 _screenCenter;
-    Faction _faction = Faction.Player;
+    Transform _myTransform;
+    Faction _faction;
     public Transform bulletSpawnPosition;
+
+    Ray MeleeDirection()
+    {
+        Ray r = new Ray();
+        switch (_faction)
+        {
+            case Faction.Player:
+                r.origin = _camTr.position;
+                r.direction = _camTr.forward;
+                break;
+            case Faction.Enemy:
+                r.origin = _myTransform.position + Vector3.up;
+                r.direction = _myTransform.forward;
+                break;
+            default:
+                return r;
+        }
+        return r;
+    }
 
     Ray ShootDirection()
     {
+        Ray r = new Ray();
         switch (_faction)
         {
             case Faction.Player:
                 if (_gm.player.offense.IsAiming)
                 {
-                    Ray r = new Ray();
                     r.origin = _camTr.position;
                     r.direction = _gm.player.offense.AimDirection();
-                    return r;
                 }
                 else
                 {
                     Vector2 pos = _screenCenter + _gm.uiManager.crosshairObject.Spread * Random.insideUnitCircle;
-                    return _gm.mainCam.ScreenPointToRay(pos);
+                    r = _gm.mainCam.ScreenPointToRay(pos);
                 }
+                break;
             case Faction.Enemy:
-                Ray ra = new Ray();
-                ra.origin = bulletSpawnPosition.position;
-                ra.direction = bulletSpawnPosition.forward;
-                return ra;
-
+                r.origin = bulletSpawnPosition.position;
+                r.direction = bulletSpawnPosition.forward;
+                break;
             default:
-                return new Ray();
+                return r;
         }
 
+        return r;
     }
     public AttackClass(Collider[] attackerColliders, IFactionTarget factionTarget)
     {
@@ -171,6 +192,7 @@ public class AttackClass
         }
         _screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
         _faction = factionTarget.Fact;
+        _myTransform = factionTarget.MyTransform;
     }
 
     public void Attack(SoItem weaponItem)
@@ -179,7 +201,7 @@ public class AttackClass
         switch (weaponItem.weaponType)
         {
             case WeaponMechanics.Melee:
-                Physics.SphereCastNonAlloc(_camTr.position, weaponItem.areaOfEffect * 0.5f, _camTr.forward, _multipleHits, weaponItem.range);
+                Physics.SphereCastNonAlloc(MeleeDirection(), weaponItem.areaOfEffect * 0.5f, _multipleHits, weaponItem.range, _gm.layFOV, QueryTriggerInteraction.Ignore);
                 foreach (RaycastHit item in _multipleHits)
                 {
                     if (item.collider == null || _colliders.Contains(item.collider)) continue;
@@ -250,7 +272,7 @@ public class AttackClass
 
         if (col.TryGetComponent(out ITakeDamage damagable))
         {
-            damagable.TakeDamage(ElementType.Normal, HelperScript.Damage(weaponItem.damage), null, null);
+            damagable.TakeDamage(ElementType.Normal, HelperScript.Damage(weaponItem.damage), _myTransform, null);
         }
         if (col.TryGetComponent(out IMaterial iMat))
         {
@@ -258,6 +280,7 @@ public class AttackClass
         }
         else _gm.poolManager.GetImpactObject(MatType.Plaster, hit);
 
+        _gm.poolManager.GetDetecable(hit.point, _faction, _myTransform);
     }
 }
 
@@ -313,13 +336,14 @@ public class UImanager
 [System.Serializable]
 public class PoolManager
 {
-    [SerializeField] Transform poolFloatDamage, poolLineRenderers, poolRockets, poolExplosionBig, poolExplosionSmall, poolGreandes, 
+    [SerializeField] Transform poolDetectables, poolFloatDamage, poolLineRenderers, poolRockets, poolExplosionBig, poolExplosionSmall, poolGreandes, 
         poolSleeveAutomatic, poolSleeveShotgun, poolSleeveSniper, poolSleeve9mm, poolBolts, poolDecals, poolWildfire,
         poolImpactBlood, poolImpactBrick, poolImpactDirt, poolImpactPlaster, poolImpactWater;
 
+    DetectableObject[] _detectables;
+    int _cDetectables;
     GameObject[] _floatingDamage;
     int _cFloatDam;
-
     Transform[] _impBlood;
     int _cImpBlood;
     Transform[] _impBrick;
@@ -358,6 +382,7 @@ public class PoolManager
 
     public void Init()
     {
+        _detectables = poolDetectables.GetComponentsInChildren<DetectableObject>();
         _floatingDamage = HelperScript.AllChildrenGameObjects(poolFloatDamage);
         _impBlood = HelperScript.AllChildren(poolImpactBlood);
         _impBrick = HelperScript.AllChildren(poolImpactBrick);
@@ -376,6 +401,11 @@ public class PoolManager
         _bolts = HelperScript.AllChildrenGameObjects(poolBolts);
         _decals = HelperScript.AllChildren(poolDecals);
         _wildFire = HelperScript.AllChildren(poolWildfire);
+    }
+    public void GetDetecable(Vector3 pos, Faction fact, Transform ownerTr)
+    {
+        DetectableObject detectable = GetGenericObject<DetectableObject>(_detectables, ref _cDetectables, 0);
+        detectable.PositionMe(pos, fact, ownerTr);
     }
     public void GetFloatingDamage(Vector3 position, string st, ElementType elementType)
     {
@@ -586,7 +616,7 @@ public class Controls
     }
     bool CanStandUp()
     {
-        if (Physics.Raycast(_player.myTransform.position + Vector3.up, Vector3.up, 0.1f, layersGrounded)) return false;
+        if (Physics.Raycast(_player.MyTransform.position + Vector3.up, Vector3.up, 0.1f, layersGrounded)) return false;
 
         return true;
     }
@@ -713,7 +743,7 @@ public class Controls
     {
         _rigid.AddForce(airMove * moveAim * moveSpeed * _moveDuck * _moveSprint * 1000f * _moveDir);
 
-        int num = Physics.SphereCastNonAlloc(_player.myTransform.position, 0.4f, Vector3.down, _hitsGrounded, 0f, layersGrounded);
+        int num = Physics.SphereCastNonAlloc(_player.MyTransform.position, 0.4f, Vector3.down, _hitsGrounded, 0f, layersGrounded);
         IsGrounded = num > 0;
 
         if (Mathf.Approximately(_moveDir.sqrMagnitude, 0f) || !IsGrounded) _player.offense.MoveSpeed(MoveType.Stationary);

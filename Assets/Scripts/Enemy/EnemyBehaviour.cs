@@ -4,7 +4,6 @@ using Sirenix.OdinInspector;
 using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.Animations.Rigging;
 using Random = UnityEngine.Random;
 
 public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
@@ -15,10 +14,10 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
     [SerializeField] Transform movePoint;
     [SerializeField] Collider[] colliders;
     [SerializeField] Transform lastKnowLocationTransform;
-    
+
     //INTERFACES
     #region
-    public Transform MyTransform { get => agent.transform; set { } }
+    [field: SerializeField] public Transform MyTransform { get; set; }
     public Transform MyHead { get ; set ; }
     [field: SerializeField] public Faction Fact { get; set; }
     [field: SerializeField] public MatType MaterialType { get; set; }
@@ -157,7 +156,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
     {
         _cam = GameManager.gm.mainCam;
         fov.Init(this, agent.transform, consoleDisplay);
-        enemyAnim.Init(this,out _anim, out _animTr, out weaponUsed, out muzzle);
+        enemyAnim.Init(this, out _anim, out _animTr, out weaponUsed, out muzzle);
 
         _attackClass = new AttackClass(colliders, this);
         _attackClass.bulletSpawnPosition = muzzle.transform;
@@ -229,8 +228,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
         displayState.transform.LookAt(_cam.transform.position);
         displayState.transform.Rotate(180 * Vector3.up, Space.Self);
 
-        //   lastKnowLocationTransform.position = lastKnowLocation;
-        lastKnowLocationTransform.position = agent.nextPosition;
+        lastKnowLocationTransform.position = lastKnowLocation + Vector3.up;
         haspath = agent.hasPath;
         pathStatus = agent.pathStatus;
         remainDistance = agent.remainingDistance;
@@ -245,7 +243,19 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
         {
             enemyAnim.Attack(false);
             agent.SetDestination(movePoint.position);
-           // print("moving");
+            // print("moving");
+        }
+    }
+    public void PassFromHealth_Attacked(Transform attackerTr)
+    {
+        _anim.SetTrigger("hit");
+        if (EnState == EnemyState.Attack || AttackTarget != null) return;
+        if (attackerTr.TryGetComponent(out IFactionTarget target) && target.Fact != Fact)
+        {
+            AttackTarget = target;
+            movePoint.position = lastKnowLocation = attackerTr.position;
+            _nextState = EnemyState.Search;
+            EnState = EnemyState.MoveToPoint;
         }
     }
     #endregion
@@ -302,15 +312,14 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
         }
 
         Vector3 dir = lastKnowLocation - agent.transform.position;
+        agent.transform.rotation = Quaternion.Slerp(agent.transform.rotation,
+            Quaternion.LookRotation(dir), 5f * Time.deltaTime);
         if (Vector3.SqrMagnitude(dir) <= _attackRangeSquared)
         {
             if (agent.hasPath) agent.ResetPath();
             _timerAttack = 0f;
-            agent.transform.rotation = Quaternion.Slerp(agent.transform.rotation,
-                Quaternion.LookRotation(dir), 2f * Time.deltaTime);
-            enemyAnim.SetAim(AttackTarget.MyHead.position); //for some reason it doesn't work here, but works in AttackBehaviour()
+            enemyAnim.SetAim(AttackTarget.MyHead.position); //for some reason it only works in AttackBehaviour()
             enemyAnim.Attack(true);
-
         }
         else
         {
@@ -318,8 +327,11 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
             if (_timerAttack > 1f)
             {
                 _timerAttack = 0f;
-                GoToTarget();
+                _nextState = EnemyState.Search;
+                EnState = EnemyState.MoveToPoint;
             }
+            //  GoToTarget();
+
         }
     }
 
@@ -377,7 +389,7 @@ public class FieldOvView
 
     Ray _ray;
     RaycastHit _hit;
-    [SerializeField] LayerMask layerFOV;
+    LayerMask _layerFOV;
     Collider[] _colls = new Collider[30];
     RaycastHit[] _multipleHits = new RaycastHit[1];
 
@@ -391,7 +403,7 @@ public class FieldOvView
         _hearingRange = hearSphere.localScale.x * 0.5f;
         sightSphere.gameObject.SetActive(false);
         hearSphere.gameObject.SetActive(false);
-
+        _layerFOV = GameManager.gm.layFOV;
         _sightAngleTrigonometry = Mathf.Cos(sightAngle * 0.5f * Mathf.Deg2Rad);
         _conseoleDisplay = consoleDis;
     }
@@ -421,7 +433,7 @@ public class FieldOvView
     }
     public IFactionTarget FindFovTargets()
     {
-        int num = Physics.OverlapSphereNonAlloc(_myTransform.position, _sightRange, _colls, layerFOV, QueryTriggerInteraction.Ignore);
+        int num = Physics.OverlapSphereNonAlloc(_myTransform.position, _sightRange, _colls, _layerFOV, QueryTriggerInteraction.Ignore);
 
         if (num == 0) return null;
 

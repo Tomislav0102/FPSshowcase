@@ -8,7 +8,7 @@ using Sirenix.OdinInspector;
 public class Player : GlobalEventManager, IActivation, IFactionTarget, IMaterial
 {
     GameManager _gm;
-    public Transform myTransform, camPosition;
+    public Transform camPosition;
     public CapsuleCollider capsuleCollider;
     public Rigidbody rigid;
     public bool IsActive
@@ -21,7 +21,7 @@ public class Player : GlobalEventManager, IActivation, IFactionTarget, IMaterial
         }
     }
 
-    public Transform MyTransform { get => myTransform; set { } }
+    [field: SerializeField] public Transform MyTransform { get; set; }
     [field:SerializeField] public Faction Fact { get; set; }
     [field: SerializeField] public MatType MaterialType { get; set; }
     public Transform MyHead { get => _gm.camTr; set { } }
@@ -38,7 +38,6 @@ public class Player : GlobalEventManager, IActivation, IFactionTarget, IMaterial
     void Awake()
     {
         _gm = GameManager.gm;
-        myTransform = transform;
 
         HelperScript.CursorVisible(false);
         controls.Init();

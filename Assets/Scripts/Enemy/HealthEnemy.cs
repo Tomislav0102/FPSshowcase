@@ -15,11 +15,13 @@ public class HealthEnemy : HealthMain, ITakeDamage
         }
     }
     Transform _myTransform;
+    EnemyBehaviour _enemyBehaviour;
 
     protected override void Init()
     {
         _myTransform = transform;
         base.Init();
+        _enemyBehaviour = GetComponent<EnemyBehaviour>();
     }
     public override void TakeDamage(ElementType elementType, int damage, Transform attackerTransform, DamageOverTime damageOverTime)
     {
@@ -27,6 +29,7 @@ public class HealthEnemy : HealthMain, ITakeDamage
 
         if (damage > 0)
         {
+            _enemyBehaviour.PassFromHealth_Attacked(attackerTransform);
             _gm.poolManager.GetFloatingDamage(_myTransform.position, damage.ToString(), elementType);
         }
 
@@ -34,6 +37,6 @@ public class HealthEnemy : HealthMain, ITakeDamage
 
     void Die()
     {
-        gameObject.SetActive(false);
+       _myTransform.parent.gameObject.SetActive(false);
     }
 }

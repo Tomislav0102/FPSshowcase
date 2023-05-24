@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Machine gun 05
   m_EditorClassIdentifier: 
   itemName: Machinegun 05
-  ordinalLookup: 3
+  ordinalLookup: 1
   weaponType: 1
   ammoType: 3
   has2ndAttack: 0
@@ -22,9 +22,13 @@ MonoBehaviour:
   partialReload: 0
   hasCrosshair: 1
   startSpread: 50
-  damage: {x: 1, y: 3}
-  range: 30
-  rofModifier: 2
+  damage: {x: 50, y: 60}
+  damageOverTime:
+    elementType: 0
+    damagePerTick: 0
+    effectDuration: 0
+  range: 500
+  rofModifier: 1
   noOfPelletsPerShot: 1
   areaOfEffect: 0
   clipCapacity: 3000

@@ -32,7 +32,7 @@ Transform:
   - {fileID: 8666812799878683301}
   - {fileID: 8057801291189741568}
   m_Father: {fileID: 0}
-  m_RootOrder: 15
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2194072017361417643
 GameObject:
@@ -213,6 +213,7 @@ GameObject:
   - component: {fileID: 6746911911608078744}
   - component: {fileID: 7391702910629167921}
   - component: {fileID: 2124945155030204128}
+  - component: {fileID: 3253973745715575079}
   m_Layer: 21
   m_Name: agent
   m_TagString: Untagged
@@ -255,18 +256,16 @@ MonoBehaviour:
   agent: {fileID: 6746911911608078744}
   enemyAnim: {fileID: 0}
   movePoint: {fileID: 8666812799878683301}
-  colliders: []
+  colliders:
+  - {fileID: 2124945155030204128}
   lastKnowLocationTransform: {fileID: 8057801291189741568}
-  <MyHead>k__BackingField: {fileID: 0}
+  <MyTransform>k__BackingField: {fileID: 2398194289418554482}
   <Fact>k__BackingField: 1
   <MaterialType>k__BackingField: 0
   fov:
     sightSphere: {fileID: 374648284135301785}
     hearSphere: {fileID: 4466628684827694054}
     sightAngle: 120
-    layerFOV:
-      serializedVersion: 2
-      m_Bits: 2162688
   startingState: 2
   idleLookAngle: 180
   wpParent: {fileID: 0}
@@ -350,6 +349,20 @@ CapsuleCollider:
   m_Height: 1.7403734
   m_Direction: 1
   m_Center: {x: -0, y: 0.8701867, z: -0}
+--- !u!114 &3253973745715575079
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5294618580347998814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3af9c298419e03643a04e0060f09e201, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _maxHitPoints: 100
+  _startingPoints: 100
 --- !u!1 &5335822317061231053
 GameObject:
   m_ObjectHideFlags: 0
