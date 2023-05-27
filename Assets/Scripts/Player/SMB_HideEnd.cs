@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SMB_HideEnd : SMB_MainParent
+public class SMB_HideEnd : SMB_MainPlayer
 {
     bool _oneHit;
 

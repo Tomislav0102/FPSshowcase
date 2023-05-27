@@ -31,7 +31,14 @@ public class Crosshair : MonoBehaviour, IActivation
         set
         {
             _weapon = value;
-            IsActive = value.hasCrosshair || !value.weaponDetail.scope;
+            if (value.hasCrosshair)
+            {
+                IsActive = !value.weaponDetail.scope;
+            }
+            else
+            {
+                IsActive = false;
+            }
             Spread = _shootSpread = value.startSpread;
 
         }

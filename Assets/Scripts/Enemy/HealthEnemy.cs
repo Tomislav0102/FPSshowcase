@@ -17,6 +17,11 @@ public class HealthEnemy : HealthMain, ITakeDamage
     Transform _myTransform;
     EnemyBehaviour _enemyBehaviour;
 
+    ElementType _elType = ElementType.Normal;
+    [SerializeField] SkinnedMeshRenderer[] skins;
+    [SerializeField] Material[] standardMats;
+    [SerializeField] Material[] explosionMats;
+
     protected override void Init()
     {
         _myTransform = transform;
@@ -29,6 +34,7 @@ public class HealthEnemy : HealthMain, ITakeDamage
 
         if (damage > 0)
         {
+            _elType = elementType;
             _enemyBehaviour.PassFromHealth_Attacked(attackerTransform);
             _gm.poolManager.GetFloatingDamage(_myTransform.position, damage.ToString(), elementType);
         }
@@ -37,6 +43,17 @@ public class HealthEnemy : HealthMain, ITakeDamage
 
     void Die()
     {
-       _myTransform.parent.gameObject.SetActive(false);
+        switch (_elType)
+        {
+            case ElementType.Fire:
+                break;
+            case ElementType.Explosion:
+                for (int i = 0; i < skins.Length; i++)
+                {
+                    skins[i].material = explosionMats[i];
+                }
+                break;
+        }
+        _enemyBehaviour.IsActive = false;
     }
 }

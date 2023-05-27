@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using FirstCollection;
 
-public class SMB_AimPostprocess : SMB_MainParent
+public class SMB_AimPostprocess : SMB_MainPlayer
 {
     [SerializeField] bool activateAimPostprocess;
     bool _hasScope;

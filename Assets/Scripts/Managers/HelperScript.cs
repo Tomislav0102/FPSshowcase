@@ -124,6 +124,7 @@ namespace FirstCollection
     {
         Normal,
         Fire,
+        Explosion,
         Cold,
         Electricity,
         Poison
@@ -200,6 +201,7 @@ namespace FirstCollection
         Transform MyTransform { get; set; }
         Transform MyHead { get; set; }
         Faction Fact { get; set; }
+        IFactionTarget Owner { get; set; }
     }
     public interface IMaterial
     {

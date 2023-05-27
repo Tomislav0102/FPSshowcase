@@ -3,18 +3,24 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using System.Threading;
+using System.Threading.Tasks;
 
 public class TestScript : MonoBehaviour
 {
     Camera _cam;
-    RaycastHit _hit;
-    RaycastHit[] _multipleHits = new RaycastHit[1];
-    public Transform sphere;
-    Vector3[] _pos= new Vector3[0];
-    public Vector3 _nextPos;
-    float _ver, _hor;
-    public LayerMask layerMask;
-    public bool isPlayer;
+    //RaycastHit _hit;
+    //RaycastHit[] _multipleHits = new RaycastHit[1];
+    //public Transform sphere;
+    //Vector3[] _pos= new Vector3[0];
+    //public Vector3 _nextPos;
+    //float _ver, _hor;
+    //public LayerMask layerMask;
+    //public bool isPlayer;
+    public Animator anim;
+
+    public float broj;
+
     private void Awake()
     {
         _cam = Camera.main;
@@ -22,20 +28,16 @@ public class TestScript : MonoBehaviour
     private void Start()
     {
         print($"Test script is on '{gameObject.name}' gameobject, that is on '{gameObject.scene.name}' scene.");
-        gameObject.layer = layerMask;
     }
-
-
 
     private void Update()
     {
-       int num =  Physics.SphereCastNonAlloc(transform.position, 0.5f, transform.forward, _multipleHits, 10f);
-
-        for (int i = 0; i < num; i++)
+        if (Input.GetKeyDown(KeyCode.F))
         {
-            print(_multipleHits[i].collider.name);
+            anim.Play("New Animation");
         }
     }
+
 
 
 }

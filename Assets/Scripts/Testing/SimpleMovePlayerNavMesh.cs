@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class SimpleMovePlayerNavMesh : MonoBehaviour, IFactionTarget
+public class SimpleMovePlayerNavMesh : MonoBehaviour/*, IFactionTarget*/
 {
     public Transform MyTransform { get => _agent.transform; set { } }
     [field: SerializeField] public Faction Fact { get; set; }

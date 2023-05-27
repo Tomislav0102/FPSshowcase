@@ -43,6 +43,7 @@ public class HealthMain : GlobalEventManager
     protected virtual void Init()
     {
         _gm = GameManager.gm;
+        if (_startingPoints > 0 && _startingPoints > _maxHitPoints) _maxHitPoints = _startingPoints;
         TakeDamage(ElementType.Normal, -_startingPoints, null, null);
     }
 

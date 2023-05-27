@@ -10,6 +10,6 @@ public class SMB_RandomPar_Machine : StateMachineBehaviour
     public override void OnStateMachineEnter(Animator animator, int stateMachinePathHash)
     {
         animator.SetInteger(parameterName, Random.Range(0, numOfVariations));
-       // animator.SetInteger(parameterName, 1);
+        //animator.SetInteger(parameterName, 3);
     }
 }

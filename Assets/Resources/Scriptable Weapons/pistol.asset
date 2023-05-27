@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: pistol
   m_EditorClassIdentifier: 
   itemName: Pistol
-  ordinalLookup: 7
+  ordinalLookup: 1
   weaponType: 1
   ammoType: 1
   has2ndAttack: 0
@@ -21,12 +21,19 @@ MonoBehaviour:
   canAim: 1
   partialReload: 0
   hasCrosshair: 1
-  minSpread: 30
-  spreadIncreaseWhileShooting: 90
-  spreadRange: {x: 16.550457, y: 164.35669}
-  damage: {x: 5, y: 10}
-  range: 15
+  startSpread: 50
+  damage: {x: 1, y: 1}
+  damageOverTime:
+    elementType: 0
+    damagePerTick: 0
+    effectDuration: 0
+  range: 200
   rofModifier: 1
   noOfPelletsPerShot: 1
   areaOfEffect: 0
   clipCapacity: 10
+  weaponDetail:
+    flameArrester: 0
+    flashlight: 0
+    scope: 0
+    silencer: 0

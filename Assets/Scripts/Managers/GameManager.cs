@@ -26,7 +26,7 @@ public class GameManager : MonoBehaviour
     public UImanager uiManager;
     public PoolManager poolManager;
     public PostprocessMan postProcess;
-    public LayerMask layFOV;
+    public LayerMask layFOV, layAllWithoutDetectables;
     [HideInInspector] public int layerPl, layerEn;
     public Transform wayPointParent;
     private void Awake()
@@ -105,8 +105,10 @@ public class DamageOverTime
 public class PostprocessMan
 {
     [SerializeField] PostProcessProfile mainProfile;
+    [SerializeField] Animator playerDamageVol;
     DepthOfField _depth;
     Vignette _vignette;
+
     public void Init()
     {
         _depth = mainProfile.GetSetting<DepthOfField>();
@@ -121,6 +123,10 @@ public class PostprocessMan
         _depth.active = show;
         _vignette.intensity.value = show ? 0.55f : 0.4f;
     }
+    public void ShowPlayerDamage()
+    {
+        playerDamageVol.SetTrigger("hit");
+    }
 }
 public class AttackClass
 {
@@ -132,22 +138,21 @@ public class AttackClass
    // [ShowInInspector]
     GameObject projec; 
     Vector2 _screenCenter;
-    Transform _myTransform;
-    Faction _faction;
+    IFactionTarget _myFactionInterface;
     public Transform bulletSpawnPosition;
 
     Ray MeleeDirection()
     {
         Ray r = new Ray();
-        switch (_faction)
+        switch (_myFactionInterface.Fact)
         {
             case Faction.Player:
                 r.origin = _camTr.position;
                 r.direction = _camTr.forward;
                 break;
             case Faction.Enemy:
-                r.origin = _myTransform.position + Vector3.up;
-                r.direction = _myTransform.forward;
+                r.origin = _myFactionInterface.MyHead.position;
+                r.direction = _myFactionInterface.MyTransform.forward;
                 break;
             default:
                 return r;
@@ -158,7 +163,7 @@ public class AttackClass
     Ray ShootDirection()
     {
         Ray r = new Ray();
-        switch (_faction)
+        switch (_myFactionInterface.Fact)
         {
             case Faction.Player:
                 if (_gm.player.offense.IsAiming)
@@ -191,8 +196,7 @@ public class AttackClass
             _colliders.Add(attackerColliders[i]);
         }
         _screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
-        _faction = factionTarget.Fact;
-        _myTransform = factionTarget.MyTransform;
+        _myFactionInterface = factionTarget;
     }
 
     public void Attack(SoItem weaponItem)
@@ -201,12 +205,12 @@ public class AttackClass
         switch (weaponItem.weaponType)
         {
             case WeaponMechanics.Melee:
-                Physics.SphereCastNonAlloc(MeleeDirection(), weaponItem.areaOfEffect * 0.5f, _multipleHits, weaponItem.range, _gm.layFOV, QueryTriggerInteraction.Ignore);
+                Physics.SphereCastNonAlloc(MeleeDirection(), weaponItem.areaOfEffect * 0.5f, _multipleHits, weaponItem.range, ~0, QueryTriggerInteraction.Ignore);
                 foreach (RaycastHit item in _multipleHits)
                 {
-                    if (item.collider == null || _colliders.Contains(item.collider)) continue;
-                    Debug.Log(item.collider.name);
-                    ApplyDamage(weaponItem, item);
+                    if (item.collider == null) continue;
+                  //  Debug.Log(item.collider.name);
+                    ApplyDamage(weaponItem, item, false);
                 }
                 break;
 
@@ -238,16 +242,16 @@ public class AttackClass
             Vector3 endPosLineRenderer;
             for (int i = 0; i < pellets; i++)
             {
-                if(RayHitsSomething(weapon, out Ray ray)) //out Ray ray needed only for line renderer
+                if(RayHitsSomething(weapon, out Ray ray)) 
                 {
                     endPosLineRenderer = _hit.point;
-                    ApplyDamage(weapon, _hit);
+                    ApplyDamage(weapon, _hit, true);
                 }
                 else
                 {
                     endPosLineRenderer = _camTr.position + ray.direction * weapon.range;
                 }
-                if(_faction == Faction.Enemy) _gm.poolManager.GetLineRenderer(bulletSpawnPosition.position, endPosLineRenderer);
+                if(_myFactionInterface.Fact == Faction.Enemy) _gm.poolManager.GetLineRenderer(bulletSpawnPosition.position, endPosLineRenderer);
             }
         }
 
@@ -265,22 +269,22 @@ public class AttackClass
         }
     }
 
-    public void ApplyDamage(SoItem weaponItem, RaycastHit hit)
+    public void ApplyDamage(SoItem weaponItem, RaycastHit hit, bool showBulletHole)
     {
         Collider col = hit.collider;
-        if (_colliders.Contains(col)) return;
+        if (_colliders.Contains(col) || col.GetComponent<DetectableObject>() != null) return;
 
         if (col.TryGetComponent(out ITakeDamage damagable))
         {
-            damagable.TakeDamage(ElementType.Normal, HelperScript.Damage(weaponItem.damage), _myTransform, null);
+            damagable.TakeDamage(ElementType.Normal, HelperScript.Damage(weaponItem.damage), _myFactionInterface.MyTransform, null);
         }
         if (col.TryGetComponent(out IMaterial iMat))
         {
-            _gm.poolManager.GetImpactObject(iMat.MaterialType, hit);
+            _gm.poolManager.GetImpactObject(iMat.MaterialType, hit, showBulletHole);
         }
-        else _gm.poolManager.GetImpactObject(MatType.Plaster, hit);
+        else _gm.poolManager.GetImpactObject(MatType.Plaster, hit, showBulletHole);
 
-        _gm.poolManager.GetDetecable(hit.point, _faction, _myTransform);
+        _gm.poolManager.GetDetecable(hit.point/* + 0.01f * hit.normal*/, 2f, _myFactionInterface);
     }
 }
 
@@ -291,6 +295,7 @@ public class UImanager
     public Canvas canvasGame;
     [SerializeField] TextMeshProUGUI displayHP, displaySpeed, displayWeaponName, displayAmmo, displayAllAmo;
     [SerializeField] Image pain;
+    const float CONST_PAINLENGTH = 0.5f;
     public Crosshair crosshairObject;
 
     public void ShowHitPoints(int hp, int maxHp)
@@ -328,8 +333,10 @@ public class UImanager
     }
     public void ShowPain()
     {
-        pain.DOFade(0f, 0.5f)
-            .From(0.8f);
+        pain.DOFade(0f, CONST_PAINLENGTH)
+            .From(0.5f);
+
+        GameManager.gm.postProcess.ShowPlayerDamage();
     }
 }
 
@@ -337,8 +344,8 @@ public class UImanager
 public class PoolManager
 {
     [SerializeField] Transform poolDetectables, poolFloatDamage, poolLineRenderers, poolRockets, poolExplosionBig, poolExplosionSmall, poolGreandes, 
-        poolSleeveAutomatic, poolSleeveShotgun, poolSleeveSniper, poolSleeve9mm, poolBolts, poolDecals, poolWildfire,
-        poolImpactBlood, poolImpactBrick, poolImpactDirt, poolImpactPlaster, poolImpactWater;
+        poolSleeveAutomatic, poolSleeveShotgun, poolSleeveSniper, poolSleeve9mm, poolBolts, poolDecalsBlood, poolWildfire,
+        poolImpactBlood, poolImpactBrick, poolImpactDirt, poolImpactPlaster, poolImpactRock, poolImpactWater;
 
     DetectableObject[] _detectables;
     int _cDetectables;
@@ -352,6 +359,8 @@ public class PoolManager
     int _cImpDirt;
     Transform[] _impPlaster;
     int _cImpPlaster;
+    Transform[] _impRock;
+    int _cImpRock;
     Transform[] _impWater;
     int _cImpWater;
 
@@ -375,8 +384,8 @@ public class PoolManager
     int _cSleeves9mm;
     GameObject[] _bolts;
     int _cBolts;
-    Transform[] _decals;
-    int _cDecals;
+    GameObject[] _decalsBlood;
+    int _cDecalsBlood;
     Transform[] _wildFire;
     int _cWildFire;
 
@@ -388,6 +397,7 @@ public class PoolManager
         _impBrick = HelperScript.AllChildren(poolImpactBrick);
         _impDirt = HelperScript.AllChildren(poolImpactDirt);
         _impPlaster = HelperScript.AllChildren(poolImpactPlaster);
+        _impRock = HelperScript.AllChildren(poolImpactRock);
         _impWater = HelperScript.AllChildren(poolImpactWater);
         _lrs = poolLineRenderers.GetComponentsInChildren<LineRenderer>();
         _explosionBig = HelperScript.AllChildrenGameObjects(poolExplosionBig);
@@ -399,13 +409,13 @@ public class PoolManager
         _sleevesSniper = HelperScript.AllChildrenGameObjects(poolSleeveSniper);
         _sleeves9mm = HelperScript.AllChildrenGameObjects(poolSleeve9mm);
         _bolts = HelperScript.AllChildrenGameObjects(poolBolts);
-        _decals = HelperScript.AllChildren(poolDecals);
+        _decalsBlood = HelperScript.AllChildrenGameObjects(poolDecalsBlood);
         _wildFire = HelperScript.AllChildren(poolWildfire);
     }
-    public void GetDetecable(Vector3 pos, Faction fact, Transform ownerTr)
+    public void GetDetecable(Vector3 pos, float size, IFactionTarget ownerInterface)
     {
         DetectableObject detectable = GetGenericObject<DetectableObject>(_detectables, ref _cDetectables, 0);
-        detectable.PositionMe(pos, fact, ownerTr);
+        detectable.PositionMe(pos, size, ownerInterface);
     }
     public void GetFloatingDamage(Vector3 position, string st, ElementType elementType)
     {
@@ -418,15 +428,22 @@ public class PoolManager
     {
         return GetGenericObject<Transform>(_wildFire, ref _cWildFire, 0);
     }
-    public void GetBulletDecal(Transform hitTarget, Vector3 hitPosition, Vector3 hitNormal)
+    public GameObject GetBloodDecals()
     {
-        Transform decal = GetGenericObject<Transform>(_decals, ref _cDecals, 2000);
-        decal.parent = null;
-        decal.localScale = 0.1f * Vector3.one;
-        decal.SetPositionAndRotation(hitPosition + 0.001f * hitNormal, Quaternion.LookRotation(hitNormal));
-        decal.parent = hitTarget.transform;
-        decal.gameObject.SetActive(true);
+        GameObject g = GetGenericObject<GameObject>(_decalsBlood, ref _cDecalsBlood, 10000);
+        g.SetActive(false);
+        g.SetActive(true);
+        return g;
     }
+    //public void GetBulletDecal(Transform hitTarget, Vector3 hitPosition, Vector3 hitNormal)
+    //{
+    //    Transform decal = GetGenericObject<Transform>(_decals, ref _cDecals, 2000);
+    //    decal.parent = null;
+    //    decal.localScale = 0.1f * Vector3.one;
+    //    decal.SetPositionAndRotation(hitPosition + 0.001f * hitNormal, Quaternion.LookRotation(hitNormal));
+    //    decal.parent = hitTarget.transform;
+    //    decal.gameObject.SetActive(true);
+    //}
     public void GetLineRenderer(Vector3 startPos, Vector3 endPos)
     {
         LineRenderer line = GetGenericObject<LineRenderer>(_lrs, ref _cLR, 200);
@@ -437,14 +454,16 @@ public class PoolManager
         line.enabled = true;
     }
 
-    public void GetImpactObject(MatType matType, RaycastHit hit)
+    public void GetImpactObject(MatType matType, RaycastHit hit, bool showBulletHole)
     {
         Transform tr = null;
         switch (matType)
         {
             case MatType.Blood:
-                tr = GetGenericObject<Transform>(_impBlood, ref _cImpBlood, 3500);
-                break;
+                tr = GetGenericObject<Transform>(_impBlood, ref _cImpBlood, 2000);
+                tr.position = hit.point;
+                tr.gameObject.SetActive(true);
+                return; //blood particle is different, code below doesn't aplly to it
             case MatType.Brick:
                 tr = GetGenericObject<Transform>(_impBrick, ref _cImpBrick, 3500);
                 break;
@@ -463,6 +482,7 @@ public class PoolManager
                 tr = GetGenericObject<Transform>(_impPlaster, ref _cImpPlaster, 3500);
                 break;
             case MatType.Rock:
+                tr = GetGenericObject<Transform>(_impRock, ref _cImpRock, 3500);
                 break;
             case MatType.Water:
                 tr = GetGenericObject<Transform>(_impWater, ref _cImpWater, 3500);
@@ -474,13 +494,11 @@ public class PoolManager
         }
         if (tr == null) return;
         tr.parent = null;
-       // tr.localScale = Vector3.one;
-        //tr.SetPositionAndRotation(hit.point, Quaternion.LookRotation(hit.point + hit.normal));
         tr.position = hit.point;
         tr.LookAt(hit.point + hit.normal);
         tr.parent = hit.transform;
+        tr.GetChild(2).gameObject.SetActive(showBulletHole);
         tr.gameObject.SetActive(true);
-
     }
     public GameObject GetProjectile(AmmoType ammoType) 
     {
@@ -814,7 +832,7 @@ public class Offense
             _wAnims[value].SetBool("isShotgun", _currWeapon.weaponType == WeaponMechanics.Shotgun);
             _wAnims[value].SetFloat("rofModifier", _currWeapon.rofModifier);
 
-            _gm.uiManager.crosshairObject.Weapon = _currWeapon;
+           // _gm.uiManager.crosshairObject.Weapon = _currWeapon;
         }
     }
     int _wi;
@@ -836,7 +854,7 @@ public class Offense
             _wAnims[Windex].SetBool("isAiming", _isAiming);
             _player.controls.moveAim = _isAiming ? 0.3f : 1f;
 
-            if (/*_currWeapon.canAim && */_currWeapon.hasCrosshair) _gm.uiManager.crosshairObject.IsActive = !_isAiming;
+            if (_currWeapon.hasCrosshair && !_currWeapon.weaponDetail.scope) _gm.uiManager.crosshairObject.IsActive = !_isAiming;
             else _gm.uiManager.crosshairObject.IsActive = false;
         }
     }

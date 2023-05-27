@@ -6,21 +6,58 @@ using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
-public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
+public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial, IActivation
 {
+    GameManager _gm;
     [SerializeField] TextMeshPro displayState;
     [SerializeField] NavMeshAgent agent;
-    [SerializeField] EnemyAnim enemyAnim;
-    [SerializeField] Transform movePoint;
+    public EnemyAnim enemyAnim;
+    public Transform movePoint;
     [SerializeField] Collider[] colliders;
-    [SerializeField] Transform lastKnowLocationTransform;
 
     //INTERFACES
     #region
     [field: SerializeField] public Transform MyTransform { get; set; }
     public Transform MyHead { get ; set ; }
     [field: SerializeField] public Faction Fact { get; set; }
+    public IFactionTarget Owner { get; set; }
     [field: SerializeField] public MatType MaterialType { get; set; }
+    public bool IsActive
+    {
+        get => _isActive;
+        set
+        {
+            _isActive = value;
+            if (value)
+            {
+                fov.Init(this, agent.transform, consoleDisplay);
+                enemyAnim.Init(this, out _anim, out _animTr, out weaponUsed, out muzzle);
+
+                _attackClass = new AttackClass(colliders, this);
+                _attackClass.bulletSpawnPosition = muzzle.transform;
+                InvokeRepeating(nameof(CanUpdateFOVMethod), Random.Range(0f, 1f), 0.2f);
+
+            }
+            else
+            {
+                AttackTarget = null;
+                fov = null;
+                _attackClass = null;
+                enemyAnim.Attack(false);
+                CancelInvoke();
+            }
+
+            agent.enabled = value;
+            _anim.gameObject.SetActive(value);
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                colliders[i].enabled = value;
+            }
+            displayState.enabled = value;
+        }
+    }
+    bool _isActive;
+
     #endregion
 
     [BoxGroup("Field of view")]
@@ -78,13 +115,15 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
             displayState.color = GameManager.gm.gizmoColorsByState[(int)value];
         }
     }
+
+
     EnemyState _enState;
     Animator _anim;
     Transform _animTr;
     Camera _cam;
     Vector3 _startPos;
     Quaternion _startRot;
-    bool _canUpdateFOV;
+    bool _canUpdateFOV, _canUpdateDestination;
     MoveType _moveType;
 
     //BEHAVIOUR SPECIFIC
@@ -128,14 +167,14 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
     SoItem weaponUsed;
     public IFactionTarget AttackTarget;
     float _attackRangeSquared;
-    float _timerAttack;
+    float _timerAttack, _timerCheckTargetVisible;
     GameObject muzzle;
     AttackClass _attackClass;
 
     //search
     float _timerSearch;
     [HideInInspector] public bool hasSearched;
-    [HideInInspector] public Vector3 lastKnowLocation;
+    Vector3 _searchCenter;
     #endregion
 
     bool ReadyToMove()
@@ -149,19 +188,15 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
     public NavMeshPathStatus pathStatus;
     public float speedCurrent;
     public float remainDistance;
+    public string namOfAttacker;
 
     //AWAKE -> UPDATE
     #region
     private void Awake()
     {
-        _cam = GameManager.gm.mainCam;
-        fov.Init(this, agent.transform, consoleDisplay);
-        enemyAnim.Init(this, out _anim, out _animTr, out weaponUsed, out muzzle);
-
-        _attackClass = new AttackClass(colliders, this);
-        _attackClass.bulletSpawnPosition = muzzle.transform;
-
-
+        _gm = GameManager.gm;
+        _cam = _gm.mainCam;
+        IsActive = true;
     }
     private void Start()
     {
@@ -177,12 +212,11 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
          _wayPoints = HelperScript.AllChildren((wpParent == null || wpParent.childCount == 0) ? GameManager.gm.wayPointParent : wpParent);
 
 
-        InvokeRepeating(nameof(CanUpdateFOVMethod), Random.Range(0f, 1f), 0.2f);
     }
 
     private void Update()
     {
-       // if (Input.GetMouseButtonDown(1)) _anim.SetTrigger("hit");
+        if (!IsActive) return;
         Debugs();
 
         switch (EnState)
@@ -216,7 +250,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
     }
     void FixedUpdate()
     {
-        if (EnState == EnemyState.Attack) return;
+        if (!IsActive || EnState == EnemyState.Attack) return;
         if (_canUpdateFOV)
         {
             AttackTarget = fov.FindFovTargets();
@@ -228,22 +262,23 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
         displayState.transform.LookAt(_cam.transform.position);
         displayState.transform.Rotate(180 * Vector3.up, Space.Self);
 
-        lastKnowLocationTransform.position = lastKnowLocation + Vector3.up;
         haspath = agent.hasPath;
         pathStatus = agent.pathStatus;
         remainDistance = agent.remainingDistance;
+        namOfAttacker = AttackTarget == null ? "no target" : AttackTarget.MyTransform.name.ToString();
     }
-    void CanUpdateFOVMethod()
+    void CanUpdateFOVMethod() //optimization method. Detection and navigation don't need updates on every frame.
     {
-        _canUpdateFOV = true;
+        _canUpdateFOV = _canUpdateDestination = true;
     }
     void GoToTarget()
     {
-        if (ReadyToMove())
+        enemyAnim.Attack(false);
+        if (ReadyToMove() && _canUpdateDestination)
         {
-            enemyAnim.Attack(false);
             agent.SetDestination(movePoint.position);
             // print("moving");
+            _canUpdateDestination = false;
         }
     }
     public void PassFromHealth_Attacked(Transform attackerTr)
@@ -253,7 +288,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
         if (attackerTr.TryGetComponent(out IFactionTarget target) && target.Fact != Fact)
         {
             AttackTarget = target;
-            movePoint.position = lastKnowLocation = attackerTr.position;
+            movePoint.position = attackerTr.position;
             _nextState = EnemyState.Search;
             EnState = EnemyState.MoveToPoint;
         }
@@ -302,18 +337,21 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
             return;
         }
 
-        movePoint.position = lastKnowLocation = AttackTarget.MyTransform.position;
+        movePoint.position = AttackTarget.MyTransform.position;
 
-        if (!fov.TargetStillVisible(AttackTarget))
+        _timerCheckTargetVisible += Time.deltaTime;
+        if(_timerCheckTargetVisible > 0.3f)
         {
-            _nextState = EnemyState.Search;
-            EnState = EnemyState.MoveToPoint;
-            return;
+            _timerCheckTargetVisible = 0f;
+            if (!fov.TargetStillVisible(AttackTarget, _gm.layAllWithoutDetectables))
+            {
+                SearchStart();
+                return;
+            }
         }
 
-        Vector3 dir = lastKnowLocation - agent.transform.position;
-        agent.transform.rotation = Quaternion.Slerp(agent.transform.rotation,
-            Quaternion.LookRotation(dir), 5f * Time.deltaTime);
+        Vector3 dir = movePoint.position - agent.transform.position;
+        agent.transform.rotation = Quaternion.Slerp(agent.transform.rotation, Quaternion.LookRotation(dir), 5f * Time.deltaTime);
         if (Vector3.SqrMagnitude(dir) <= _attackRangeSquared)
         {
             if (agent.hasPath) agent.ResetPath();
@@ -327,8 +365,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
             if (_timerAttack > 1f)
             {
                 _timerAttack = 0f;
-                _nextState = EnemyState.Search;
-                EnState = EnemyState.MoveToPoint;
+                SearchStart();
             }
             //  GoToTarget();
 
@@ -348,10 +385,15 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
         _attackClass.Attack(weaponUsed);
 
     }
-
+    void SearchStart()
+    {
+        _searchCenter = movePoint.position;
+        _nextState = EnemyState.Search;
+        EnState = EnemyState.MoveToPoint;
+    }
     void SearchBeahaviour()
     {
-        RoamBehaviour(lastKnowLocation);
+        RoamBehaviour(_searchCenter);
         _timerSearch += Time.deltaTime;
         if (_timerSearch > 5f)
         {
@@ -365,7 +407,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial
     {
         if (agent.hasPath && agent.remainingDistance < 0.1f)
         {
-            agent.transform.rotation = _startRot;
+            if (_nextState == startingState) agent.transform.rotation = _startRot;
             EnState = _nextState;
             return;
         }
@@ -417,18 +459,19 @@ public class FieldOvView
         }
         return r;
     }
-    public bool TargetStillVisible(IFactionTarget target)
+    public bool TargetStillVisible(IFactionTarget target, LayerMask layerMask)
     {
         _ray.direction = (target.MyTransform.position - _myTransform.position).normalized;
         for (int i = 0; i < 2; i++)
         {
             _ray.origin = _myTransform.position + (i + 0.7f) * Vector3.up;
 
-            if (Physics.Raycast(_ray, out _hit, EffectiveRange(target.MyTransform.position), ~0, QueryTriggerInteraction.Ignore))
+            if (Physics.Raycast(_ray, out _hit, EffectiveRange(target.MyTransform.position), layerMask, QueryTriggerInteraction.Ignore))
             {
                 if (_hit.collider == target.MyTransform.GetComponent<Collider>()) return true;
             }
         }
+      //  Debug.Log($"{target.MyTransform.name} is not visible, but in range");
         return false;
     }
     public IFactionTarget FindFovTargets()
@@ -442,14 +485,14 @@ public class FieldOvView
             IFactionTarget ifact = _colls[i].GetComponent<IFactionTarget>();
 
             if (ifact == null || ifact == _parentFovTraget) continue;
-
-            if (!TargetStillVisible(ifact)) continue;
+            if (!TargetStillVisible(ifact, ~0)) continue;
 
             switch (ifact.Fact)
             {
                 case Faction.Player:
                     _enemyBehaviour.EnState = EnemyState.Attack;
-                    return ifact;
+                    //  return ifact.Owner == null ? ifact : ifact.Owner;
+                    return ifact.Owner ?? ifact;
 
                 case Faction.Enemy:
                     if (_hit.collider.TryGetComponent(out EnemyBehaviour en))
@@ -465,7 +508,7 @@ public class FieldOvView
                                     return null;
                                 }
                                 _enemyBehaviour.EnState = EnemyState.Search;
-                                _enemyBehaviour.lastKnowLocation = en.lastKnowLocation;
+                                _enemyBehaviour.movePoint.position = en.movePoint.position;
                                 break;
                         }
                     }

@@ -2716,7 +2716,7 @@ MonoBehaviour:
   <MyHead>k__BackingField: {fileID: 8235467050001574613}
   weaponUsed: {fileID: 11400000, guid: 35c2456c36a8ccc4cae192f629d1c724, type: 2}
   muzzle: {fileID: 0}
-  rigAiming: {fileID: 5310640610033313771}
+  rigRightHandAiming: {fileID: 5310640610033313771}
   rigLeftHand: {fileID: 1369932270968800905}
   multiAimConstraintRightHand: {fileID: 2167823997769451893}
 --- !u!95 &5458902715401782888

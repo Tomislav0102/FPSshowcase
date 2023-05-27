@@ -23,6 +23,7 @@ public class Player : GlobalEventManager, IActivation, IFactionTarget, IMaterial
 
     [field: SerializeField] public Transform MyTransform { get; set; }
     [field:SerializeField] public Faction Fact { get; set; }
+    public IFactionTarget Owner { get; set; }
     [field: SerializeField] public MatType MaterialType { get; set; }
     public Transform MyHead { get => _gm.camTr; set { } }
 

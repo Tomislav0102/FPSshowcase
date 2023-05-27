@@ -10,6 +10,7 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
     Rigidbody _rigid;
     Transform _myTransform;
     [SerializeField] SoItem weaponUsingThisProjectile;
+    ElementType _elType;
     [field:SerializeField] public MatType MaterialType { get; set; }
     public bool IsDead { get; set; }
 
@@ -28,7 +29,21 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
     {
         _myTransform.SetPositionAndRotation(spawPoint.position, spawPoint.rotation);
         _colliders = colsToIgnore;
-        
+        switch (weaponUsingThisProjectile.ammoType)
+        {
+            case AmmoType.Rocket:
+                _elType = ElementType.Explosion;
+                break;
+            case AmmoType.HandGrenade:
+                _elType = ElementType.Explosion;
+                break;
+            case AmmoType.Fuel:
+                _elType = ElementType.Fire;
+                break;
+            default:
+                _elType = ElementType.Normal;
+                break;
+        }
     }
     void OnEnable()
     {
@@ -43,7 +58,16 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
     {
         if (damage > 0)
         {
-            _gm.poolManager.GetExplosion(weaponUsingThisProjectile.ammoType == AmmoType.Rocket ? ExplosionType.Big : ExplosionType.Small, _myTransform.position);
+            switch (weaponUsingThisProjectile.ammoType)
+            {
+                case AmmoType.Rocket:
+                    _gm.poolManager.GetExplosion(ExplosionType.Big, _myTransform.position);
+                    break;
+                case AmmoType.HandGrenade:
+                    _gm.poolManager.GetExplosion(ExplosionType.Small, _myTransform.position);
+                    break;
+            }
+
             ReturnToPool();
         }
 
@@ -68,7 +92,7 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
         switch (weaponUsingThisProjectile.ammoType)
         {
             case AmmoType.Bolt:
-                _gm.player.offense.attack.ApplyDamage(weaponUsingThisProjectile, GetHit());
+                _gm.player.offense.attack.ApplyDamage(weaponUsingThisProjectile, GetHit(), false);
                 break;
             default:
                 print($"Collision with {other.name}. I AM EXPLODING NOW!!!");
@@ -77,7 +101,7 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
                 {
                     if (item.TryGetComponent(out ITakeDamage damagable))
                     {
-                        damagable.TakeDamage(ElementType.Normal, HelperScript.Damage(weaponUsingThisProjectile.damage), _myTransform, null);
+                        damagable.TakeDamage(_elType, HelperScript.Damage(weaponUsingThisProjectile.damage), _myTransform, null);
                     }
                     if (item.TryGetComponent(out Rigidbody rigids) && !rigids.isKinematic)
                     {

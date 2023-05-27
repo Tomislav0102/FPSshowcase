@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SMB_MainParent : StateMachineBehaviour
+public class SMB_MainPlayer : StateMachineBehaviour
 {
     internal GameManager _gm;
     internal Player _player;

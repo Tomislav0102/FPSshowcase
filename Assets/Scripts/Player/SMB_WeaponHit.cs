@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using FirstCollection;
 
-public class SMB_WeaponHit : SMB_MainParent
+public class SMB_WeaponHit : SMB_MainPlayer
 {
     float _normTime;
     bool _usesAnimationEvent;

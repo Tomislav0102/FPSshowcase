@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SMB_IdleToIdleOther : SMB_MainParent
+public class SMB_IdleToIdleOther : SMB_MainPlayer
 {
     float _timer;
     float _maxTimer;

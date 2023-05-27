@@ -22,7 +22,7 @@ MonoBehaviour:
   partialReload: 0
   hasCrosshair: 1
   startSpread: 50
-  damage: {x: 50, y: 60}
+  damage: {x: 1, y: 2}
   damageOverTime:
     elementType: 0
     damagePerTick: 0
