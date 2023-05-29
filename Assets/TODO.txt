@@ -3,10 +3,13 @@ ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 - follow behaviour
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+- issue with 'AttackBehaviour()' - it doesn't work with mellee's. Agent is constantly changing 'AttackTarget' from player to no target
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+- syringe - after use (returning to weapon - get animation) muzzle activates
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -91,6 +91,7 @@ public class Player : GlobalEventManager, IActivation, IFactionTarget, IMaterial
 
         if (Input.GetKeyDown(KeyCode.R)) offense.BeginReloadAnimation();
         if (Input.GetMouseButtonDown(1)) offense.IsAiming = !offense.IsAiming;
+        if (Input.GetKeyDown(KeyCode.H)) offense.HealMethod(GenPhasePos.Begin);
 
     }
     void FixedUpdate()

@@ -8607,7 +8607,7 @@ ParticleSystem:
     radiusScale: 4
     collidesWith:
       serializedVersion: 2
-      m_Bits: 4294967295
+      m_Bits: 2097153
     maxCollisionShapes: 256
     quality: 0
     voxelSize: 0.5
@@ -9835,8 +9835,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 480764}
   - {fileID: 4390458877888226}
+  - {fileID: 480764}
   - {fileID: 480766}
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -13564,7 +13564,7 @@ ParticleSystem:
     radiusScale: 4
     collidesWith:
       serializedVersion: 2
-      m_Bits: 4294967295
+      m_Bits: 2097153
     maxCollisionShapes: 256
     quality: 0
     voxelSize: 0.5

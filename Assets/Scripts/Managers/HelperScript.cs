@@ -7,7 +7,7 @@ using UnityEngine;
 namespace FirstCollection
 {
 
-    public class HelperScript 
+    public class HelperScript
     {
 
         static Camera _cam;
@@ -24,7 +24,7 @@ namespace FirstCollection
             Vector3 v3 = Vector3.up;
             if (Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 100f, lay))
             {
-              //  Debug.Log(hit.collider.name);
+                //  Debug.Log(hit.collider.name);
                 v3 = new Vector3(hit.point.x, Mathf.Clamp(hit.point.y, -3.43f, hit.point.y), hit.point.z);
             }
 
@@ -98,6 +98,7 @@ namespace FirstCollection
             return Random.Range(dam.x, dam.y);
         }
     }
+    #region//ENUMS
     public enum Faction
     {
         Player,
@@ -107,7 +108,7 @@ namespace FirstCollection
     {
         Idle,
         Patrol,
-        Roam ,
+        Roam,
         Search,
         Attack,
         Follow,
@@ -136,9 +137,15 @@ namespace FirstCollection
     }
     public enum MoveType
     {
-        Stationary, 
-        Walk, 
-        Run 
+        Stationary,
+        Walk,
+        Run
+    }
+    public enum GenPhasePos
+    {
+        Begin,
+        Middle,
+        End
     }
     public enum PuType
     {
@@ -160,7 +167,7 @@ namespace FirstCollection
         Gun, //standard ranged - raycast
         Shotgun, //ranged with spread - multiple raycasts
         BreathWeapon, //ranged - trigger collider with ray that detects obstacles
-        Thrown, //ranged - physcal object moving (bow, grenade, bazooka)
+        Thrown //ranged - physcal object moving (bow, grenade, bazooka)
     }
     public enum AmmoType
     {
@@ -175,7 +182,8 @@ namespace FirstCollection
         Rocket,
         HandGrenade,
         Bolt,
-        Fuel
+        Fuel,
+        HealShot
     }
     public enum MatType //used for hit particles
     {
@@ -192,10 +200,9 @@ namespace FirstCollection
         Wood,
         NoMaterial
     }
+    #endregion
 
-    //
-    //INTERFACE
-    //
+    #region//INTERFACES
     public interface IFactionTarget
     {
         Transform MyTransform { get; set; }
@@ -216,5 +223,6 @@ namespace FirstCollection
         void TakeDamage(ElementType elementType, int damage, Transform attackerTransform, DamageOverTime damageOverTime);
         bool IsDead { get; set; }
     }
+    #endregion
 }
 

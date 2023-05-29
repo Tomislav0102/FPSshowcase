@@ -10,6 +10,7 @@ using UnityEngine.UI;
 using DG.Tweening;
 using Sirenix.OdinInspector;
 using UnityEngine.Rendering.PostProcessing;
+using Unity.Burst.Intrinsics;
 
 public class GameManager : MonoBehaviour
 {
@@ -282,7 +283,10 @@ public class AttackClass
         {
             _gm.poolManager.GetImpactObject(iMat.MaterialType, hit, showBulletHole);
         }
-        else _gm.poolManager.GetImpactObject(MatType.Plaster, hit, showBulletHole);
+        else
+        {
+            _gm.poolManager.GetImpactObject(MatType.Plaster, hit, showBulletHole);
+        }
 
         _gm.poolManager.GetDetecable(hit.point/* + 0.01f * hit.normal*/, 2f, _myFactionInterface);
     }
@@ -797,12 +801,13 @@ public class Offense
     Player _player;
     GameManager _gm;
     [SerializeField] Transform parWeapons;
-    public SoItem[] weapons;
+    [SerializeField] GameObject syringe;
+    [HideInInspector] public SoItem[] weapons;
     SoItem _currWeapon;
     Animator[] _wAnims;
     Hands[] _hands;
     Transform[] _bulletSpawnPositions;
-    /*[HideInInspector]*/ public Transform[] aimPoints;
+    [HideInInspector] public Transform[] aimPoints;
     public Vector3 AimDirection()
     {
         if (aimPoints[Windex] == null) return _gm.camTr.forward;
@@ -837,7 +842,7 @@ public class Offense
     }
     int _wi;
     int _nextWeaponIndex;
-    bool _isReloading; 
+    bool _isReloading, _healSyringActive; 
     Collider[] _actorColliders = new Collider[1];
     public AttackClass attack; 
     readonly Dictionary<AmmoType, int> _ammoCapacity = new Dictionary<AmmoType, int>();
@@ -890,6 +895,7 @@ public class Offense
         _ammoCapacity.Add(AmmoType.HandGrenade, 100);
         _ammoCapacity.Add(AmmoType.Bolt, 120);
         _ammoCapacity.Add(AmmoType.Fuel, 1000);
+        _ammoCapacity.Add(AmmoType.HealShot, 10);
         foreach (KeyValuePair<AmmoType, int> item in _ammoCapacity)
         {
           // _ammoCurrent.Add(item.Key, 0);
@@ -945,6 +951,24 @@ public class Offense
         }
         HideWeapon(_acquiredWeapons[ord]);
     }
+    public void HealMethod(GenPhasePos phasePos)
+    {
+        switch (phasePos)
+        {
+            case GenPhasePos.Begin:
+                if (_healSyringActive || !IdleAnimations() || _ammoCurrent[AmmoType.HealShot] == 0) return;
+                _wAnims[Windex].SetTrigger("hide");
+                _gm.uiManager.crosshairObject.IsActive = false;
+                _healSyringActive = true;
+                break;
+            case GenPhasePos.Middle:
+                break;
+            case GenPhasePos.End:
+                _ammoCurrent[AmmoType.HealShot]--;
+                break;
+        }
+    }
+
     public void HideWeapon(int nextWeaponIndex)
     {
         if (!_acquiredWeapons.Contains(nextWeaponIndex) || !IdleAnimations()) return;
@@ -957,6 +981,12 @@ public class Offense
     }
     public void ReadyWeapon()
     {
+        if (_healSyringActive)
+        {
+            syringe.SetActive(true);
+            _healSyringActive = false;
+            return;
+        }
         Windex = _nextWeaponIndex;
     }
     bool IdleAnimations()
@@ -1086,10 +1116,7 @@ public class Offense
                     }
 
                     _ammoCurrent[amm] += pu.weaponPU.clipCapacity;
-                    if (_ammoCurrent[amm] > _ammoCapacity[amm])
-                    {
-                        _ammoCurrent[amm] = _ammoCapacity[amm];
-                    }
+                    AmmoOwerFlow(amm);
                     DisplayUIweapons();
                     return true;
                 }
@@ -1102,19 +1129,18 @@ public class Offense
                 }
 
                 _ammoCurrent[pickUpAmmo] += pu.ammoQuantity[pickUpAmmo];
-                if (_ammoCurrent[pickUpAmmo] > _ammoCapacity[pickUpAmmo])
-                {
-                    _ammoCurrent[pickUpAmmo] = _ammoCapacity[pickUpAmmo];
-                }
+                AmmoOwerFlow(pickUpAmmo);
                 DisplayUIweapons();
                 return true;
 
             case PuType.Health:
-                //if (_player.health.HitPoints < _player.health.maxHP)
-                //{
-                //    _player.health.HitPoints += pu.healAmount;
-                //    return true;
-                //}
+                if (_ammoCurrent[AmmoType.HealShot] >= _ammoCapacity[AmmoType.HealShot])
+                {
+                    return false;
+                }
+
+                _ammoCurrent[AmmoType.HealShot]++;
+                AmmoOwerFlow(AmmoType.HealShot);
                 break;
 
             case PuType.Armor:
@@ -1124,6 +1150,14 @@ public class Offense
         }
 
         return false;
+
+        void AmmoOwerFlow(AmmoType ammoType)
+        {
+            if (_ammoCurrent[ammoType] > _ammoCapacity[ammoType])
+            {
+                _ammoCurrent[ammoType] = _ammoCapacity[ammoType];
+            }
+        }
     }
 
     public bool CheckForPartialReload()

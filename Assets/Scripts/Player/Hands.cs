@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using FirstCollection;
 using Sirenix.OdinInspector;
+using UnityEngine.Animations.Rigging;
 
 public class Hands : GlobalEventManager
 {
@@ -34,6 +35,7 @@ public class Hands : GlobalEventManager
     {
         return weapon.weaponType == WeaponMechanics.BreathWeapon;
     }
+
     public void SetAwakeGetData(out SoItem wea, out Animator anim, out Transform bulletSpawn, out Transform aimP)
     {
         _player = GameManager.gm.player;
@@ -50,6 +52,11 @@ public class Hands : GlobalEventManager
         attachments.UpdateGameobjectVisiblity(weapon);
     }
 
+    protected override void OnDisable()
+    {
+        base.OnDisable();
+        muzzleFlash.SetActive(false);
+    }
     public void AE_Attacking(int a)
     {
       //  print("AE_Attacking");

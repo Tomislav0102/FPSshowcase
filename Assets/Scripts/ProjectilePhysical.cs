@@ -82,7 +82,7 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
 
     RaycastHit GetHit()
     {
-        Physics.RaycastNonAlloc(_myTransform.position - 2 * _myTransform.forward, _myTransform.forward, _hitsForContactPoint, 2.1f);
+        Physics.RaycastNonAlloc(_myTransform.position - 2 * _myTransform.forward, _myTransform.forward, _hitsForContactPoint, 2.1f, _gm.layAllWithoutDetectables);
         return _hitsForContactPoint[0];
     }
     private void OnTriggerEnter(Collider other)

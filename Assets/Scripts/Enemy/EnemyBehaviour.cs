@@ -15,8 +15,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial, IActivat
     public Transform movePoint;
     [SerializeField] Collider[] colliders;
 
-    //INTERFACES
-    #region
+    #region//INTERFACES
     [field: SerializeField] public Transform MyTransform { get; set; }
     public Transform MyHead { get ; set ; }
     [field: SerializeField] public Faction Fact { get; set; }
@@ -126,8 +125,8 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial, IActivat
     bool _canUpdateFOV, _canUpdateDestination;
     MoveType _moveType;
 
-    //BEHAVIOUR SPECIFIC
-    #region
+
+    #region//BEHAVIOUR SPECIFIC
     //idle
     [BoxGroup("Idle")]
     [SerializeField]
@@ -186,12 +185,13 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial, IActivat
     public bool consoleDisplay;
     public bool haspath;
     public NavMeshPathStatus pathStatus;
-    public float speedCurrent;
+    public float speedAnimRoot;
+    public float speedAgent;
     public float remainDistance;
     public string namOfAttacker;
 
-    //AWAKE -> UPDATE
-    #region
+
+    #region //MAIN
     private void Awake()
     {
         _gm = GameManager.gm;
@@ -202,6 +202,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial, IActivat
     {
         _startPos = agent.transform.position;
         _startRot = agent.transform.rotation;
+        _searchCenter = movePoint.position;
         EnState = startingState;
         _attackRangeSquared = Mathf.Pow(weaponUsed.range, 2f);
 
@@ -243,17 +244,17 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial, IActivat
                 break;
         }
         
-        speedCurrent = _anim.velocity.magnitude;
-        if (speedCurrent < 0.05f) speedCurrent = 0f;
-        agent.speed = speedCurrent;
+        speedAnimRoot = _anim.velocity.magnitude;
+        if (speedAnimRoot < 0.05f) speedAnimRoot = 0f;
+        agent.speed = speedAnimRoot;
         _animTr.SetPositionAndRotation(agent.transform.position - 0.06152725f * Vector3.up, agent.transform.rotation);
     }
     void FixedUpdate()
     {
         if (!IsActive || EnState == EnemyState.Attack) return;
+            AttackTarget = fov.FindFovTargets();
         if (_canUpdateFOV)
         {
-            AttackTarget = fov.FindFovTargets();
             _canUpdateFOV = false;
         }
     }
@@ -265,6 +266,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial, IActivat
         haspath = agent.hasPath;
         pathStatus = agent.pathStatus;
         remainDistance = agent.remainingDistance;
+        speedAgent =agent.velocity.magnitude;
         namOfAttacker = AttackTarget == null ? "no target" : AttackTarget.MyTransform.name.ToString();
     }
     void CanUpdateFOVMethod() //optimization method. Detection and navigation don't need updates on every frame.
@@ -295,8 +297,8 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial, IActivat
     }
     #endregion
 
-    //BEHAVIOURS
-    #region
+
+    #region //BEHAVIOURS
     void IdleBehaviour(bool lookAround)
     {
         if (!lookAround) return;
@@ -399,6 +401,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget, IMaterial, IActivat
         {
             _timerSearch = 0f;
             movePoint.SetPositionAndRotation(_startPos, _startRot);
+            _searchCenter = movePoint.position;
             _nextState = startingState;
             EnState = EnemyState.MoveToPoint;
         }

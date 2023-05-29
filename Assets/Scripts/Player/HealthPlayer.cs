@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class HealthPlayer : HealthMain, ITakeDamage
 {
+    public static System.Action<int> HealSyringe;
     public override bool IsDead 
     { 
         get => base.IsDead; 
@@ -21,6 +22,22 @@ public class HealthPlayer : HealthMain, ITakeDamage
     {
         base.Init();
         _gm.uiManager.ShowHitPoints(_hitPoints, _maxHitPoints);
+    }
+
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        HealSyringe += Heal;
+    }
+    protected override void OnDisable()
+    {
+        base.OnDisable();
+        HealSyringe -= Heal;
+    }
+    void Heal(int healAmmount)
+    {
+        TakeDamage(ElementType.Normal, -healAmmount, transform, null);
+        _gm.player.offense.HealMethod(GenPhasePos.End);
     }
     public override void TakeDamage(ElementType elementType, int damage, Transform attackerTransform, DamageOverTime damageOverTime)
     {
