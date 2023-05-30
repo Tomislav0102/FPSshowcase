@@ -1,16 +1,13 @@
 
 ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-- follow behaviour
-
-- issue with 'AttackBehaviour()' - it doesn't work with mellee's. Agent is constantly changing 'AttackTarget' from player to no target
+- Factions - needs lot of work before follow behaviour can be implemented. 'Faction.Ally' is neccessary.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-- syringe - after use (returning to weapon - get animation) muzzle activates
-
+- DoTween.To() doesn't work in '_offense.IsAiming'
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1

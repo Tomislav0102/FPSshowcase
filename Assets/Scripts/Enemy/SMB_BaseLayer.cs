@@ -7,7 +7,6 @@ public class SMB_BaseLayer : SMB_MainEnemy
 
     public override void OnStateMachineEnter(Animator animator, int stateMachinePathHash)
     {
-        Debug.Log("ksdjfklsfj");
-      //  base.OnStateMachineEnter(animator, stateMachinePathHash);
+        _enemyAnim.isHit = false;
     }
 }

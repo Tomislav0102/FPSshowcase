@@ -79,6 +79,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 443250975038177664, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: m_Weight
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 723532482301221492, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -111,6 +115,10 @@ PrefabInstance:
       propertyPath: m_Data.m_Offset.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4167861779160945103, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: m_Weight
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5025850811729427330, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -131,6 +139,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7026450960813312743, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7031359852143264810, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: m_Name
       value: Model - SWAT - Melee
@@ -145,7 +157,7 @@ PrefabInstance:
       objectReference: {fileID: 11400000, guid: 2b8aeed9cee05844fbf00e4cc1c84379, type: 2}
     - target: {fileID: 7302843789854544062, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: m_RootOrder
-      value: -1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7302843789854544062, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: m_LocalPosition.x
@@ -188,6 +200,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8951114472218285952, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9156546404645892949, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}

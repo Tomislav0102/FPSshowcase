@@ -263,9 +263,9 @@ MonoBehaviour:
   fov:
     sightSphere: {fileID: 374648284135301785}
     hearSphere: {fileID: 4466628684827694054}
+    sightRange: 0
     sightAngle: 120
-  startingState: 2
-  hitAnimation: 0
+  startingState: 0
   idleLookAngle: 180
   wpParent: {fileID: 0}
   roamRadius: 5
@@ -273,7 +273,8 @@ MonoBehaviour:
   consoleDisplay: 0
   haspath: 0
   pathStatus: 0
-  speedCurrent: 0
+  speedAnimRoot: 0
+  speedAgent: 0
   remainDistance: 0
   namOfAttacker: 
 --- !u!195 &6746911911608078744

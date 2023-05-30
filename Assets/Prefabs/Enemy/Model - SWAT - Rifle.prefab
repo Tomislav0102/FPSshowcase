@@ -8,6 +8,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 443250975038177664, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: m_Weight
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7031359852143264810, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: m_Name
       value: Model - SWAT - Rifle
@@ -22,7 +26,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7302843789854544062, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: m_RootOrder
-      value: -1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7302843789854544062, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: m_LocalPosition.x

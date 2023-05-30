@@ -8,10 +8,26 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 443250975038177664, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: m_Weight
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4167861779160945103, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: m_Weight
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5458902715401782888, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 22100000, guid: d41e520f76b7d8d45907529d819e2ffd, type: 2}
+    - target: {fileID: 6167483555465222269, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7026450960813312743, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7031359852143264810, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: m_Name
       value: Model - SWAT - Pistol
@@ -70,6 +86,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7302843789854544062, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9156546404645892949, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

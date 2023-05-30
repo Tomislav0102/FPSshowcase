@@ -15,13 +15,15 @@ using Unity.Burst.Intrinsics;
 public class GameManager : MonoBehaviour
 {
     public static GameManager gm;
-    
+
+    public float gameSpeed = 1f;
+
     [BoxGroup("Colors for gizmo")]
     [HideLabel]
     public Color[] gizmoColorsByState;
 
     public Player player;
-    public Camera mainCam;
+    public Camera mainCam, weaponCam;
     [HideInInspector] public Transform camTr, camRigTr;
     [HideInInspector] public CameraBehaviour cameraBehaviour;
     public UImanager uiManager;
@@ -39,7 +41,7 @@ public class GameManager : MonoBehaviour
         poolManager.Init();
         postProcess.Init();
 
-        Time.timeScale = 1f;
+        Time.timeScale = gameSpeed;
         layerPl = LayerMask.NameToLayer("Player");
         layerEn = LayerMask.NameToLayer("Enemy");
     }
@@ -151,12 +153,10 @@ public class AttackClass
                 r.origin = _camTr.position;
                 r.direction = _camTr.forward;
                 break;
-            case Faction.Enemy:
+            default:
                 r.origin = _myFactionInterface.MyHead.position;
                 r.direction = _myFactionInterface.MyTransform.forward;
                 break;
-            default:
-                return r;
         }
         return r;
     }
@@ -178,12 +178,10 @@ public class AttackClass
                     r = _gm.mainCam.ScreenPointToRay(pos);
                 }
                 break;
-            case Faction.Enemy:
+            default:
                 r.origin = bulletSpawnPosition.position;
                 r.direction = bulletSpawnPosition.forward;
                 break;
-            default:
-                return r;
         }
 
         return r;
@@ -265,8 +263,7 @@ public class AttackClass
         bool RayHitsSomething(SoItem weapon, out Ray r)
         {
             r = ShootDirection();
-            var allLayers = ~0;
-            return Physics.Raycast(r, out _hit, weapon.range, allLayers, QueryTriggerInteraction.Ignore);
+            return Physics.Raycast(r, out _hit, weapon.range, _gm.layAllWithoutDetectables, QueryTriggerInteraction.Ignore);
         }
     }
 
@@ -861,6 +858,11 @@ public class Offense
 
             if (_currWeapon.hasCrosshair && !_currWeapon.weaponDetail.scope) _gm.uiManager.crosshairObject.IsActive = !_isAiming;
             else _gm.uiManager.crosshairObject.IsActive = false;
+
+            float target = !_isAiming ? 40f : 60f;
+            float currentFieldOvView = _isAiming ? 40f : 60f;
+            DOTween.To(() => currentFieldOvView, x => currentFieldOvView = x, target, 1f);
+            _gm.weaponCam.fieldOfView = currentFieldOvView;
         }
     }
     bool _isAiming;

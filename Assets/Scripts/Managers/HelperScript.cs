@@ -102,7 +102,8 @@ namespace FirstCollection
     public enum Faction
     {
         Player,
-        Enemy
+        Enemy,
+        Ally
     }
     public enum EnemyState
     {
@@ -111,8 +112,7 @@ namespace FirstCollection
         Roam,
         Search,
         Attack,
-        Follow,
-        MoveToPoint
+        Follow
     }
 
     public enum EnemyWeaponUsed
