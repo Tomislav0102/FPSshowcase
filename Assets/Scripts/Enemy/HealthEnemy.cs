@@ -18,9 +18,9 @@ public class HealthEnemy : HealthMain, ITakeDamage
     EnemyBehaviour _enemyBehaviour;
 
     ElementType _elType = ElementType.Normal;
-    [SerializeField] SkinnedMeshRenderer[] skins;
-    [SerializeField] Material[] standardMats;
-    [SerializeField] Material[] explosionMats;
+    //[SerializeField] SkinnedMeshRenderer[] skins;
+    //[SerializeField] Material[] standardMats;
+    //[SerializeField] Material[] explosionMats;
 
     protected override void Init()
     {
@@ -35,10 +35,16 @@ public class HealthEnemy : HealthMain, ITakeDamage
         if (damage > 0)
         {
             _elType = elementType;
-            _enemyBehaviour.PassFromHealth_Attacked(attackerTransform);
+            _enemyBehaviour.PassFromHealth_Attacked(attackerTransform, CanSwitchAgro());
             _gm.poolManager.GetFloatingDamage(_myTransform.position, damage.ToString(), elementType);
         }
 
+        bool CanSwitchAgro() //needs more work, it's too simple
+        {
+            if (damage > _maxHitPoints * 0.2f) return true;
+
+            return false;
+        }
     }
 
     void Die()
@@ -48,10 +54,10 @@ public class HealthEnemy : HealthMain, ITakeDamage
             case ElementType.Fire:
                 break;
             case ElementType.Explosion:
-                for (int i = 0; i < skins.Length; i++)
-                {
-                    skins[i].material = explosionMats[i];
-                }
+                //for (int i = 0; i < skins.Length; i++)
+                //{
+                //    skins[i].material = explosionMats[i];
+                //}
                 break;
         }
         _enemyBehaviour.IsActive = false;

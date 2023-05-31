@@ -1,13 +1,11 @@
 
 ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-- Factions - needs lot of work before follow behaviour can be implemented. 'Faction.Ally' is neccessary.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-- DoTween.To() doesn't work in '_offense.IsAiming'
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1
@@ -23,7 +21,7 @@ ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	armor (with UI)
 
 5
-	sniper - fix aim_shoot animation - hands move to much backward -> impossible without IK
+	
 
 6
 	attachments to weapons (silencers, optics...)

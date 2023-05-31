@@ -26,6 +26,7 @@ public class GameManager : MonoBehaviour
     public Camera mainCam, weaponCam;
     [HideInInspector] public Transform camTr, camRigTr;
     [HideInInspector] public CameraBehaviour cameraBehaviour;
+    [HideInInspector] public Animator weaponCamAnim;
     public UImanager uiManager;
     public PoolManager poolManager;
     public PostprocessMan postProcess;
@@ -38,6 +39,7 @@ public class GameManager : MonoBehaviour
         camTr = mainCam.transform;
         camRigTr = camTr.parent.transform;
         cameraBehaviour = mainCam.GetComponent<CameraBehaviour>();
+        weaponCamAnim = weaponCam.GetComponent<Animator>();
         poolManager.Init();
         postProcess.Init();
 
@@ -859,10 +861,7 @@ public class Offense
             if (_currWeapon.hasCrosshair && !_currWeapon.weaponDetail.scope) _gm.uiManager.crosshairObject.IsActive = !_isAiming;
             else _gm.uiManager.crosshairObject.IsActive = false;
 
-            float target = !_isAiming ? 40f : 60f;
-            float currentFieldOvView = _isAiming ? 40f : 60f;
-            DOTween.To(() => currentFieldOvView, x => currentFieldOvView = x, target, 1f);
-            _gm.weaponCam.fieldOfView = currentFieldOvView;
+            _gm.weaponCamAnim.SetBool("zoom", IsAiming);
         }
     }
     bool _isAiming;
