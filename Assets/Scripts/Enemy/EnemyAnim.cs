@@ -7,66 +7,74 @@ using FirstCollection;
 
 public class EnemyAnim : MonoBehaviour
 {
-    Animator _anim;
-    EnemyBehaviour _enemyBehaviour;
+    EnemyRef _eRef;
+    [SerializeField] Collider[] ragdollColls;
+    RagdollBodyPart[] _bodyParts;
     [SerializeField] EnemyWeaponUsed weaponAnimType;
     [field: SerializeField] Transform MyHead { get; set; }
-    [SerializeField] SoItem weaponUsed;
-    [SerializeField] GameObject muzzle;
+    public SoItem weaponUsed;
+    public GameObject muzzle;
     [SerializeField] Rig rigRightHandAiming;
     [SerializeField] Rig rigLeftHand;
     [SerializeField] MultiAimConstraint multiAimConstraintRightHand; //needed for accuracy (together with '_spreadWeapon')
     Transform _aimIK;
     float _spreadWeapon = 0f;
     Vector3 _offsetTar;
-    bool IkActive
+    /*[HideInInspector]*/ public bool isHit;
+    float _weightRightHandAim, _weightLeftHand;
+    const float CONST_WEIGHTSPEED = 2f;
+
+    void GetIK(bool attack)
     {
-        get => _ikActive;
-        set
+        _weightRightHandAim = _weightLeftHand = 0f;
+        if (isHit) return;
+
+        if (attack)
         {
-            _ikActive = isHit ? false : value;
-            rigRightHandAiming.weight = _ikActive ? 1f : 0f;
+            _weightRightHandAim = _weightLeftHand = 1f;
+        }
+        else
+        {
             switch (weaponAnimType)
             {
                 case EnemyWeaponUsed.Melee:
                     break;
                 case EnemyWeaponUsed.Pistol:
-                    rigLeftHand.weight = _ikActive ? 1f : 0f;
                     break;
                 case EnemyWeaponUsed.Rifle:
+                    _weightLeftHand = 1f;
                     break;
             }
-
         }
     }
-    bool _ikActive;
-    [HideInInspector] public bool isHit;
-
-
-    public void Init(EnemyBehaviour enBeh, out Animator anim, out Transform myTran, out SoItem weapon, out GameObject weaponMuzzle)
+    public void InitAwake(EnemyRef eRef, out HashSet<Collider> hs)
     {
-        _anim = GetComponent<Animator>();
-        anim = _anim;
-        _enemyBehaviour = enBeh;
-        myTran = transform;
-        _enemyBehaviour.GetComponent<IFactionTarget>().MyHead = MyHead;
-        weapon = weaponUsed;
-        weaponMuzzle = muzzle;
-        
+        _eRef = eRef;
         _aimIK = multiAimConstraintRightHand.data.sourceObjects[0].transform;
-        _anim.SetFloat("rof", weaponUsed.rofModifier);
-    }
+        _bodyParts = new RagdollBodyPart[ragdollColls.Length];
+        HashSet<Collider> colls = new HashSet<Collider>();
+        for (int i = 0; i < _bodyParts.Length; i++)
+        {
+            _bodyParts[i] = ragdollColls[i].GetComponent<RagdollBodyPart>();
+            _bodyParts[i].InitializeMe(_eRef);
+            colls.Add(_bodyParts[i].GetComponent<Collider>());
+        }
+        hs = colls;
 
+        _eRef.anim.SetFloat("rof", weaponUsed.rofModifier);
+
+    }
     public void AE_Attacking()
     {
-        _enemyBehaviour.PassFromAE_Attacking();
+        _eRef.enemyBehaviour.PassFromAE_Attacking();
     }
 
     public void Attack(bool isAttacking)
     {
         //   print(isAttacking);
-        IkActive = isAttacking;
-        _anim.SetBool("attack", isAttacking);
+        // IkActive = isAttacking;
+        GetIK(isAttacking);
+        _eRef.anim.SetBool("attack", isAttacking);
         if (weaponAnimType == EnemyWeaponUsed.Melee) return;
         _offsetTar = new Vector3(Random.Range(-_spreadWeapon, _spreadWeapon), 0f, Random.Range(-_spreadWeapon, _spreadWeapon));
     }
@@ -81,7 +89,15 @@ public class EnemyAnim : MonoBehaviour
     }
     public void SetSpeed(MoveType movetype)
     {
-        _anim.SetInteger("movePhase", (int)movetype);
+        _eRef.anim.SetInteger("movePhase", (int)movetype);
     }
 
+
+    private void Update()
+    {
+         rigRightHandAiming.weight = _weightRightHandAim;
+        //  rigLeftHand.weight = _weightLeftHand;
+        //  rigRightHandAiming.weight = Mathf.MoveTowards(rigRightHandAiming.weight, _weightRightHandAim, CONST_WEIGHTSPEED * Time.deltaTime);
+        rigLeftHand.weight = Mathf.MoveTowards(rigLeftHand.weight, _weightLeftHand, CONST_WEIGHTSPEED * Time.deltaTime);
+    }
 }

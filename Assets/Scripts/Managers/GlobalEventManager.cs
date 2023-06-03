@@ -11,16 +11,16 @@ public class GlobalEventManager : MonoBehaviour
 
     protected virtual void OnEnable()
     {
-        PlayerDead += Death;
+        PlayerDead += CallEv_PlayerDead;
       //  PlayerAiming += Aiming;
     }
     protected virtual void OnDisable()
     {
-        PlayerDead -= Death;
+        PlayerDead -= CallEv_PlayerDead;
       //  PlayerAiming -= Aiming;
     }
 
-    protected virtual void Death()
+    protected virtual void CallEv_PlayerDead()
     {
 
     }

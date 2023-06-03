@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HealthEnemy : HealthMain, ITakeDamage
+public class HealthEnemy : HealthMain
 {
+    public System.Action Dead;
+    EnemyRef _eRef;
     public override bool IsDead
     {
         get => base.IsDead;
@@ -14,41 +16,68 @@ public class HealthEnemy : HealthMain, ITakeDamage
             if (value) Die();
         }
     }
-    Transform _myTransform;
-    EnemyBehaviour _enemyBehaviour;
-
+    RagdollBodyPart _lastBodyPart;
+    Transform _attackerTr;
     ElementType _elType = ElementType.Normal;
     //[SerializeField] SkinnedMeshRenderer[] skins;
     //[SerializeField] Material[] standardMats;
     //[SerializeField] Material[] explosionMats;
 
+    float _parDamage;
+    float _timerAgro;
+
     protected override void Init()
     {
-        _myTransform = transform;
         base.Init();
-        _enemyBehaviour = GetComponent<EnemyBehaviour>();
+        _eRef = GetComponent<EnemyRef>();
+    }
+    public void PassFromBodyPart(RagdollBodyPart ragdoll, ElementType elementType, int damage, Transform attackerTransform, DamageOverTime damageOverTime)
+    {
+        _lastBodyPart = ragdoll;
+        TakeDamage(elementType, damage, attackerTransform, damageOverTime);
     }
     public override void TakeDamage(ElementType elementType, int damage, Transform attackerTransform, DamageOverTime damageOverTime)
     {
+        _attackerTr = attackerTransform;
         base.TakeDamage(elementType, damage, attackerTransform, damageOverTime);
 
         if (damage > 0)
         {
             _elType = elementType;
-            _enemyBehaviour.PassFromHealth_Attacked(attackerTransform, CanSwitchAgro());
-            _gm.poolManager.GetFloatingDamage(_myTransform.position, damage.ToString(), elementType);
+            _eRef.anim.SetTrigger("hit");
+            _eRef.enemyBehaviour.PassFromHealth_Attacked(attackerTransform, CanSwitchAgro());
         }
 
-        bool CanSwitchAgro() //needs more work, it's too simple
+        bool CanSwitchAgro() 
         {
-            if (damage > _maxHitPoints * 0.2f) return true;
+            _parDamage = damage / _maxHitPoints;
+            if (_timerAgro == 0f && Random.value < _parDamage)
+            {
+                StartCoroutine(AgroCooldown());
+                return true;
+            }
 
             return false;
         }
     }
 
+
+    IEnumerator AgroCooldown()
+    {
+        while(_timerAgro < 10f)
+        {
+            _timerAgro += Time.deltaTime;
+            yield return null;
+        }
+        _timerAgro = 0f;
+    }
+
     void Die()
     {
+        //print(_attackerTr);
+        _lastBodyPart.attacker = _attackerTr;
+        Dead?.Invoke();
+
         switch (_elType)
         {
             case ElementType.Fire:
@@ -59,7 +88,10 @@ public class HealthEnemy : HealthMain, ITakeDamage
                 //    skins[i].material = explosionMats[i];
                 //}
                 break;
+            default:
+              //  _lastBodyPart.attacker = _attackerTr;
+                break;
         }
-        _enemyBehaviour.IsActive = false;
+      //  _enemyBehaviour.IsActive = false;
     }
 }

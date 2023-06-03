@@ -56,7 +56,7 @@ public class FloatingDamage : MonoBehaviour
 
     public void FloatingDisplay(Vector3 pos, string textToDisplay, int duration, ElementType elementType)
     {
-        if(_cam == null) _cam = GameManager.gm.mainCam;
+        if(_cam == null) _cam = GameManager.Instance.mainCam;
         if (_camtr == null) _camtr = _cam.transform;
         if (_myTransform == null) _myTransform = transform;
 

@@ -19,7 +19,7 @@ public class BreathCollider : MonoBehaviour
         }
 
         _weapon = wea;
-        _poolManager = GameManager.gm.poolManager;
+        _poolManager = GameManager.Instance.poolManager;
         _myTransform = transform;
     }
 

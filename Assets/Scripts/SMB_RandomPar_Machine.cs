@@ -12,6 +12,6 @@ public class SMB_RandomPar_Machine : StateMachineBehaviour
     public override void OnStateMachineEnter(Animator animator, int stateMachinePathHash)
     {
         animator.SetInteger(parameterName, Random.Range(0, numOfVariations));
-       // animator.SetInteger(parameterName, testVariation);
+        if(testVariation >= 0 && testVariation < 4)  animator.SetInteger(parameterName, testVariation);
     }
 }

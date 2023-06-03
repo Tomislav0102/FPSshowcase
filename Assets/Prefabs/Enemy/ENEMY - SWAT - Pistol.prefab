@@ -14,7 +14,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1982041645282451913, guid: d25b4a405a509bb498416ee854476a7c, type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1982041645282451913, guid: d25b4a405a509bb498416ee854476a7c, type: 3}
       propertyPath: m_LocalPosition.x
@@ -64,6 +64,10 @@ PrefabInstance:
       propertyPath: startingState
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 8605751372891241174, guid: d25b4a405a509bb498416ee854476a7c, type: 3}
+      propertyPath: enemyAnim
+      value: 
+      objectReference: {fileID: 412694979060167284}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:

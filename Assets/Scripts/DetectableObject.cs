@@ -29,11 +29,11 @@ public class DetectableObject : MonoBehaviour, IFactionTarget
 
     GameManager _gm;
     GameObject _myGameObject;
-    [SerializeField] SphereCollider _collider;
+    [SerializeField] Collider _collider;
 
     void Awake()
     {
-        _gm = GameManager.gm;
+        _gm = GameManager.Instance;
         _myGameObject = gameObject;
         _collider.enabled = false;
     }
@@ -42,10 +42,14 @@ public class DetectableObject : MonoBehaviour, IFactionTarget
     {
         MyTransform.position = pos;
         MyTransform.localScale = size * Vector3.one;
+        HookInterface(ownerInterface);
+        Invoke(nameof(EndMe), 1f);
+    }
+    public void HookInterface(IFactionTarget ownerInterface)
+    {
         Fact = ownerInterface.Fact;
         Owner = ownerInterface;
         _collider.enabled = true;
-        Invoke(nameof(EndMe), 1f);
     }
     void EndMe()
     {

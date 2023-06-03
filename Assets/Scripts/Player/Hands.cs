@@ -38,8 +38,8 @@ public class Hands : GlobalEventManager
 
     public void SetAwakeGetData(out SoItem wea, out Animator anim, out Transform bulletSpawn, out Transform aimP)
     {
-        _player = GameManager.gm.player;
-        _poolMan = GameManager.gm.poolManager;
+        _player = GameManager.Instance.player;
+        _poolMan = GameManager.Instance.poolManager;
         _anim = GetComponent<Animator>();
 
         wea = weapon;
@@ -173,7 +173,7 @@ public class Hands : GlobalEventManager
             _spawnPoint = aimPoint;
             _breathCollider = coll.GetComponent<BreathCollider>();
             Collider[] plcols = new Collider[1];
-            plcols[0] = GameManager.gm.player.capsuleCollider;
+            plcols[0] = GameManager.Instance.player.capsuleCollider;
             _breathCollider.Init(plcols, wea);
         }
         public void Flame(bool startFire)

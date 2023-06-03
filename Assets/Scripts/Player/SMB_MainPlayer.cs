@@ -15,7 +15,7 @@ public class SMB_MainPlayer : StateMachineBehaviour
     }
     protected virtual void Init()
     {
-        _gm = GameManager.gm;
+        _gm = GameManager.Instance;
         _player = _gm.player;
         _offense = _player.offense;
         _currentWeapon = _offense.weapons[_offense.Windex];

@@ -21,7 +21,7 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
     private void Awake()
     {
         _rigid = GetComponent<Rigidbody>();
-        _gm = GameManager.gm;
+        _gm = GameManager.Instance;
         _myTransform = transform;
         ReturnToPool();
     }
@@ -82,7 +82,7 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
 
     RaycastHit GetHit()
     {
-        Physics.RaycastNonAlloc(_myTransform.position - 2 * _myTransform.forward, _myTransform.forward, _hitsForContactPoint, 2.1f, _gm.layAllWithoutDetectables);
+        Physics.RaycastNonAlloc(_myTransform.position - 2 * _myTransform.forward, _myTransform.forward, _hitsForContactPoint, 2.1f, _gm.layShooting);
         return _hitsForContactPoint[0];
     }
     private void OnTriggerEnter(Collider other)

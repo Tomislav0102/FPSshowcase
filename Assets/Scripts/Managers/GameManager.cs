@@ -10,11 +10,10 @@ using UnityEngine.UI;
 using DG.Tweening;
 using Sirenix.OdinInspector;
 using UnityEngine.Rendering.PostProcessing;
-using Unity.Burst.Intrinsics;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager gm;
+    public static GameManager Instance;
 
     public float gameSpeed = 1f;
 
@@ -30,12 +29,12 @@ public class GameManager : MonoBehaviour
     public UImanager uiManager;
     public PoolManager poolManager;
     public PostprocessMan postProcess;
-    public LayerMask layFOV, layAllWithoutDetectables;
-    [HideInInspector] public int layerPl, layerEn;
+    public LayerMask layFOV, layShooting;
+    int layerPl, layerEn;
     public Transform wayPointParent;
     private void Awake()
     {
-        gm = this;
+        Instance = this;
         camTr = mainCam.transform;
         camRigTr = camTr.parent.transform;
         cameraBehaviour = mainCam.GetComponent<CameraBehaviour>();
@@ -188,14 +187,11 @@ public class AttackClass
 
         return r;
     }
-    public AttackClass(Collider[] attackerColliders, IFactionTarget factionTarget)
+    public AttackClass(HashSet<Collider> attackerColliders, IFactionTarget factionTarget)
     {
-        _gm = GameManager.gm;
+        _gm = GameManager.Instance;
         _camTr = _gm.mainCam.transform;
-        for (int i = 0; i < attackerColliders.Length; i++)
-        {
-            _colliders.Add(attackerColliders[i]);
-        }
+        _colliders = attackerColliders;
         _screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
         _myFactionInterface = factionTarget;
     }
@@ -265,7 +261,7 @@ public class AttackClass
         bool RayHitsSomething(SoItem weapon, out Ray r)
         {
             r = ShootDirection();
-            return Physics.Raycast(r, out _hit, weapon.range, _gm.layAllWithoutDetectables, QueryTriggerInteraction.Ignore);
+            return Physics.Raycast(r, out _hit, weapon.range, _gm.layShooting, QueryTriggerInteraction.Ignore);
         }
     }
 
@@ -339,7 +335,7 @@ public class UImanager
         pain.DOFade(0f, CONST_PAINLENGTH)
             .From(0.5f);
 
-        GameManager.gm.postProcess.ShowPlayerDamage();
+        GameManager.Instance.postProcess.ShowPlayerDamage();
     }
 }
 
@@ -690,7 +686,7 @@ public class Controls
 
     public void Init()
     {
-        _gm = GameManager.gm;
+        _gm = GameManager.Instance;
         _player = _gm.player;
 
         _rigid = _player.rigid;
@@ -842,7 +838,7 @@ public class Offense
     int _wi;
     int _nextWeaponIndex;
     bool _isReloading, _healSyringActive; 
-    Collider[] _actorColliders = new Collider[1];
+    readonly HashSet<Collider> _actorColliders = new HashSet<Collider>();
     public AttackClass attack; 
     readonly Dictionary<AmmoType, int> _ammoCapacity = new Dictionary<AmmoType, int>();
     readonly Dictionary<AmmoType, int> _ammoCurrent = new Dictionary<AmmoType, int>();
@@ -868,7 +864,7 @@ public class Offense
 
     public void Init(IFactionTarget factionTarget)
     {
-        _gm = GameManager.gm;
+        _gm = GameManager.Instance;
         _player = _gm.player;
 
         weapons = new SoItem[parWeapons.childCount];
@@ -883,7 +879,7 @@ public class Offense
             weapons[i].ordinalLookup = i;
         }
 
-        _actorColliders[0] = _player.capsuleCollider;
+        _actorColliders.Add(_player.capsuleCollider);
         attack = new AttackClass(_actorColliders, factionTarget);
 
         _ammoCapacity.Add(AmmoType.None, 0);

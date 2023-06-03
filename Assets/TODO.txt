@@ -1,11 +1,15 @@
 
 ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+- ragdoll to animator transition
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+- dynamic navmesh (doors opening and closing)
 
+- fix ik weight changing during animation
+
+- consdier merging EnemyBehaviour.cs and EnemyAnim.cs into one script
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1

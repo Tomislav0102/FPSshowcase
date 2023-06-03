@@ -38,7 +38,7 @@ public class Player : GlobalEventManager, IActivation, IFactionTarget, IMaterial
 
     void Awake()
     {
-        _gm = GameManager.gm;
+        _gm = GameManager.Instance;
 
         HelperScript.CursorVisible(false);
         controls.Init();
@@ -54,7 +54,7 @@ public class Player : GlobalEventManager, IActivation, IFactionTarget, IMaterial
         _alfaKeys[7] = KeyCode.Alpha8;
         _alfaKeys[8] = KeyCode.Alpha9;
     }
-    protected override void Death()
+    protected override void CallEv_PlayerDead()
     {
         IsActive = false;
         _gm.camRigTr.DOLocalMoveY(controls._camHeights.z, 1.5f)

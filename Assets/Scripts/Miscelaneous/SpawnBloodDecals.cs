@@ -35,7 +35,7 @@ public class SpawnBloodDecals : MonoBehaviour
 
     private void Awake()
     {
-        _gm = GameManager.gm;
+        _gm = GameManager.Instance;
         system = GetComponent<ParticleSystem>();
     }
 

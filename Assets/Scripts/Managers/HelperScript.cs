@@ -114,7 +114,21 @@ namespace FirstCollection
         Attack,
         Follow
     }
-
+    public enum IkState
+    {
+        NotFighting,
+        Fighting,
+        Hit
+    }
+    public enum BodyPart
+    {
+        Head,
+        Torso,
+        LeftArm,
+        RightArm,
+        LeftLeg,
+        RightLeg
+    }
     public enum EnemyWeaponUsed
     {
         Melee,
