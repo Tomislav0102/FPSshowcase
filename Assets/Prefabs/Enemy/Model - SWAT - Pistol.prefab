@@ -12,6 +12,22 @@ PrefabInstance:
       propertyPath: m_Weight
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3718415612249610278, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: muzzle
+      value: 
+      objectReference: {fileID: 5082330232970433060}
+    - target: {fileID: 3718415612249610278, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: weaponUsed
+      value: 
+      objectReference: {fileID: 11400000, guid: fd9a6dab1c3f2dc42aa76e5b9d858108, type: 2}
+    - target: {fileID: 3718415612249610278, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: enemyAnim.muzzle
+      value: 
+      objectReference: {fileID: 5082330232970433060}
+    - target: {fileID: 3718415612249610278, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: enemyAnim.weaponUsed
+      value: 
+      objectReference: {fileID: 11400000, guid: fd9a6dab1c3f2dc42aa76e5b9d858108, type: 2}
     - target: {fileID: 4167861779160945103, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: m_Weight
       value: 0

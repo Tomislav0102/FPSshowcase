@@ -45,6 +45,7 @@ public class HealthEnemy : HealthMain
         {
             _elType = elementType;
             _eRef.anim.SetTrigger("hit");
+            _eRef.anim.SetLayerWeight(1, 1f);
             _eRef.enemyBehaviour.PassFromHealth_Attacked(attackerTransform, CanSwitchAgro());
         }
 

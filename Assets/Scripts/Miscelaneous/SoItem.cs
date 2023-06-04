@@ -68,6 +68,8 @@ public class SoItem : ScriptableObject
     [GUIColor(0.5f, 1f, 1f, 1f)]
     public WeaponDetail<bool> weaponDetail;
 
+    public EnemyWeaponUsed enemyWeaponUsed;
+
     bool MeleeOrThrown() //don't delete, it is being used
     {
         return weaponType == WeaponMechanics.Melee || weaponType == WeaponMechanics.Thrown;

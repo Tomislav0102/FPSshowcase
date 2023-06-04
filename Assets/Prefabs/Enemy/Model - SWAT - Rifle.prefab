@@ -12,6 +12,26 @@ PrefabInstance:
       propertyPath: m_Weight
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3718415612249610278, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: muzzle
+      value: 
+      objectReference: {fileID: 8104471503991611113}
+    - target: {fileID: 3718415612249610278, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: weaponUsed
+      value: 
+      objectReference: {fileID: 11400000, guid: 35c2456c36a8ccc4cae192f629d1c724, type: 2}
+    - target: {fileID: 3718415612249610278, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: enemyAnim.muzzle
+      value: 
+      objectReference: {fileID: 8104471503991611113}
+    - target: {fileID: 3718415612249610278, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: enemyAnim.weaponUsed
+      value: 
+      objectReference: {fileID: 11400000, guid: 35c2456c36a8ccc4cae192f629d1c724, type: 2}
+    - target: {fileID: 5458902715401782888, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: b0b08d5617a134e4b954df7ee5aa6024, type: 2}
     - target: {fileID: 7031359852143264810, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: m_Name
       value: Model - SWAT - Rifle

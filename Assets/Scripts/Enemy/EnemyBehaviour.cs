@@ -1,32 +1,35 @@
 using FirstCollection;
 using Sirenix.OdinInspector;
+using System.Collections.Generic;
+using System.Timers;
 using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Animations.Rigging;
 using Random = UnityEngine.Random;
 
 public class EnemyBehaviour : MonoBehaviour, IFactionTarget
 {
+    #region//INTERFACE
+    [field: SerializeField] public Transform MyTransform { get; set; }
+    [field: SerializeField] public Transform MyHead { get ; set ; }
+    [field: SerializeField] public Faction Fact { get; set; }
+    public IFactionTarget Owner { get; set; }
+    #endregion
+
     GameManager _gm;
     EnemyRef _eRef;
-    [SerializeField] TextMeshPro displayState;
-    public Transform movePoint;
-    NavMeshAgent _agent;
+    TextMeshPro _displayState;
     Camera _cam;
     Vector3 _startPos;
     Quaternion _startRot;
     bool _canUpdateFOV, _canUpdateDestination;
     MoveType _moveType;
+    [Title("General", null, TitleAlignments.Centered)]
+    [SerializeField] DetectableObject detectable;
+    [HideInInspector] public Transform movePoint;
 
-    #region//INTERFACES
-    [field: SerializeField] public Transform MyTransform { get; set; }
-    public Transform MyHead { get ; set ; }
-    [field: SerializeField] public Faction Fact { get; set; }
-    public IFactionTarget Owner { get; set; }
-
-    #endregion
-
-
+    [Title("Behaviours", null, TitleAlignments.Centered)]
     [SerializeField] EnemyState startingState;
     public EnemyState EnState
     {
@@ -34,9 +37,9 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
         set
         {
             _timerIdleRotate = _timerSearch = _timerAttack = 0f;
-            _agent.ResetPath();
-            _agent.stoppingDistance = 0f;
-            _eRef.enemyAnim.Attack(false);
+            _eRef.agent.ResetPath();
+            _eRef.agent.stoppingDistance = 0f;
+            Attack_Animation(false);
             _enState = value;
             _moveType = MoveType.Stationary;
             if (value != EnemyState.Attack) AttackTarget = null;
@@ -61,12 +64,12 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
                     _moveType = MoveType.Run;
                     break;
                 case EnemyState.Follow:
-                    _agent.stoppingDistance = 3f;
+                    _eRef.agent.stoppingDistance = 3f;
                     break;
             }
-            _eRef.enemyAnim.SetSpeed(_moveType);
-            displayState.text = value.ToString();
-            displayState.color = GameManager.Instance.gizmoColorsByState[(int)value];
+            SetSpeed_Animation(_moveType);
+            _displayState.text = value.ToString();
+            _displayState.color = GameManager.Instance.gizmoColorsByState[(int)value];
         }
     }
     EnemyState _enState;
@@ -113,6 +116,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
     public IFactionTarget AttackTarget;
     float _attackRangeSquared;
     float _timerAttack, _timerCheckTargetVisible;
+    float _weightHit;
 
     //search
     float _timerSearch;
@@ -122,8 +126,29 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
 
     bool ReadyToMove()
     {
-        return !_agent.pathPending && _agent.remainingDistance <= 0.5f; 
+        return !_eRef.agent.pathPending && _eRef.agent.remainingDistance <= 0.5f; 
     }
+
+    [Title("Animations", null, TitleAlignments.Centered)]
+    [GUIColor(0.5f, 1f, 0f, 1f)]
+    [SerializeField] Transform[] ragdollTransform;
+    RagdollBodyPart[] _bodyParts;
+    [GUIColor(0.5f, 1f, 0f, 1f)]
+    public SoItem weaponUsed;
+    [GUIColor(0.5f, 1f, 0f, 1f)]
+    public GameObject muzzle;
+    [GUIColor(0.5f, 1f, 0f, 1f)]
+    [SerializeField] Rig rigRightHandAiming;
+    [GUIColor(0.5f, 1f, 0f, 1f)]
+    [SerializeField] Rig rigLeftHand;
+    [GUIColor(0.5f, 1f, 0f, 1f)]
+    [SerializeField] MultiAimConstraint multiAimConstraintRightHand; //needed for accuracy (together with '_spreadWeapon')
+    Transform _aimIK;
+    float _spreadWeapon = 0f;
+    Vector3 _offsetTar;
+    [HideInInspector] public bool isHit;
+    float _weightRightHandAim, _weightLeftHand;
+
 
     [Title("Debug only")]
     public bool haspath;
@@ -135,28 +160,42 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
 
 
     #region //MAIN
-    public void InitAwake(EnemyRef eRef)
+    public void InitAwake(EnemyRef eRef, Transform moveP, TextMeshPro displayT, out HashSet<Collider> hs, out DetectableObject detectObject)
     {
         _gm = GameManager.Instance;
         _cam = _gm.mainCam;
         _eRef = eRef;
-        _agent = GetComponent<NavMeshAgent>();
-
-        _startPos = _agent.transform.position;
-        _startRot = _agent.transform.rotation;
+        movePoint = moveP;
+        _displayState = displayT;
+        _startPos = _eRef.agent.transform.position;
+        _startRot = _eRef.agent.transform.rotation;
         _searchCenter = movePoint.position;
         EnState = startingState;
 
         //idle
-        _startRotY = _agent.transform.eulerAngles.y;
+        _startRotY = _eRef.agent.transform.eulerAngles.y;
 
         //patrol
         _wayPoints = HelperScript.AllChildren((wpParent == null || wpParent.childCount == 0) ? GameManager.Instance.wayPointParent : wpParent);
 
-        //attack
-        float range = Mathf.Min(_eRef.enemyAnim.weaponUsed.range, _eRef.fov.sightRange);
+        //anims
+        _aimIK = multiAimConstraintRightHand.data.sourceObjects[0].transform;
+        _bodyParts = new RagdollBodyPart[ragdollTransform.Length];
+        HashSet<Collider> colls = new HashSet<Collider>();
+        for (int i = 0; i < _bodyParts.Length; i++)
+        {
+            _bodyParts[i] = ragdollTransform[i].GetComponent<RagdollBodyPart>();
+            _bodyParts[i].InitializeMe(_eRef);
+            colls.Add(_bodyParts[i].GetComponent<Collider>());
+        }
+        hs = colls;
+        _eRef.anim.SetFloat("rof", weaponUsed.rofModifier);
+        detectObject = detectable;
+    }
+    public void InitAttackRange(float sightRange)
+    {
+        float range = Mathf.Min(weaponUsed.range, sightRange);
         _attackRangeSquared = Mathf.Pow(range, 2f);
-
     }
     void OnEnable()
     {
@@ -196,8 +235,14 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
         
         speedAnimRoot = _eRef.anim.velocity.magnitude;
         if (speedAnimRoot < 0.05f) speedAnimRoot = 0f;
-        _agent.speed = speedAnimRoot;
-        _eRef.animTr.SetPositionAndRotation(_agent.transform.position - 0.06152725f * Vector3.up, _agent.transform.rotation);
+        _eRef.agent.speed = speedAnimRoot;
+        _eRef.animTr.SetPositionAndRotation(_eRef.agent.transform.position - 0.06152725f * Vector3.up, _eRef.agent.transform.rotation);
+
+        rigRightHandAiming.weight = _weightRightHandAim;
+        rigLeftHand.weight = Mathf.MoveTowards(rigLeftHand.weight, _weightLeftHand, 2f * Time.deltaTime);
+
+        _weightHit = Mathf.MoveTowards(_weightHit, isHit ? 1f : 0f, 2f * Time.deltaTime);
+        _eRef.anim.SetLayerWeight(1, _weightHit);
     }
     void FixedUpdate()
     {
@@ -211,13 +256,13 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
     }
     void Debugs()
     {
-        displayState.transform.LookAt(_cam.transform.position);
-        displayState.transform.Rotate(180 * Vector3.up, Space.Self);
+        _displayState.transform.LookAt(_cam.transform.position);
+        _displayState.transform.Rotate(180 * Vector3.up, Space.Self);
 
-        haspath = _agent.hasPath;
-        pathStatus = _agent.pathStatus;
-        remainDistance = _agent.remainingDistance;
-        speedAgent =_agent.velocity.magnitude;
+        haspath = _eRef.agent.hasPath;
+        pathStatus = _eRef.agent.pathStatus;
+        remainDistance = _eRef.agent.remainingDistance;
+        speedAgent =_eRef.agent.velocity.magnitude;
         namOfAttacker = AttackTarget == null ? "no target" : AttackTarget.MyTransform.name.ToString();
     }
     void CanUpdateFOVMethod() //optimization method. Detection and navigation don't need updates on every frame.
@@ -226,10 +271,10 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
     }
     void TrackMovingTarget()
     {
-        _eRef.enemyAnim.Attack(false);
+        Attack_Animation(false);
         if (_canUpdateDestination)
         {
-            _agent.SetDestination(movePoint.position);
+            _eRef.agent.SetDestination(movePoint.position);
           //   print("moving");
             _canUpdateDestination = false;
         }
@@ -252,6 +297,45 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
             }
         }
     }
+    void GetIKAnimation(bool attack)
+    {
+        _weightRightHandAim = _weightLeftHand = 0f;
+        if (isHit) return;
+
+        switch (weaponUsed.enemyWeaponUsed)
+        {
+            case EnemyWeaponUsed.Melee:
+                _weightRightHandAim = attack ? 1f : 0f;
+                break;
+            case EnemyWeaponUsed.Pistol:
+                _weightRightHandAim = _weightLeftHand = attack ? 1f : 0f;
+                break;
+            case EnemyWeaponUsed.Rifle:
+                _weightRightHandAim = attack ? 1f : 0f;
+                _weightLeftHand = 1f;
+                break;
+        }
+    }
+    void Attack_Animation(bool isAttacking)
+    {
+        GetIKAnimation(isAttacking);
+        _eRef.anim.SetBool("attack", isAttacking);
+        if (weaponUsed.enemyWeaponUsed == EnemyWeaponUsed.Melee) return;
+        _offsetTar = new Vector3(Random.Range(-_spreadWeapon, _spreadWeapon), 0f, Random.Range(-_spreadWeapon, _spreadWeapon));
+    }
+    void SetAim_Animation(Vector3 pos)
+    {
+        _aimIK.position = pos;
+        if (weaponUsed.enemyWeaponUsed == EnemyWeaponUsed.Melee) return;
+
+        multiAimConstraintRightHand.data.offset =
+            Vector3.Lerp(multiAimConstraintRightHand.data.offset, _offsetTar, 0.3f * Time.deltaTime);
+
+    }
+    void SetSpeed_Animation(MoveType movetype)
+    {
+        _eRef.anim.SetInteger("movePhase", (int)movetype);
+    }
 
     #endregion
 
@@ -259,16 +343,16 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
     #region //BEHAVIOURS
     void IdleBehaviour(bool lookAround)
     {
-        if (Vector3.SqrMagnitude(movePoint.position - _agent.transform.position) < 0.3f)
+        if (Vector3.SqrMagnitude(movePoint.position - _eRef.agent.transform.position) < 0.3f)
         {
             _moveType = MoveType.Stationary;
-            _eRef.enemyAnim.SetSpeed(_moveType);
+            SetSpeed_Animation(_moveType);
 
             if (_idleOnMove)
             {
                 _idleOnMove = false;
-                if(_agent.hasPath) _agent.ResetPath();
-                _agent.transform.rotation = _startRot;
+                if(_eRef.agent.hasPath) _eRef.agent.ResetPath();
+                _eRef.agent.transform.rotation = _startRot;
             }
 
             if (!lookAround) return;
@@ -279,12 +363,12 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
                 _timerIdleRotate = Random.Range(3f, 10f);
                 _targetRot = Quaternion.AngleAxis(_startRotY + Random.Range(-idleLookAngle * 0.5f, idleLookAngle * 0.5f), Vector3.up);
             }
-            _agent.transform.rotation = Quaternion.Slerp(_agent.transform.rotation, _targetRot, 10 * Time.deltaTime);
+            _eRef.agent.transform.rotation = Quaternion.Slerp(_eRef.agent.transform.rotation, _targetRot, 10 * Time.deltaTime);
             return;
         }
         movePoint.position = _startPos;
 
-        if(!_agent.hasPath)
+        if(!_eRef.agent.hasPath)
         {
             _idleOnMove = true;
             TrackMovingTarget();
@@ -296,7 +380,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
         {
             movePoint.position = _wayPoints[_counterWayPoints].position;
             _counterWayPoints = (1 + _counterWayPoints) % _wayPoints.Length;
-            _agent.SetDestination(movePoint.position);
+            _eRef.agent.SetDestination(movePoint.position);
         } 
     }
     void RoamBehaviour(Vector3 center)
@@ -304,7 +388,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
         if (ReadyToMove())
         {
             movePoint.position = GetRdnPos(center);
-            _agent.SetDestination(movePoint.position);
+            _eRef.agent.SetDestination(movePoint.position);
         }
     }
     void AttackBehaviour()
@@ -317,12 +401,12 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
         }
 
 
-        if (!_eRef.fov.TargetStillVisible(AttackTarget, _gm.layShooting))
+        if (!_eRef.fov.TargetStillVisible(AttackTarget, _gm.layFOV_Ray))
         {
-            _eRef.enemyAnim.Attack(false);
+            Attack_Animation(false);
             TrackMovingTarget();
 
-            if (_agent.remainingDistance < 1f)
+            if (_eRef.agent.remainingDistance < 1f)
             {
                 SearchStart();
             }
@@ -331,34 +415,36 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
         movePoint.position = AttackTarget.MyTransform.position;
 
 
-        Vector3 dir = movePoint.position - _agent.transform.position;
-        _agent.transform.rotation = Quaternion.Slerp(_agent.transform.rotation, Quaternion.LookRotation(dir), 5f * Time.deltaTime);
+        Vector3 dir = movePoint.position - _eRef.agent.transform.position;
+        _eRef.agent.transform.rotation = Quaternion.Slerp(_eRef.agent.transform.rotation, Quaternion.LookRotation(dir), 5f * Time.deltaTime);
         if (Vector3.SqrMagnitude(dir) <= _attackRangeSquared)
         {
-            if (_agent.hasPath) _agent.ResetPath();
+            if (_eRef.agent.hasPath) _eRef.agent.ResetPath();
             _timerAttack = 0f;
-            _eRef.enemyAnim.SetAim(AttackTarget.MyHead.position); //for some reason it only works in AttackBehaviour()
-            _eRef.enemyAnim.Attack(true);
+            SetAim_Animation(AttackTarget.MyHead.position); //for some reason it only works in AttackBehaviour()
+            Attack_Animation(true);
         }
         else
         {
-            _eRef.enemyAnim.Attack(false);
+            Attack_Animation(false);
              TrackMovingTarget();
 
         }
     }
 
-    public void PassFromAE_Attacking()
+    public void AE_Attacking()
     {
+        if (isHit) return;
+
         if (AttackTarget == null)
         {
             EnState = EnemyState.Search;
             return;
         }
 
-        _eRef.enemyAnim.muzzle.SetActive(false);
-        _eRef.enemyAnim.muzzle.SetActive(true);
-        _eRef.attackClass.Attack(_eRef.enemyAnim.weaponUsed);
+        muzzle.SetActive(false);
+        muzzle.SetActive(true);
+        _eRef.attackClass.Attack(weaponUsed);
 
     }
     void SearchStart()
@@ -384,19 +470,17 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
         movePoint.position = _gm.player.GetComponent<IFactionTarget>().MyTransform.position;
 
         MoveType mt = MoveType.Stationary;
-        if (_agent.remainingDistance > _agent.stoppingDistance)
+        if (_eRef.agent.remainingDistance > _eRef.agent.stoppingDistance)
         {
-            mt = Vector3.SqrMagnitude(_agent.transform.position - movePoint.position) > 50f ? MoveType.Run : MoveType.Walk;
+            mt = Vector3.SqrMagnitude(_eRef.agent.transform.position - movePoint.position) > 50f ? MoveType.Run : MoveType.Walk;
         }
-        _eRef.enemyAnim.SetSpeed(mt);
+        SetSpeed_Animation(mt);
 
         TrackMovingTarget();
     }
     #endregion
 
 }
-
-
 
 
 

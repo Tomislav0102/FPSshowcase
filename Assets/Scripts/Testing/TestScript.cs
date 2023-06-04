@@ -19,8 +19,6 @@ public class TestScript : MonoBehaviour
     //public bool isPlayer;
     public Animator anim;
 
-    public float broj;
-
     private void Awake()
     {
         _cam = Camera.main;
@@ -30,13 +28,6 @@ public class TestScript : MonoBehaviour
         print($"Test script is on '{gameObject.name}' gameobject, that is on '{gameObject.scene.name}' scene.");
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            anim.Play("New Animation");
-        }
-    }
 
 
 

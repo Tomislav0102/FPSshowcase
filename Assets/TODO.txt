@@ -7,10 +7,6 @@ ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 - dynamic navmesh (doors opening and closing)
 
-- fix ik weight changing during animation
-
-- consdier merging EnemyBehaviour.cs and EnemyAnim.cs into one script
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1
 	mouse sensitvity should be dependant of zoom (especially for sniper and maybe only for sniper)

@@ -172,6 +172,14 @@ PrefabInstance:
       propertyPath: m_Data.m_Offset.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6157075916867682284, guid: bbd7da59e18c76b4b9334df468fb16c0, type: 3}
+      propertyPath: muzzle
+      value: 
+      objectReference: {fileID: 9001115523219355746}
+    - target: {fileID: 6157075916867682284, guid: bbd7da59e18c76b4b9334df468fb16c0, type: 3}
+      propertyPath: weaponUsed
+      value: 
+      objectReference: {fileID: 11400000, guid: 2b8aeed9cee05844fbf00e4cc1c84379, type: 2}
     - target: {fileID: 7755381164609934641, guid: bbd7da59e18c76b4b9334df468fb16c0, type: 3}
       propertyPath: m_Weight
       value: 0
@@ -238,17 +246,22 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 265937900424116084, guid: bbd7da59e18c76b4b9334df468fb16c0, type: 3}
   m_PrefabInstance: {fileID: 4261067168643245492}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &4546123473708087302 stripped
+--- !u!114 &7948864265602849368 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 303229041972878770, guid: bbd7da59e18c76b4b9334df468fb16c0, type: 3}
+  m_CorrespondingSourceObject: {fileID: 6157075916867682284, guid: bbd7da59e18c76b4b9334df468fb16c0, type: 3}
   m_PrefabInstance: {fileID: 4261067168643245492}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2114d486377bd404f9ca4b660bd7b483, type: 3}
+  m_Script: {fileID: 11500000, guid: 64d935a1f42e12546a40feed78fb5ae2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &9001115523219355746 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5172446721131748822, guid: bbd7da59e18c76b4b9334df468fb16c0, type: 3}
+  m_PrefabInstance: {fileID: 4261067168643245492}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &7838418736944252516
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -306,17 +319,13 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6060082052009515112, guid: d25b4a405a509bb498416ee854476a7c, type: 3}
-      propertyPath: enemyAnim
-      value: 
-      objectReference: {fileID: 4546123473708087302}
-    - target: {fileID: 6060082052009515112, guid: d25b4a405a509bb498416ee854476a7c, type: 3}
       propertyPath: startingState
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8605751372891241174, guid: d25b4a405a509bb498416ee854476a7c, type: 3}
-      propertyPath: enemyAnim
+      propertyPath: enemyBehaviour
       value: 
-      objectReference: {fileID: 4546123473708087302}
+      objectReference: {fileID: 7948864265602849368}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:

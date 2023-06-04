@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour
     public UImanager uiManager;
     public PoolManager poolManager;
     public PostprocessMan postProcess;
-    public LayerMask layFOV, layShooting;
+    public LayerMask layFOV_Overlap, layFOV_Ray, layShooting;
     int layerPl, layerEn;
     public Transform wayPointParent;
     private void Awake()

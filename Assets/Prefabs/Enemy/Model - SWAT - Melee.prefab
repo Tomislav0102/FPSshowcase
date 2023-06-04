@@ -99,6 +99,14 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3718415612249610278, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: enemyAnim.muzzle
+      value: 
+      objectReference: {fileID: 5172446721131748822}
+    - target: {fileID: 3718415612249610278, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: enemyAnim.weaponUsed
+      value: 
+      objectReference: {fileID: 11400000, guid: 2b8aeed9cee05844fbf00e4cc1c84379, type: 2}
     - target: {fileID: 3994438942473730581, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: m_Weight
       value: 0
