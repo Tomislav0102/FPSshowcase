@@ -34,7 +34,7 @@ public class HealthMain : GlobalEventManager
     const float CONST_TICKFIRE = 0.5f;
 
     public virtual bool IsDead { get; set; }
-
+    internal bool _floatingDamageWhileBurning;
 
     private void Awake()
     {
@@ -80,6 +80,7 @@ public class HealthMain : GlobalEventManager
             yield return w;
             _fireDuration -= CONST_TICKFIRE;
             TakeDamage(ElementType.Fire, _currentDot.damagePerTick, null, _currentDot);
+            if(_floatingDamageWhileBurning) _gm.poolManager.GetFloatingDamage(transform.position, _currentDot.damagePerTick.ToString(), ElementType.Fire);
         }
         TakeDamage(ElementType.Fire, 0, null, _currentDot);
         OnFire = false;

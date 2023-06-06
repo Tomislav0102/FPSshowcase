@@ -809,7 +809,7 @@ public class Offense
         else
         {
             if (_currWeapon.weaponDetail.scope) return aimPoints[Windex].forward;
-            else return aimPoints[Windex].position - _gm.camTr.position;
+             else return (aimPoints[Windex].position - _gm.camTr.position).normalized;
         }
     }
     public int Windex

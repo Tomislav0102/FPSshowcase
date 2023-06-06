@@ -4,6 +4,7 @@ using UnityEngine;
 using FirstCollection;
 using Sirenix.OdinInspector;
 using UnityEngine.Animations.Rigging;
+using DG.Tweening;
 
 public class Hands : GlobalEventManager
 {
@@ -46,7 +47,7 @@ public class Hands : GlobalEventManager
         anim = _anim;
         bulletSpawn = muzzleFlash.transform;
         aimP = aimPoint;
-        if (IsFlamethrower()) flamethrowerControl.Init(weapon, muzzleFlash.transform);
+        if (IsFlamethrower()) flamethrowerControl.Init(this, weapon, muzzleFlash.transform);
 
         attachments.Init(this, _player.offense, aimPoint);
         attachments.UpdateGameobjectVisiblity(weapon);
@@ -78,10 +79,10 @@ public class Hands : GlobalEventManager
         ThrowableMethod(99, true);
     }
 
-    public void ThrowableMethod(int attackOrdinal, bool activateThrowbale)
+    public void ThrowableMethod(int attackOrdinal, bool activateThrowable)
     {
         if (throwableMesh == null) return;
-        if (activateThrowbale) throwableMesh.SetActive(true);
+        if (activateThrowable) throwableMesh.SetActive(true);
         else if (attackOrdinal == 0) throwableMesh.SetActive(false);
     }
 
@@ -156,7 +157,10 @@ public class Hands : GlobalEventManager
     [System.Serializable]
     public class FlamethrowerControl
     {
-        [SerializeField] ParticleSystem flameMain;
+        GameManager _gm;
+        Hands _hands;
+        [SerializeField] ParticleSystem flameOn;
+        [SerializeField] ParticleSystem flameOff;
         [SerializeField] ParticleSystem[] smokeEmbers;
         [SerializeField] Transform collParent;
         [SerializeField] Collider coll;
@@ -164,16 +168,16 @@ public class Hands : GlobalEventManager
         Transform _spawnPoint;
         SoItem _weapon;
         RaycastHit _hit;
-        readonly Vector2 _startSpeedRange = new Vector2(1f, 30f);
-        readonly Vector2 _startSizeRange = new Vector2(0.2f, 3f);
 
-        public void Init(SoItem wea, Transform aimPoint)
+        public void Init(Hands hands, SoItem wea, Transform aimPoint)
         {
+            _gm = GameManager.Instance;
+            _hands = hands;
             _weapon = wea;
             _spawnPoint = aimPoint;
             _breathCollider = coll.GetComponent<BreathCollider>();
             Collider[] plcols = new Collider[1];
-            plcols[0] = GameManager.Instance.player.capsuleCollider;
+            plcols[0] = _gm.player.capsuleCollider;
             _breathCollider.Init(plcols, wea);
         }
         public void Flame(bool startFire)
@@ -181,7 +185,7 @@ public class Hands : GlobalEventManager
             float dist = _weapon.range;
             if (startFire)
             {
-                if (Physics.Raycast(_spawnPoint.position, _spawnPoint.forward, out _hit, _weapon.range))
+                if (Physics.Raycast(_spawnPoint.position, _spawnPoint.forward, out _hit, _weapon.range, _gm.layShooting))
                 {
                     dist = _hit.distance;
                     _breathCollider.SpawnFire(_hit.point);
@@ -192,12 +196,11 @@ public class Hands : GlobalEventManager
                 dist = 0f;
                 _breathCollider.StopFire();
             }
-            Fire(dist/_weapon.range);
+            ParticlesMethod(dist/_weapon.range);
         }
-        void Fire(float distNormalized)
-        {
-            var m = flameMain.main;
 
+        void ParticlesMethod(float distNormalized)
+        {
             if (distNormalized == 0) //not shooting
             {
                 coll.enabled = false;
@@ -205,7 +208,8 @@ public class Hands : GlobalEventManager
                 {
                     if (smokeEmbers[i].isPlaying) smokeEmbers[i].Stop();
                 }
-                m.simulationSpace = ParticleSystemSimulationSpace.Local;
+                if(flameOn.isPlaying) flameOn.Stop();
+                if(flameOff.isStopped) flameOff.Play();
             }
             else
             {
@@ -215,11 +219,10 @@ public class Hands : GlobalEventManager
                 {
                     if (smokeEmbers[i].isStopped) smokeEmbers[i].Play();
                 }
-                m.simulationSpace = ParticleSystemSimulationSpace.World;
+                if (flameOn.isStopped) flameOn.Play();
+                if (flameOff.isPlaying) flameOff.Stop();
             }
             collParent.localScale = new Vector3(1f, 1f, Mathf.Lerp(0, 0.5f * _weapon.range, distNormalized));
-            m.startSpeed = Mathf.Lerp(_startSpeedRange.x, _startSpeedRange.y, distNormalized);
-            m.startSize = Mathf.Lerp(_startSizeRange.x, _startSizeRange.y, distNormalized);
 
         }
     }

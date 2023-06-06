@@ -509,6 +509,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 2
+  usedForExplosions: 0
   attacker: {fileID: 0}
 --- !u!136 &6766369222150761432
 CapsuleCollider:
@@ -871,6 +872,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 4
+  usedForExplosions: 0
   attacker: {fileID: 0}
 --- !u!136 &2022621824862104875
 CapsuleCollider:
@@ -1049,6 +1051,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 4
+  usedForExplosions: 0
   attacker: {fileID: 0}
 --- !u!136 &5483744364872681780
 CapsuleCollider:
@@ -2048,6 +2051,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 5
+  usedForExplosions: 0
   attacker: {fileID: 0}
 --- !u!136 &1149669568227967102
 CapsuleCollider:
@@ -2194,6 +2198,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 5
+  usedForExplosions: 0
   attacker: {fileID: 0}
 --- !u!136 &5491215752333379114
 CapsuleCollider:
@@ -2606,6 +2611,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 0
+  usedForExplosions: 0
   attacker: {fileID: 0}
 --- !u!135 &8249117768633058165
 SphereCollider:
@@ -2750,6 +2756,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 2
+  usedForExplosions: 0
   attacker: {fileID: 0}
 --- !u!136 &6928915624713991122
 CapsuleCollider:
@@ -3171,6 +3178,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 3
+  usedForExplosions: 0
   attacker: {fileID: 0}
 --- !u!136 &6846284896294236062
 CapsuleCollider:
@@ -3627,8 +3635,6 @@ MonoBehaviour:
   rigLeftHand: {fileID: 1369932270968800905}
   multiAimConstraintRightHand: {fileID: 2167823997769451893}
   isHit: 0
-  _weightRightHandAim: 0
-  _weightLeftHand: 0
   haspath: 0
   pathStatus: 0
   speedAnimRoot: 0
@@ -3991,6 +3997,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 3
+  usedForExplosions: 0
   attacker: {fileID: 0}
 --- !u!136 &7048988789679748950
 CapsuleCollider:
@@ -4169,6 +4176,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 1
+  usedForExplosions: 0
   attacker: {fileID: 0}
 --- !u!65 &8752482947379295595
 BoxCollider:
@@ -4422,9 +4430,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4368334889242015716}
+  - component: {fileID: 8687337178145996677}
   - component: {fileID: 8320471118381387837}
   - component: {fileID: 5436516392881889493}
-  - component: {fileID: 8687337178145996677}
   m_Layer: 21
   m_Name: mixamorig:Hips
   m_TagString: Untagged
@@ -4451,6 +4459,21 @@ Transform:
   m_Father: {fileID: 7302843789854544062}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8687337178145996677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9033878189418798734}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fc3c03edd4c6994f8bdcd51af880589, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bodyPart: 1
+  usedForExplosions: 1
+  attacker: {fileID: 0}
 --- !u!65 &8320471118381387837
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4499,20 +4522,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &8687337178145996677
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9033878189418798734}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7fc3c03edd4c6994f8bdcd51af880589, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  bodyPart: 1
-  attacker: {fileID: 0}
 --- !u!1 &9201123406765279750
 GameObject:
   m_ObjectHideFlags: 0

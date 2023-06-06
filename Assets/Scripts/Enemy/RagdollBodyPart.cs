@@ -8,13 +8,15 @@ public class RagdollBodyPart : MonoBehaviour, ITakeDamage, IMaterial
     GameManager _gm;
     EnemyRef _eRef;
     [SerializeField] FirstCollection.BodyPart bodyPart;
+    [SerializeField] bool usedForExplosions;
     public bool IsDead { get; set; }
     public MatType MaterialType { get ; set; }
 
     Transform _myTransform;
     Rigidbody _rigid;
     Collider _collider;
-    public Transform attacker;
+    [HideInInspector] public Transform attacker;
+
 
     void Awake()
     {
@@ -30,10 +32,10 @@ public class RagdollBodyPart : MonoBehaviour, ITakeDamage, IMaterial
         IsDead = false;
         attacker = null;
     }
-    void OnDisable()
-    {
-        _eRef.enemyHealth.Dead -= Dead;
-    }
+    //void OnDisable()
+    //{
+    //    _eRef.enemyHealth.Dead -= Dead;
+    //}
     void Dead()
     {
         _rigid.isKinematic = false;
@@ -64,6 +66,22 @@ public class RagdollBodyPart : MonoBehaviour, ITakeDamage, IMaterial
         }
         else if (damage > 0)
         {
+            switch (elementType)
+            {
+                case ElementType.Normal:
+                    break;
+                case ElementType.Fire:
+                    break;
+                case ElementType.Explosion:
+                    if (!usedForExplosions) return;
+                    break;
+                case ElementType.Cold:
+                    break;
+                case ElementType.Electricity:
+                    break;
+                case ElementType.Poison:
+                    break;
+            }
             _gm.poolManager.GetFloatingDamage(_myTransform.position, damage.ToString(), elementType);
         }
 

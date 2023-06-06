@@ -22,13 +22,13 @@ MonoBehaviour:
   partialReload: 0
   hasCrosshair: 0
   startSpread: 50
-  damage: {x: 5, y: 15}
+  damage: {x: 1, y: 1}
   damageOverTime:
     elementType: 1
     damagePerTick: 2
-    effectDuration: 10
+    effectDuration: 5
   range: 10
-  rofModifier: 20
+  rofModifier: 0.3
   noOfPelletsPerShot: 1
   areaOfEffect: 0
   clipCapacity: 1000
@@ -37,3 +37,4 @@ MonoBehaviour:
     flashlight: 0
     scope: 0
     silencer: 0
+  enemyWeaponUsed: 0

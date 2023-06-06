@@ -8,7 +8,7 @@ public class BreathCollider : MonoBehaviour
     PoolManager _poolManager;
     HashSet<Collider> _collidersToIgnore = new HashSet<Collider>();
     SoItem _weapon;
-    Transform wildFire;
+    Transform _wildFire;
     Transform _myTransform;
 
     public void Init(Collider[] colIgnore, SoItem wea)
@@ -25,17 +25,17 @@ public class BreathCollider : MonoBehaviour
 
     public void SpawnFire(Vector3 point)
     {
-        if (wildFire == null)
+        if (_wildFire == null)
         {
-            wildFire = _poolManager.GetWildFire();
-            wildFire.GetComponent<ParticleSystem>().Play();
+            _wildFire = _poolManager.GetWildFire();
+            _wildFire.GetComponent<ParticleSystem>().Play();
         }
 
-        wildFire.position = point;
+        _wildFire.position = point;
     }
     public void StopFire()
     {
-        wildFire = null;
+        _wildFire = null;
     }
 
     private void OnTriggerEnter(Collider other)

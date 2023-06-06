@@ -30,6 +30,7 @@ public class HealthEnemy : HealthMain
     {
         base.Init();
         _eRef = GetComponent<EnemyRef>();
+        _floatingDamageWhileBurning = true;
     }
     public void PassFromBodyPart(RagdollBodyPart ragdoll, ElementType elementType, int damage, Transform attackerTransform, DamageOverTime damageOverTime)
     {
