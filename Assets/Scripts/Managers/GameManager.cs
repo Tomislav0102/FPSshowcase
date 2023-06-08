@@ -137,7 +137,7 @@ public class AttackClass
     GameManager _gm;
     Transform _camTr;
     RaycastHit _hit;
-    RaycastHit[] _multipleHits = new RaycastHit[4];
+    RaycastHit[] _multipleHits = new RaycastHit[10];
     readonly HashSet<Collider> _colliders = new HashSet<Collider>();
    // [ShowInInspector]
     GameObject projec; 
@@ -202,11 +202,10 @@ public class AttackClass
         switch (weaponItem.weaponType)
         {
             case WeaponMechanics.Melee:
-                Physics.SphereCastNonAlloc(MeleeDirection(), weaponItem.areaOfEffect * 0.5f, _multipleHits, weaponItem.range, ~0, QueryTriggerInteraction.Ignore);
+                Physics.SphereCastNonAlloc(MeleeDirection(), weaponItem.areaOfEffect * 0.5f, _multipleHits, weaponItem.range, _gm.layShooting, QueryTriggerInteraction.Ignore);
                 foreach (RaycastHit item in _multipleHits)
                 {
-                    if (item.collider == null) continue;
-                  //  Debug.Log(item.collider.name);
+                    if (item.collider == null || _colliders.Contains(item.collider)) continue;
                     ApplyDamage(weaponItem, item, false);
                 }
                 break;
@@ -434,15 +433,6 @@ public class PoolManager
         g.SetActive(true);
         return g;
     }
-    //public void GetBulletDecal(Transform hitTarget, Vector3 hitPosition, Vector3 hitNormal)
-    //{
-    //    Transform decal = GetGenericObject<Transform>(_decals, ref _cDecals, 2000);
-    //    decal.parent = null;
-    //    decal.localScale = 0.1f * Vector3.one;
-    //    decal.SetPositionAndRotation(hitPosition + 0.001f * hitNormal, Quaternion.LookRotation(hitNormal));
-    //    decal.parent = hitTarget.transform;
-    //    decal.gameObject.SetActive(true);
-    //}
     public void GetLineRenderer(Vector3 startPos, Vector3 endPos)
     {
         LineRenderer line = GetGenericObject<LineRenderer>(_lrs, ref _cLR, 200);
@@ -968,7 +958,7 @@ public class Offense
 
     public void HideWeapon(int nextWeaponIndex)
     {
-        if (!_acquiredWeapons.Contains(nextWeaponIndex) || !IdleAnimations()) return;
+        if (!_acquiredWeapons.Contains(nextWeaponIndex) || !IdleAnimations() || _currWeapon == weapons[nextWeaponIndex]) return;
         if (weapons[nextWeaponIndex].ammoType != AmmoType.None && _ammoCurrent[weapons[nextWeaponIndex].ammoType] == 0 && _clipCurrent[weapons[nextWeaponIndex]] == 0) return;
 
         IsAiming = false;

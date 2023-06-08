@@ -1,7 +1,8 @@
 using FirstCollection;
 using Sirenix.OdinInspector;
+using System;
 using System.Collections.Generic;
-using System.Timers;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
@@ -12,7 +13,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
 {
     #region//INTERFACE
     [field: SerializeField] public Transform MyTransform { get; set; }
-    [field: SerializeField] public Transform MyHead { get ; set ; }
+    [field: SerializeField] public Transform MyHead { get; set; }
     [field: SerializeField] public Faction Fact { get; set; }
     public IFactionTarget Owner { get; set; }
     #endregion
@@ -25,8 +26,10 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
     Quaternion _startRot;
     bool _canUpdateFOV, _canUpdateDestination;
     MoveType _moveType;
+    public RagToAnimTranstions ragToAnimTransition;
     [Title("General", null, TitleAlignments.Centered)]
     [SerializeField] DetectableObject detectable;
+    public ParticleSystem psOnFire;
     [HideInInspector] public Transform movePoint;
 
     [Title("Behaviours", null, TitleAlignments.Centered)]
@@ -103,7 +106,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
     Vector3 GetRdnPos(Vector3 center)
     {
         Vector3 pos = center + roamRadius * Random.insideUnitSphere;
-        if (NavMesh.SamplePosition(pos, out _navHit, 2f* roamRadius, NavMesh.AllAreas))
+        if (NavMesh.SamplePosition(pos, out _navHit, 2f * roamRadius, NavMesh.AllAreas))
         {
             return _navHit.position;
         }
@@ -126,9 +129,27 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
 
     bool ReadyToMove()
     {
-        return !_eRef.agent.pathPending && _eRef.agent.remainingDistance <= 0.5f; 
+        return !_eRef.agent.pathPending && _eRef.agent.remainingDistance <= 0.5f;
     }
+    bool HostileFaction(Faction attackerFaction)
+    {
+        if (Fact == attackerFaction) return false;
 
+        switch (attackerFaction)
+        {
+            case Faction.Player:
+                if (Fact == Faction.Enemy) return true;
+                break;
+            case Faction.Enemy:
+                if (Fact == Faction.Ally) return true;
+                break;
+            case Faction.Ally:
+                if (Fact == Faction.Enemy) return true;
+                break;
+        }
+
+        return false;
+    }
     [Title("Animations", null, TitleAlignments.Centered)]
     [GUIColor(0.5f, 1f, 0f, 1f)]
     [SerializeField] Transform[] ragdollTransform;
@@ -146,7 +167,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
     Transform _aimIK;
     float _spreadWeapon = 0f;
     Vector3 _offsetTar;
-    [HideInInspector] public bool isHit;
+    /*[HideInInspector] */public bool isHit;
     float _weightRightHandAim, _weightLeftHand;
 
 
@@ -167,13 +188,13 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
         _eRef = eRef;
         movePoint = moveP;
         _displayState = displayT;
-        _startPos = _eRef.agent.transform.position;
-        _startRot = _eRef.agent.transform.rotation;
+        _startPos = _eRef.agentTr.position;
+        _startRot = _eRef.agentTr.rotation;
         _searchCenter = movePoint.position;
         EnState = startingState;
 
         //idle
-        _startRotY = _eRef.agent.transform.eulerAngles.y;
+        _startRotY = _eRef.agentTr.eulerAngles.y;
 
         //patrol
         _wayPoints = HelperScript.AllChildren((wpParent == null || wpParent.childCount == 0) ? GameManager.Instance.wayPointParent : wpParent);
@@ -190,6 +211,8 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
         }
         hs = colls;
         _eRef.anim.SetFloat("rof", weaponUsed.rofModifier);
+        ragToAnimTransition = new RagToAnimTranstions(_eRef, ragdollTransform);
+       
         detectObject = detectable;
     }
     public void InitAttackRange(float sightRange)
@@ -199,7 +222,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
     }
     void OnEnable()
     {
-        InvokeRepeating(nameof(CanUpdateFOVMethod), Random.Range(0f, 1f), 0.3f);
+        InvokeRepeating(nameof(CanUpdateFOVMethod), Random.Range(0.3f, 1f), 0.3f);
     }
     void OnDisable()
     {
@@ -231,22 +254,24 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
             case EnemyState.Follow:
                 FollowBehaviour();
                 break;
+            case EnemyState.Immobile:
+                ImmobileBehaviour();
+                return;
         }
-        
+
         speedAnimRoot = _eRef.anim.velocity.magnitude;
         if (speedAnimRoot < 0.05f) speedAnimRoot = 0f;
         _eRef.agent.speed = speedAnimRoot;
-        _eRef.animTr.SetPositionAndRotation(_eRef.agent.transform.position - 0.06152725f * Vector3.up, _eRef.agent.transform.rotation);
+        _eRef.animTr.SetPositionAndRotation(_eRef.agentTr.position - 0.06152725f * Vector3.up, _eRef.agentTr.rotation);
 
         rigRightHandAiming.weight = _weightRightHandAim;
         rigLeftHand.weight = Mathf.MoveTowards(rigLeftHand.weight, _weightLeftHand, 2f * Time.deltaTime);
 
         _weightHit = Mathf.MoveTowards(_weightHit, isHit ? 1f : 0f, 2f * Time.deltaTime);
         _eRef.anim.SetLayerWeight(1, _weightHit);
-    }
-    void FixedUpdate()
-    {
-        if (EnState == EnemyState.Attack) return;
+
+
+        if (EnState == EnemyState.Attack || EnState == EnemyState.Immobile) return;
         if (_canUpdateFOV)
         {
             AttackTarget = _eRef.fov.FindFovTargets();
@@ -254,6 +279,8 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
             _canUpdateFOV = false;
         }
     }
+
+
     void Debugs()
     {
         _displayState.transform.LookAt(_cam.transform.position);
@@ -262,25 +289,25 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
         haspath = _eRef.agent.hasPath;
         pathStatus = _eRef.agent.pathStatus;
         remainDistance = _eRef.agent.remainingDistance;
-        speedAgent =_eRef.agent.velocity.magnitude;
+        speedAgent = _eRef.agent.velocity.magnitude;
         namOfAttacker = AttackTarget == null ? "no target" : AttackTarget.MyTransform.name.ToString();
     }
-    void CanUpdateFOVMethod() //optimization method. Detection and navigation don't need updates on every frame.
-    {
-        _canUpdateFOV = _canUpdateDestination = true;
-    }
+    void CanUpdateFOVMethod() => _canUpdateFOV = _canUpdateDestination = true;
     void TrackMovingTarget()
     {
         Attack_Animation(false);
         if (_canUpdateDestination)
         {
             _eRef.agent.SetDestination(movePoint.position);
-          //   print("moving");
+            //   print("moving");
             _canUpdateDestination = false;
         }
     }
+
     public void PassFromHealth_Attacked(Transform attackerTr, bool switchAgro)
     {
+        if (EnState == EnemyState.Immobile) return;
+
         if (EnState == EnemyState.Attack || AttackTarget != null)
         {
             if (switchAgro) NewTarget();
@@ -290,13 +317,17 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
 
         void NewTarget()
         {
-            if (attackerTr.TryGetComponent(out IFactionTarget target) && target.Fact != Fact)
+            if (attackerTr.TryGetComponent(out IFactionTarget target) && HostileFaction(target.Fact))
             {
                 AttackTarget = target;
                 EnState = EnemyState.Search;
             }
         }
     }
+
+    #endregion
+
+    #region//ANIMATIONS
     void GetIKAnimation(bool attack)
     {
         _weightRightHandAim = _weightLeftHand = 0f;
@@ -336,14 +367,12 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
     {
         _eRef.anim.SetInteger("movePhase", (int)movetype);
     }
-
     #endregion
-
 
     #region //BEHAVIOURS
     void IdleBehaviour(bool lookAround)
     {
-        if (Vector3.SqrMagnitude(movePoint.position - _eRef.agent.transform.position) < 0.3f)
+        if (Vector3.SqrMagnitude(movePoint.position - _eRef.agentTr.position) < 0.3f)
         {
             _moveType = MoveType.Stationary;
             SetSpeed_Animation(_moveType);
@@ -351,8 +380,8 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
             if (_idleOnMove)
             {
                 _idleOnMove = false;
-                if(_eRef.agent.hasPath) _eRef.agent.ResetPath();
-                _eRef.agent.transform.rotation = _startRot;
+                if (_eRef.agent.hasPath) _eRef.agent.ResetPath();
+                _eRef.agentTr.rotation = _startRot;
             }
 
             if (!lookAround) return;
@@ -363,12 +392,12 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
                 _timerIdleRotate = Random.Range(3f, 10f);
                 _targetRot = Quaternion.AngleAxis(_startRotY + Random.Range(-idleLookAngle * 0.5f, idleLookAngle * 0.5f), Vector3.up);
             }
-            _eRef.agent.transform.rotation = Quaternion.Slerp(_eRef.agent.transform.rotation, _targetRot, 10 * Time.deltaTime);
+            _eRef.agentTr.rotation = Quaternion.Slerp(_eRef.agentTr.rotation, _targetRot, 10 * Time.deltaTime);
             return;
         }
         movePoint.position = _startPos;
 
-        if(!_eRef.agent.hasPath)
+        if (!_eRef.agent.hasPath)
         {
             _idleOnMove = true;
             TrackMovingTarget();
@@ -381,7 +410,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
             movePoint.position = _wayPoints[_counterWayPoints].position;
             _counterWayPoints = (1 + _counterWayPoints) % _wayPoints.Length;
             _eRef.agent.SetDestination(movePoint.position);
-        } 
+        }
     }
     void RoamBehaviour(Vector3 center)
     {
@@ -415,8 +444,8 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
         movePoint.position = AttackTarget.MyTransform.position;
 
 
-        Vector3 dir = movePoint.position - _eRef.agent.transform.position;
-        _eRef.agent.transform.rotation = Quaternion.Slerp(_eRef.agent.transform.rotation, Quaternion.LookRotation(dir), 5f * Time.deltaTime);
+        Vector3 dir = movePoint.position - _eRef.agentTr.position;
+        _eRef.agentTr.rotation = Quaternion.Slerp(_eRef.agentTr.rotation, Quaternion.LookRotation(dir), 5f * Time.deltaTime);
         if (Vector3.SqrMagnitude(dir) <= _attackRangeSquared)
         {
             if (_eRef.agent.hasPath) _eRef.agent.ResetPath();
@@ -427,7 +456,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
         else
         {
             Attack_Animation(false);
-             TrackMovingTarget();
+            TrackMovingTarget();
 
         }
     }
@@ -472,32 +501,234 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
         MoveType mt = MoveType.Stationary;
         if (_eRef.agent.remainingDistance > _eRef.agent.stoppingDistance)
         {
-            mt = Vector3.SqrMagnitude(_eRef.agent.transform.position - movePoint.position) > 50f ? MoveType.Run : MoveType.Walk;
+            mt = Vector3.SqrMagnitude(_eRef.agentTr.position - movePoint.position) > 50f ? MoveType.Run : MoveType.Walk;
         }
         SetSpeed_Animation(mt);
 
         TrackMovingTarget();
     }
+    private void ImmobileBehaviour()
+    {
+        ragToAnimTransition.RagdollStandingUp();
+        _eRef.agentTr.SetPositionAndRotation(new Vector3(_eRef.animTr.position.x, _eRef.agentTr.position.y, _eRef.animTr.position.z), _eRef.animTr.rotation);
+        rigRightHandAiming.weight = rigLeftHand.weight = 0f;
+    }
+
     #endregion
 
+
+    [System.Serializable]
+    public class RagToAnimTranstions
+    {
+        struct BoneTransforms
+        {
+            public Vector3 pos;
+            public Quaternion rot;
+        }
+
+        EnemyRef _eRef;
+        Transform _myTransform;
+        Animator _anim;
+        readonly string[] _clipNames = { "Stand Up", "Zombie Stand Up" };
+        string _currentClip;
+        Transform[] _ragdollTransforms;
+        Rigidbody[] _ragdollRigids;
+        Transform _hipsBone;
+
+        List<Transform> _bones = new List<Transform>();
+        BoneTransforms[] _standingFaceUpBones;
+        BoneTransforms[] _standingFaceDownBones;
+        BoneTransforms[] _standingCurrent;
+        BoneTransforms[] _ragdollBones;
+
+        bool FacingUp() => _hipsBone.forward.y > 0f;
+        bool _readyToStandUp;
+        const float CONST_TIMETOSTANDUP = 2f;
+        float _timer;
+        float _elapsedPercentage;
+
+        public RagToAnimTranstions(EnemyRef eRef, Transform[] ragParts)
+        {
+            _eRef = eRef;
+            _ragdollTransforms = ragParts;
+            _myTransform = _eRef.animTr;
+            _anim = _eRef.anim;
+
+            _hipsBone = _anim.GetBoneTransform(HumanBodyBones.Hips);
+
+            _ragdollRigids = new Rigidbody[_ragdollTransforms.Length];
+            for (int i = 0; i < _ragdollTransforms.Length; i++)
+            {
+                _ragdollRigids[i] = _ragdollTransforms[i].GetComponent<Rigidbody>();
+            }
+
+            Transform[] bon = _hipsBone.GetComponentsInChildren<Transform>();
+            for (int i = 0; i < bon.Length; i++)
+            {
+                if (bon[i].name.StartsWith("mixamorig")) _bones.Add(bon[i]);
+            }
+            _standingFaceUpBones = new BoneTransforms[_bones.Count];
+            _standingFaceDownBones = new BoneTransforms[_bones.Count];
+            _ragdollBones = new BoneTransforms[_bones.Count];
+
+            PopulateAnimationBones(true);
+            PopulateAnimationBones(false);
+
+        }
+
+        public void RagdollStandingUp()
+        {
+            if (_anim.GetCurrentAnimatorStateInfo(0).IsName("Rifle Idle"))
+            {
+                _eRef.enemyBehaviour.EnState = EnemyState.Attack;
+
+            }
+            if (!_readyToStandUp) return;
+
+            _timer += Time.deltaTime;
+            _elapsedPercentage = _timer / CONST_TIMETOSTANDUP;
+            for (int i = 0; i < _bones.Count; i++)
+            {
+                _bones[i].localPosition = Vector3.Lerp(_ragdollBones[i].pos, _standingCurrent[i].pos, _elapsedPercentage);
+                _bones[i].localRotation = Quaternion.Lerp(_ragdollBones[i].rot, _standingCurrent[i].rot, _elapsedPercentage);
+            }
+
+
+          //  if (Mathf.Approximately(_elapsedPercentage, 1f))
+            if (_elapsedPercentage >= 1f)
+            {
+                _readyToStandUp = false;
+                _anim.Play(_currentClip, 0, 0);
+                _timer = 0f;
+                _anim.enabled = true;
+                for (int i = 0; i < _ragdollRigids.Length; i++)
+                {
+                    _ragdollRigids[i].isKinematic = true;
+                }
+            }
+
+        }
+
+
+
+        public void RagdollMe(Rigidbody ragRigid, Transform attackerTr)
+        {
+            if (!_readyToStandUp)
+            {
+                for (int i = 0; i < _ragdollRigids.Length; i++)
+                {
+                    _ragdollRigids[i].isKinematic = false;
+                }
+
+                Vector3 dir = (attackerTr.position - _myTransform.position).normalized;
+                ragRigid.AddForce(-40f * dir, ForceMode.VelocityChange);
+                _anim.enabled = false;
+                _eRef.enemyBehaviour.EnState = EnemyState.Immobile;
+                BeginStandUp();
+            }
+
+        }
+        async void BeginStandUp()
+        {
+            await Task.Delay(2000);
+            _readyToStandUp = true;
+            _standingCurrent = FacingUp() ? _standingFaceUpBones : _standingFaceDownBones;
+            AlignRotationToHips();
+            AlignPositionToHips();
+            PopulateBones(_ragdollBones);
+            _currentClip = FacingUp() ? _clipNames[0] : _clipNames[1];
+
+        }
+
+        void ActivateRagdoll(bool activ)
+        {
+            for (int i = 0; i < _ragdollRigids.Length; i++)
+            {
+                _ragdollRigids[i].isKinematic = !activ;
+            }
+            if (activ)
+            {
+                if (!_readyToStandUp)
+                {
+                    _ragdollRigids[8].AddForce(-40f * Vector3.forward, ForceMode.VelocityChange);
+                    _anim.enabled = false;
+                }
+            }
+            else
+            {
+                _standingCurrent = FacingUp() ? _standingFaceUpBones : _standingFaceDownBones;
+                AlignRotationToHips();
+                AlignPositionToHips();
+                PopulateBones(_ragdollBones);
+                _readyToStandUp = true;
+                _currentClip = FacingUp() ? _clipNames[0] : _clipNames[1];
+            }
+        }
+        void PopulateBones(BoneTransforms[] bon)
+        {
+            for (int i = 0; i < _bones.Count; i++)
+            {
+                bon[i].pos = _bones[i].localPosition;
+                bon[i].rot = _bones[i].localRotation;
+            }
+        }
+        void PopulateAnimationBones(bool isFacingUp)
+        {
+            Vector3 posBeforeSampling = _myTransform.position;
+            Quaternion rotBeforeSampling = _myTransform.rotation;
+
+            _currentClip = isFacingUp ? _clipNames[0] : _clipNames[1];
+
+            foreach (AnimationClip item in _anim.runtimeAnimatorController.animationClips)
+            {
+                if (item.name == _currentClip)
+                {
+                    item.SampleAnimation(_myTransform.gameObject, 0f);
+                    PopulateBones(isFacingUp ? _standingFaceUpBones : _standingFaceDownBones);
+                    break;
+                }
+            }
+
+            _myTransform.position = posBeforeSampling;
+            _myTransform.rotation = rotBeforeSampling;
+        }
+
+        private void AlignRotationToHips()
+        {
+            Vector3 originalHipsPosition = _hipsBone.position;
+            Quaternion originalHipsRotation = _hipsBone.rotation;
+
+            Vector3 desiredDirection = _hipsBone.up * -1;
+            if (!FacingUp()) desiredDirection *= -1f;
+            desiredDirection.y = 0;
+            desiredDirection.Normalize();
+
+            Quaternion fromToRotation = Quaternion.FromToRotation(_myTransform.forward, desiredDirection);
+            _myTransform.rotation *= fromToRotation;
+
+            _hipsBone.position = originalHipsPosition;
+            _hipsBone.rotation = originalHipsRotation;
+        }
+
+        private void AlignPositionToHips()
+        {
+            Vector3 originalHipsPosition = _hipsBone.position;
+            _myTransform.position = _hipsBone.position;
+
+            Vector3 positionOffset = _standingCurrent[0].pos;
+            positionOffset.y = 0;
+            positionOffset = _myTransform.rotation * positionOffset;
+            _myTransform.position -= positionOffset;
+
+            if (Physics.Raycast(_myTransform.position, Vector3.down, out RaycastHit hitInfo))
+            {
+                _myTransform.position = new Vector3(_myTransform.position.x, hitInfo.point.y, _myTransform.position.z);
+            }
+
+            _hipsBone.position = originalHipsPosition;
+        }
+
+    }
 }
 
 
-
-// switch (EnState)
-// {
-//     case EnemyState.Idle:
-//         break;
-//     case EnemyState.Patrol:
-//         break;
-//     case EnemyState.Roam:
-//         break;
-//     case EnemyState.Search:
-//         break;
-//     case EnemyState.Attack:
-//         break;
-//     case EnemyState.Follow:
-//         break;
-//     case EnemyState.MoveToPoint:
-//         break;
-// }

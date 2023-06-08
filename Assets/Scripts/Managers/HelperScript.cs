@@ -112,7 +112,8 @@ namespace FirstCollection
         Roam,
         Search,
         Attack,
-        Follow
+        Follow,
+        Immobile
     }
     public enum IkState
     {

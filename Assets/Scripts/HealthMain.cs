@@ -16,7 +16,7 @@ public class HealthMain : GlobalEventManager
     float _fireDuration;
     DamageOverTime _currentDot;
     Coroutine _coroutine; //maybe it will have to be stopped (e.g. entering water)
-    bool OnFire
+    protected virtual bool OnFire
     {
         get => _onFire;
         set

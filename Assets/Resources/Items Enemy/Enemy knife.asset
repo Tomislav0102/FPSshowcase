@@ -37,3 +37,4 @@ MonoBehaviour:
     flashlight: 0
     scope: 0
     silencer: 0
+  enemyWeaponUsed: 0

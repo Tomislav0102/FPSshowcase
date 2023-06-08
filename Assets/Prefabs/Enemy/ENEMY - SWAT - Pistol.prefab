@@ -14,7 +14,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1982041645282451913, guid: d25b4a405a509bb498416ee854476a7c, type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1982041645282451913, guid: d25b4a405a509bb498416ee854476a7c, type: 3}
       propertyPath: m_LocalPosition.x
@@ -192,6 +192,10 @@ PrefabInstance:
     - target: {fileID: 7405203672163543349, guid: c2098dc042f130941b2b5b96140ab9f6, type: 3}
       propertyPath: m_Name
       value: Model - SWAT - Pistol
+      objectReference: {fileID: 0}
+    - target: {fileID: 7763781301892431791, guid: c2098dc042f130941b2b5b96140ab9f6, type: 3}
+      propertyPath: m_Name
+      value: Target FOV - swat - pistol
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

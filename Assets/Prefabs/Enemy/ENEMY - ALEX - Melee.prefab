@@ -70,15 +70,15 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4347170197059186756, guid: b3384d86e74fe91468a322a6f35f3694, type: 3}
   m_PrefabInstance: {fileID: 438773763410660531}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &6272927576121069623 stripped
+--- !u!114 &6063014648372995850 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5844330967516863620, guid: b3384d86e74fe91468a322a6f35f3694, type: 3}
+  m_CorrespondingSourceObject: {fileID: 5923062382050519993, guid: b3384d86e74fe91468a322a6f35f3694, type: 3}
   m_PrefabInstance: {fileID: 438773763410660531}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2114d486377bd404f9ca4b660bd7b483, type: 3}
+  m_Script: {fileID: 11500000, guid: 64d935a1f42e12546a40feed78fb5ae2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &2563657530775732640
@@ -138,13 +138,13 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6060082052009515112, guid: d25b4a405a509bb498416ee854476a7c, type: 3}
-      propertyPath: enemyAnim
-      value: 
-      objectReference: {fileID: 6272927576121069623}
-    - target: {fileID: 6060082052009515112, guid: d25b4a405a509bb498416ee854476a7c, type: 3}
       propertyPath: <Fact>k__BackingField
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 8605751372891241174, guid: d25b4a405a509bb498416ee854476a7c, type: 3}
+      propertyPath: enemyBehaviour
+      value: 
+      objectReference: {fileID: 6063014648372995850}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:

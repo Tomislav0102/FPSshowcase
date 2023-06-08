@@ -1,7 +1,7 @@
 
 ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-- ragdoll to animator transition
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

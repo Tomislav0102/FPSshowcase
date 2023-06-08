@@ -10,4 +10,11 @@ public class SMB_Hit : SMB_MainEnemy
        _eRef.enemyBehaviour.isHit = true;
     }
 
+
+    public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+        base.OnStateExit(animator, stateInfo, layerIndex);
+        _eRef.enemyBehaviour.isHit = false;
+    }
+
 }

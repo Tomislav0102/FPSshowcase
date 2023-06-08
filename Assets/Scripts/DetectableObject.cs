@@ -8,23 +8,6 @@ public class DetectableObject : MonoBehaviour, IFactionTarget
     [field: SerializeField] public Transform MyTransform { get ; set; }
     [field: SerializeField] public Transform MyHead { get; set; }
     public Faction Fact { get; set; }
-    //public Faction Fact {
-    //    get => _fact;
-    //    set
-    //    {
-    //        _fact = value;
-    //        switch (value)
-    //        {
-    //            case Faction.Player:
-    //                _myGameObject.layer = _gm.layerPl;
-    //                break;
-    //            case Faction.Enemy:
-    //                _myGameObject.layer = _gm.layerEn;
-    //                break;
-    //        }
-    //    }
-    //}
-    //Faction _fact;
     public IFactionTarget Owner { get; set; }
 
     GameManager _gm;

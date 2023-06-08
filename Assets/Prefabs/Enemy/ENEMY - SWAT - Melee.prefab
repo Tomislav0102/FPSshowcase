@@ -56,6 +56,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Model - SWAT - Melee
       objectReference: {fileID: 0}
+    - target: {fileID: 722441108985197946, guid: bbd7da59e18c76b4b9334df468fb16c0, type: 3}
+      propertyPath: m_Name
+      value: Target FOV - swat - melee
+      objectReference: {fileID: 0}
     - target: {fileID: 905567688517226449, guid: bbd7da59e18c76b4b9334df468fb16c0, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

@@ -65,7 +65,10 @@ public class Player : GlobalEventManager, IActivation, IFactionTarget, IMaterial
     void Start()
     {
         Invoke(nameof(BeganActive), 1f);
-        offense.AddWeapon(offense.weapons[1]);
+        for (int i = 1; i < 11; i++)
+        {
+            offense.AddWeapon(offense.weapons[i]);
+        }
     }
     void BeganActive()
     {
@@ -86,7 +89,6 @@ public class Player : GlobalEventManager, IActivation, IFactionTarget, IMaterial
 
         if (Input.mouseScrollDelta.y != 0f) offense.ChangeWeaponMouseScroll(Input.mouseScrollDelta.y > 0f);
 
-      //  offense.BeginAttackAnimation(Input.GetMouseButtonDown(0));
         offense.BeginAttackAnimation(Input.GetMouseButton(0));
 
         if (Input.GetKeyDown(KeyCode.R)) offense.BeginReloadAnimation();

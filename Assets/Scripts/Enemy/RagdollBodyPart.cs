@@ -22,9 +22,6 @@ public class RagdollBodyPart : MonoBehaviour, ITakeDamage, IMaterial
     {
         _gm = GameManager.Instance;
         MaterialType = MatType.Blood;
-        _myTransform = transform;
-        _rigid = GetComponent<Rigidbody>();
-        _collider = GetComponent<Collider>();
 
     }
     void OnEnable()
@@ -32,10 +29,10 @@ public class RagdollBodyPart : MonoBehaviour, ITakeDamage, IMaterial
         IsDead = false;
         attacker = null;
     }
-    //void OnDisable()
-    //{
-    //    _eRef.enemyHealth.Dead -= Dead;
-    //}
+    void OnDisable()
+    {
+        _eRef.enemyHealth.Dead -= Dead;
+    }
     void Dead()
     {
         _rigid.isKinematic = false;
@@ -43,23 +40,27 @@ public class RagdollBodyPart : MonoBehaviour, ITakeDamage, IMaterial
         if (attacker != null) StartCoroutine(PushbackDeath());
         IsDead = true;
     }
-    IEnumerator PushbackDeath()
+    IEnumerator PushbackDeath() //needs to be changed. When dead, gameobject is dactivated so this never happens
     {
         yield return null;
-        Vector3 dir = (-attacker.position + _myTransform.position).normalized;
+        Vector3 dir = (_myTransform.position - attacker.position).normalized;
         _rigid.AddForce(50f * dir, ForceMode.VelocityChange);
 
     }
     public void InitializeMe(EnemyRef eRef)
     {
         _eRef = eRef;
+        _myTransform = transform;
+        _rigid = GetComponent<Rigidbody>();
+        _collider = GetComponent<Collider>();
+
         _eRef.enemyHealth.Dead += Dead;
         _rigid.isKinematic = true;
         _collider.isTrigger = false;
     }
     public void TakeDamage(ElementType elementType, int damage, Transform attackerTransform, DamageOverTime damageOverTime)
     {
-        if (IsDead)
+        if (IsDead) 
         {
             attacker = attackerTransform;
             StartCoroutine(PushbackDeath());

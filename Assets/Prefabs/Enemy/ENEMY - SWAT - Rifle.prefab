@@ -225,6 +225,10 @@ PrefabInstance:
       propertyPath: m_LocalRotation.z
       value: -0.5000032
       objectReference: {fileID: 0}
+    - target: {fileID: 8452541995858308248, guid: 12d96f5fc96221e4381a093e7605211c, type: 3}
+      propertyPath: m_Name
+      value: Target FOV - swat - rifle
+      objectReference: {fileID: 0}
     - target: {fileID: 8662562135673633282, guid: 12d96f5fc96221e4381a093e7605211c, type: 3}
       propertyPath: m_Name
       value: Model - SWAT - Rifle

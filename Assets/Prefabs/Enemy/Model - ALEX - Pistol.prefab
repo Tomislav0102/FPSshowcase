@@ -143,6 +143,14 @@ PrefabInstance:
       propertyPath: weaponAnimType
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5334301535381648719, guid: 6665134d99499c341a7085ca74510c80, type: 3}
+      propertyPath: muzzle
+      value: 
+      objectReference: {fileID: 6956567442012524746}
+    - target: {fileID: 5334301535381648719, guid: 6665134d99499c341a7085ca74510c80, type: 3}
+      propertyPath: weaponUsed
+      value: 
+      objectReference: {fileID: 11400000, guid: fd9a6dab1c3f2dc42aa76e5b9d858108, type: 2}
     - target: {fileID: 6008036774048894780, guid: 6665134d99499c341a7085ca74510c80, type: 3}
       propertyPath: m_IsActive
       value: 1
