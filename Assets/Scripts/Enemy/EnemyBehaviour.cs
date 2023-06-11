@@ -9,13 +9,14 @@ using UnityEngine.AI;
 using UnityEngine.Animations.Rigging;
 using Random = UnityEngine.Random;
 
-public class EnemyBehaviour : MonoBehaviour, IFactionTarget
+public class EnemyBehaviour : MonoBehaviour, IFaction
 {
     #region//INTERFACE
     [field: SerializeField] public Transform MyTransform { get; set; }
+    public Collider MyCollider { get; set; }
     [field: SerializeField] public Transform MyHead { get; set; }
     [field: SerializeField] public Faction Fact { get; set; }
-    public IFactionTarget Owner { get; set; }
+    public IFaction Owner { get; set; }
     #endregion
 
     GameManager _gm;
@@ -116,7 +117,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
     NavMeshHit _navHit;
 
     //attack
-    public IFactionTarget AttackTarget;
+    public IFaction AttackTarget;
     float _attackRangeSquared;
     float _timerAttack, _timerCheckTargetVisible;
     float _weightHit;
@@ -192,6 +193,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
         _startRot = _eRef.agentTr.rotation;
         _searchCenter = movePoint.position;
         EnState = startingState;
+        Owner = this;
 
         //idle
         _startRotY = _eRef.agentTr.eulerAngles.y;
@@ -317,7 +319,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
 
         void NewTarget()
         {
-            if (attackerTr.TryGetComponent(out IFactionTarget target) && HostileFaction(target.Fact))
+            if (attackerTr.TryGetComponent(out IFaction target) && HostileFaction(target.Fact))
             {
                 AttackTarget = target;
                 EnState = EnemyState.Search;
@@ -328,7 +330,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
     #endregion
 
     #region//ANIMATIONS
-    void GetIKAnimation(bool attack)
+    void GetIK_Animation(bool attack)
     {
         _weightRightHandAim = _weightLeftHand = 0f;
         if (isHit) return;
@@ -349,7 +351,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
     }
     void Attack_Animation(bool isAttacking)
     {
-        GetIKAnimation(isAttacking);
+        GetIK_Animation(isAttacking);
         _eRef.anim.SetBool("attack", isAttacking);
         if (weaponUsed.enemyWeaponUsed == EnemyWeaponUsed.Melee) return;
         _offsetTar = new Vector3(Random.Range(-_spreadWeapon, _spreadWeapon), 0f, Random.Range(-_spreadWeapon, _spreadWeapon));
@@ -430,11 +432,10 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
         }
 
 
-        if (!_eRef.fov.TargetStillVisible(AttackTarget, _gm.layFOV_Ray))
+        if (!_eRef.fov.TargetStillVisible(AttackTarget))
         {
             Attack_Animation(false);
             TrackMovingTarget();
-
             if (_eRef.agent.remainingDistance < 1f)
             {
                 SearchStart();
@@ -450,7 +451,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
         {
             if (_eRef.agent.hasPath) _eRef.agent.ResetPath();
             _timerAttack = 0f;
-            SetAim_Animation(AttackTarget.MyHead.position); //for some reason it only works in AttackBehaviour()
+            SetAim_Animation(AttackTarget.Owner.MyHead.position); //for some reason it only works in AttackBehaviour()
             Attack_Animation(true);
         }
         else
@@ -496,7 +497,7 @@ public class EnemyBehaviour : MonoBehaviour, IFactionTarget
     void FollowBehaviour()
     {
         AttackTarget = null;
-        movePoint.position = _gm.player.GetComponent<IFactionTarget>().MyTransform.position;
+        movePoint.position = _gm.player.GetComponent<IFaction>().MyTransform.position;
 
         MoveType mt = MoveType.Stationary;
         if (_eRef.agent.remainingDistance > _eRef.agent.stoppingDistance)

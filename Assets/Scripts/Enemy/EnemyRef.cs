@@ -18,12 +18,11 @@ public class EnemyRef : GlobalEventManager
     public NavMeshAgent agent;
     [HideInInspector] public Transform agentTr;
     public AttackClass attackClass;
-    public IFactionTarget myFactionInterface;
+    public IFaction myFactionInterface;
     public HashSet<Collider> _allColliders = new HashSet<Collider>();
     [HideInInspector] public Animator anim;
     [HideInInspector] public Transform animTr;
     [HideInInspector] public DetectableObject detectableObject;
-    [HideInInspector] public IFactionTarget detectableFaction;
     public HealthEnemy enemyHealth;
 
     [BoxGroup("Field of view")]
@@ -38,16 +37,14 @@ public class EnemyRef : GlobalEventManager
     private void Awake()
     {
         _gm = GameManager.Instance;
-        myFactionInterface = enemyBehaviour.GetComponent<IFactionTarget>();
+        myFactionInterface = enemyBehaviour.GetComponent<IFaction>();
         agentTr = agent.transform;
         anim = enemyBehaviour.GetComponent<Animator>();
         animTr = enemyBehaviour.transform;
         enemyBehaviour.InitAwake(this, movePoint, displayState, out _allColliders, out detectableObject);
         detectableObject.HookInterface(myFactionInterface);
-        detectableFaction = detectableObject.GetComponent<IFactionTarget>();
         _allColliders.Add(detectableObject.GetComponent<Collider>());
         fov.Init(this, consoleDisplay);
-
     }
 
     protected override void OnEnable()
@@ -65,7 +62,7 @@ public class EnemyRef : GlobalEventManager
     }
     protected override void CallEv_PlayerDead()
     {
-        if (enemyBehaviour.AttackTarget != null && enemyBehaviour.AttackTarget == _gm.player.GetComponent<IFactionTarget>())
+        if (enemyBehaviour.AttackTarget != null && enemyBehaviour.AttackTarget == _gm.player.GetComponent<IFaction>())
         {
             enemyBehaviour.AttackTarget = null;
         }
@@ -74,7 +71,8 @@ public class EnemyRef : GlobalEventManager
     void MyDeath()
     {
         detectableObject.gameObject.SetActive(false);
-        enemyBehaviour.gameObject.SetActive(false);
+        enemyBehaviour.enabled = false;
+        agent.enabled = false;
         anim.enabled = false;
     }
 }
@@ -85,7 +83,7 @@ public class FieldOvView
     GameManager _gm;
     EnemyRef _eRef;
     EnemyBehaviour _enemyBehaviour;
-    IFactionTarget _myIFactionTarget;
+    IFaction _myIFactionTarget;
     Transform _myTransform;
     [SerializeField] Transform sightSphere, hearSphere;
     float _sightRange, _hearingRange;
@@ -95,7 +93,6 @@ public class FieldOvView
     Ray _ray;
     RaycastHit _hit;
     Collider[] _colls = new Collider[30];
-    RaycastHit[] _multipleHits = new RaycastHit[1];
 
     bool _conseoleDisplay;
     public void Init(EnemyRef eRef, bool consoleDis)
@@ -124,50 +121,58 @@ public class FieldOvView
         }
         return r;
     }
-    public bool TargetStillVisible(IFactionTarget target, LayerMask layerMask)
+    public bool TargetStillVisible(IFaction ent)
     {
-        _ray.direction = (target.MyTransform.position - _myTransform.position).normalized;
+        _ray.direction = (ent.MyTransform.position - _myTransform.position).normalized;
         for (int i = 0; i < 2; i++)
         {
             _ray.origin = _myTransform.position + (i + 0.6f) * Vector3.up;
-            if (Physics.Raycast(_ray, out _hit, EffectiveRange(target.MyTransform.position), layerMask, QueryTriggerInteraction.Ignore))
+            if (Physics.Raycast(_ray, out _hit, EffectiveRange(ent.MyTransform.position), _gm.layFOV_Ray, QueryTriggerInteraction.Ignore))
             {
                 if (_eRef._allColliders.Contains(_hit.collider)) continue;
-                if (_hit.collider == target.MyTransform.GetComponent<Collider>()) return true;
+                if (_hit.collider == ent.MyCollider) return true;
+                // else Debug.Log($"I am {_eRef.name} and {_hit.collider.name} is blocking");
+               //   else Debug.Log($"Hit coll is {_hit.collider.GetHashCode()} and target should be {tr.GetComponent<Collider>().GetHashCode()}");
+                //  else Debug.Log($"Hit coll is {_hit.collider.name} and target should be {tr.GetComponent<Collider>().name}");
+                // else Debug.Log($"Hit coll is {_hit.collider.transform.position} and target should be {tr.GetComponent<Collider>().transform.position}");
+                //else
+                //{
+                //    _hit.collider.transform.position = 10f * Vector3.forward;
+                //  //  tr.GetComponent<Collider>().transform.position = 12f * Vector3.forward;
+                //}
             }
         }
-        Debug.Log($"I am {_eRef.name} and {target.MyTransform.name} is not visible, but in range");
+       // Debug.Log($"I am {_eRef.name} and {ent.MyTransform.name} is not visible, but in range");
         return false;
     }
-    public IFactionTarget FindFovTargets()
+    public IFaction FindFovTargets()
     {
         int num = Physics.OverlapSphereNonAlloc(_myTransform.position, _sightRange, _colls, _gm.layFOV_Overlap, QueryTriggerInteraction.Ignore);
 
         for (int i = 0; i < num; i++)
         {
-            IFactionTarget target = _colls[i].GetComponent<IFactionTarget>();
+            IFaction target = _colls[i].GetComponent<IFaction>();
 
-            if (target == null || 
-              //  target == _myIFactionTarget || 
+            if (target == null ||
                 (target.Owner != null && target.Owner == _myIFactionTarget) ||
-                !TargetStillVisible(target, _gm.layFOV_Ray)) continue;
+                !TargetStillVisible(target)) continue;
 
-           // Debug.Log(_eRef.name + " ---- " + target.MyTransform.name);
+         //   Debug.Log($"I am {_eRef.name} and {target.MyTransform.name} is my traget");
             switch (_myIFactionTarget.Fact)
             {
                 case Faction.Enemy:
                     switch (target.Fact)
                     {
                         case Faction.Enemy:
-                            Debug.Log("ksdfjklsdjf");
-
-                            return BuddysFoe(target);
+                            IFaction tar = BuddysFoe(target);
+                            if (tar == null) continue;
+                            else return BuddysFoe(target);
 
                         default:
-                         //   Debug.Log(target.MyTransform.name);
+                          //  Debug.Log(target.MyTransform.name);
                             return Foe(target);
-                    }
 
+                    }
                 case Faction.Ally:
                     switch (target.Fact)
                     {
@@ -175,7 +180,10 @@ public class FieldOvView
                             return Foe(target);
 
                         case Faction.Ally:
-                            return BuddysFoe(target);
+                            IFaction tar = BuddysFoe(target);
+                            if (tar == null) continue;
+                            else return BuddysFoe(target);
+
                     }
                     break;
             }
@@ -185,7 +193,7 @@ public class FieldOvView
         }
         return null;
 
-        IFactionTarget BuddysFoe(IFactionTarget tar)
+        IFaction BuddysFoe(IFaction tar)
         {
             if (tar.Owner.MyTransform.TryGetComponent(out EnemyBehaviour en))
             {
@@ -207,10 +215,10 @@ public class FieldOvView
 
             return null;
         }
-        IFactionTarget Foe(IFactionTarget tar)
+        IFaction Foe(IFaction tar)
         {
             _enemyBehaviour.EnState = EnemyState.Attack;
-            return tar.Owner ?? tar;
+            return tar;
         }
 
     }
@@ -220,19 +228,3 @@ public class FieldOvView
 
 
 
-//public bool TargetStillVisible(IFactionTarget target, LayerMask layerMask)
-//{
-//    _ray.direction = (target.MyTransform.position - _myTransform.position).normalized;
-//    for (int i = 0; i < 2; i++)
-//    {
-//        _ray.origin = _myTransform.position + (i + 0.6f) * Vector3.up;
-//        if (Physics.Raycast(_ray, out _hit, EffectiveRange(target.MyTransform.position), layerMask, QueryTriggerInteraction.Ignore))
-//        {
-//            // Debug.Log($"{target.MyTransform.GetComponent<Collider>()} is target");
-//            if (!_eRef._allColliders.Contains(_hit.collider) && _hit.collider == target.MyTransform.GetComponent<Collider>()) return true;
-//            //  else Debug.Log($"{_hit.collider.name} is blocking");
-//        }
-//    }
-//    //  Debug.Log($"{target.MyTransform.name} is not visible, but in range");
-//    return false;
-//}

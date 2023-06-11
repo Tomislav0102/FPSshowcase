@@ -60,6 +60,24 @@ public class RagdollBodyPart : MonoBehaviour, ITakeDamage, IMaterial
     }
     public void TakeDamage(ElementType elementType, int damage, Transform attackerTransform, DamageOverTime damageOverTime)
     {
+
+        switch (elementType)
+        {
+            case ElementType.Normal:
+                break;
+            case ElementType.Fire:
+                break;
+            case ElementType.Explosion:
+                if (!usedForExplosions) return;
+                break;
+            case ElementType.Cold:
+                break;
+            case ElementType.Electricity:
+                break;
+            case ElementType.Poison:
+                break;
+        }
+
         if (IsDead) 
         {
             attacker = attackerTransform;
@@ -67,22 +85,6 @@ public class RagdollBodyPart : MonoBehaviour, ITakeDamage, IMaterial
         }
         else if (damage > 0)
         {
-            switch (elementType)
-            {
-                case ElementType.Normal:
-                    break;
-                case ElementType.Fire:
-                    break;
-                case ElementType.Explosion:
-                    if (!usedForExplosions) return;
-                    break;
-                case ElementType.Cold:
-                    break;
-                case ElementType.Electricity:
-                    break;
-                case ElementType.Poison:
-                    break;
-            }
             _gm.poolManager.GetFloatingDamage(_myTransform.position, damage.ToString(), elementType);
         }
 

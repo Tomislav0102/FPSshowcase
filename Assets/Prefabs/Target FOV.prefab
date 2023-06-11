@@ -31,7 +31,7 @@ Transform:
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: -1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7712810226811341520
 MonoBehaviour:
@@ -46,8 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <MyTransform>k__BackingField: {fileID: 7684178193443575101}
-  <MyHead>k__BackingField: {fileID: 7684178193443575101}
-  _collider: {fileID: 3863256139698586852}
+  <MyCollider>k__BackingField: {fileID: 3863256139698586852}
 --- !u!135 &3863256139698586852
 SphereCollider:
   m_ObjectHideFlags: 0

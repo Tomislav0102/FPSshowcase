@@ -177,7 +177,7 @@ public class Hands : GlobalEventManager
             _spawnPoint = aimPoint;
             _breathCollider = coll.GetComponent<BreathCollider>();
             Collider[] plcols = new Collider[1];
-            plcols[0] = _gm.player.capsuleCollider;
+            plcols[0] = _gm.plCollider;
             _breathCollider.Init(plcols, wea);
         }
         public void Flame(bool startFire)

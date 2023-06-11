@@ -22,6 +22,7 @@ public class GameManager : MonoBehaviour
     public Color[] gizmoColorsByState;
 
     public Player player;
+    [HideInInspector] public Collider plCollider;
     public Camera mainCam, weaponCam;
     [HideInInspector] public Transform camTr, camRigTr;
     [HideInInspector] public CameraBehaviour cameraBehaviour;
@@ -35,6 +36,7 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        plCollider = player.GetComponent<IFaction>().MyCollider;
         camTr = mainCam.transform;
         camRigTr = camTr.parent.transform;
         cameraBehaviour = mainCam.GetComponent<CameraBehaviour>();
@@ -68,7 +70,6 @@ public class GameManager : MonoBehaviour
         //}
 
     }
-
     private void OnTriggerEnter(Collider other)
     {
         
@@ -77,7 +78,6 @@ public class GameManager : MonoBehaviour
     {
         
     }
-
 }
 #region//GENERAL 
 [System.Serializable]
@@ -142,7 +142,7 @@ public class AttackClass
    // [ShowInInspector]
     GameObject projec; 
     Vector2 _screenCenter;
-    IFactionTarget _myFactionInterface;
+    IFaction _myFactionInterface;
     public Transform bulletSpawnPosition;
 
     Ray MeleeDirection()
@@ -187,7 +187,7 @@ public class AttackClass
 
         return r;
     }
-    public AttackClass(HashSet<Collider> attackerColliders, IFactionTarget factionTarget)
+    public AttackClass(HashSet<Collider> attackerColliders, IFaction factionTarget)
     {
         _gm = GameManager.Instance;
         _camTr = _gm.mainCam.transform;
@@ -410,7 +410,7 @@ public class PoolManager
         _decalsBlood = HelperScript.AllChildrenGameObjects(poolDecalsBlood);
         _wildFire = HelperScript.AllChildren(poolWildfire);
     }
-    public void GetDetecable(Vector3 pos, float size, IFactionTarget ownerInterface)
+    public void GetDetecable(Vector3 pos, float size, IFaction ownerInterface)
     {
         DetectableObject detectable = GetGenericObject<DetectableObject>(_detectables, ref _cDetectables, 0);
         detectable.PositionMe(pos, size, ownerInterface);
@@ -596,7 +596,7 @@ public class Controls
     [SerializeField] float moveSpeed, turnSpeed, jumpForce;
     const int CONST_DOWNFORCE = 2000;
     float _downForce;
-
+    CapsuleCollider _plCapsuleColl;
     bool IsDucked
     {
         get => _isDucked;
@@ -608,16 +608,16 @@ public class Controls
                 _moveDuck = 0.3f;
                 _player.camPosition.DOLocalMoveY(_camHeights.y, 0.1f)
                     .SetEase(Ease.InFlash);
-                _player.capsuleCollider.center = 0.5f * Vector3.up;
-                _player.capsuleCollider.height = 1f;
+                _plCapsuleColl.center = 0.5f * Vector3.up;
+                _plCapsuleColl.height = 1f;
             }
             else
             {
                 _moveDuck = 1f;
                 _player.camPosition.DOLocalMoveY(_camHeights.x, 0.1f)
                        .SetEase(Ease.InFlash);
-                _player.capsuleCollider.center = Vector3.up;
-                _player.capsuleCollider.height = 2f;
+                _plCapsuleColl.center = Vector3.up;
+                _plCapsuleColl.height = 2f;
             }
         }
     }
@@ -678,7 +678,7 @@ public class Controls
     {
         _gm = GameManager.Instance;
         _player = _gm.player;
-
+        _plCapsuleColl = _gm.plCollider.GetComponent<CapsuleCollider>();
         _rigid = _player.rigid;
         _camHeights = new Vector3(1.6f, 0.8f, 0.2f); //normal, duck, dead
         IsDucked = false;
@@ -821,8 +821,6 @@ public class Offense
             _wAnims[value].SetBool("has2ndAttack", _currWeapon.has2ndAttack);
             _wAnims[value].SetBool("isShotgun", _currWeapon.weaponType == WeaponMechanics.Shotgun);
             _wAnims[value].SetFloat("rofModifier", _currWeapon.rofModifier);
-
-           // _gm.uiManager.crosshairObject.Weapon = _currWeapon;
         }
     }
     int _wi;
@@ -852,7 +850,7 @@ public class Offense
     }
     bool _isAiming;
 
-    public void Init(IFactionTarget factionTarget)
+    public void Init(IFaction factionTarget)
     {
         _gm = GameManager.Instance;
         _player = _gm.player;
@@ -869,7 +867,7 @@ public class Offense
             weapons[i].ordinalLookup = i;
         }
 
-        _actorColliders.Add(_player.capsuleCollider);
+        _actorColliders.Add(_gm.plCollider);
         attack = new AttackClass(_actorColliders, factionTarget);
 
         _ammoCapacity.Add(AmmoType.None, 0);
@@ -898,23 +896,25 @@ public class Offense
 
         AddWeapon(weapons[0]);
     }
+    public void Death()
+    {
+        parWeapons.gameObject.SetActive(false);
+        syringe.SetActive(false);
+    }
     public void MoveSpeed(MoveType moveType)
     {
         switch (moveType)
         {
             case MoveType.Stationary:
                 _wAnims[Windex].SetInteger("movePhase", 0);
-             //   _gm.uiManager.crosshairObject.moveSpread = 1f;
                 _gm.uiManager.crosshairObject.Move(1f);
                 break;
             case MoveType.Walk:
                 _wAnims[Windex].SetInteger("movePhase", 1);
-             //   _gm.uiManager.crosshairObject.moveSpread = 2f;
                 _gm.uiManager.crosshairObject.Move(2f);
                 break;
             case MoveType.Run:
                 _wAnims[Windex].SetInteger("movePhase", 2);
-            //    _gm.uiManager.crosshairObject.moveSpread = 4f;
                 _gm.uiManager.crosshairObject.Move(4f);
                 break;
         }

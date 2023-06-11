@@ -95,7 +95,7 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
                 _gm.player.offense.attack.ApplyDamage(weaponUsingThisProjectile, GetHit(), false);
                 break;
             default:
-                print($"Collision with {other.name}. I AM EXPLODING NOW!!!");
+              //  print($"Collision with {other.name}. I AM EXPLODING NOW!!!");
                 Collider[] allAffectedCollider = Physics.OverlapSphere(_myTransform.position, weaponUsingThisProjectile.areaOfEffect);
                 foreach (Collider item in allAffectedCollider)
                 {
@@ -103,7 +103,7 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
                     {
                         damagable.TakeDamage(_elType, HelperScript.Damage(weaponUsingThisProjectile.damage), _myTransform, null);
                     }
-                    if (item.TryGetComponent(out Rigidbody rigids) && !rigids.isKinematic)
+                    else if (item.TryGetComponent(out Rigidbody rigids) && !rigids.isKinematic)
                     {
                         rigids.AddExplosionForce(200f, _myTransform.position, weaponUsingThisProjectile.areaOfEffect, 0.2f);
                     }
@@ -114,5 +114,7 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
 
         ReturnToPool();
     }
+
+    
 
 }

@@ -18,6 +18,8 @@ public class TestScript : MonoBehaviour
     //public LayerMask layerMask;
     //public bool isPlayer;
     // public Animator anim;
+    public int num;
+    public SomeClass someClass;
 
     private void Awake()
     {
@@ -28,6 +30,18 @@ public class TestScript : MonoBehaviour
         print($"Test script is on '{gameObject.name}' gameobject, that is on '{gameObject.scene.name}' scene.");
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space)) AddNumber(someClass);
+    }
 
-
+    void AddNumber(SomeClass cl)
+    {
+        cl.someNum++;
+    }
+    [System.Serializable]
+    public class SomeClass
+    {
+        public int someNum;
+    }
 }

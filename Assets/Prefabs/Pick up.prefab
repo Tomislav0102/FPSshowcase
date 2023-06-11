@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7279040638674387581}
   - component: {fileID: 6790484745363873413}
   - component: {fileID: 4259264588471737767}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: machine_gun_3 (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -95,7 +95,7 @@ GameObject:
   - component: {fileID: 4718824294357708167}
   - component: {fileID: 5942625284417446472}
   - component: {fileID: 5918191767680383832}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: machine_gun_3 (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -179,7 +179,7 @@ GameObject:
   - component: {fileID: 1097518561471976757}
   - component: {fileID: 1227631937683569597}
   - component: {fileID: 7978828632075323457}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: machine_gun_3 (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -261,7 +261,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1633472503073839904}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: bulletSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -294,7 +294,7 @@ GameObject:
   - component: {fileID: 298845153686345862}
   - component: {fileID: 1301277069732097791}
   - component: {fileID: 7030702862609078343}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: rocket
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -375,7 +375,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8749631029304851135}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: bulletSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -408,7 +408,7 @@ GameObject:
   - component: {fileID: 7847054063614471582}
   - component: {fileID: 8668621469075135542}
   - component: {fileID: 7098969514056917178}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: machine_gun_3 (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -490,7 +490,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3841189806516369060}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: bulletSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -523,7 +523,7 @@ GameObject:
   - component: {fileID: 3460842972429572839}
   - component: {fileID: 3494634699881458037}
   - component: {fileID: 3484505474530771921}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: SM_Icon_Shield_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -606,7 +606,7 @@ GameObject:
   - component: {fileID: 4534806860875740426}
   - component: {fileID: 4509710768721208654}
   - component: {fileID: 4518243741066061204}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: SM_Icon_Light_Directional_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -687,7 +687,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5185200678776271697}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: bulletSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -720,7 +720,7 @@ GameObject:
   - component: {fileID: 5185200678855938480}
   - component: {fileID: 5185200678855938482}
   - component: {fileID: 5185200678855938481}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: pistol_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -804,7 +804,7 @@ GameObject:
   - component: {fileID: 5185200678960092859}
   - component: {fileID: 5185200678960092861}
   - component: {fileID: 5185200678960092860}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: shotgun_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -886,7 +886,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5185200679028892688}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: bolt
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -918,7 +918,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5185200679138515163}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: MESHES
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -954,7 +954,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5185200679139811246}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: handgreande
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -987,7 +987,7 @@ GameObject:
   - component: {fileID: 5185200679174944097}
   - component: {fileID: 5185200679174944099}
   - component: {fileID: 5185200679174944098}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: submachine_gun_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1069,7 +1069,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5185200679225446591}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: none
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1100,7 +1100,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5185200679283753660}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: bulletSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1133,7 +1133,7 @@ GameObject:
   - component: {fileID: 5185200679324842983}
   - component: {fileID: 5185200679324843001}
   - component: {fileID: 5185200679324843000}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: key green
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1216,7 +1216,7 @@ GameObject:
   - component: {fileID: 5185200679375109338}
   - component: {fileID: 5185200679375109340}
   - component: {fileID: 5185200679375109339}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: machine_gun_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1298,7 +1298,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5185200679404547107}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: bulletSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1329,7 +1329,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5185200679435790799}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: bulletSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1362,7 +1362,7 @@ GameObject:
   - component: {fileID: 5185200679643055254}
   - component: {fileID: 5185200679643055272}
   - component: {fileID: 5185200679643055255}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: pistol_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1446,7 +1446,7 @@ GameObject:
   - component: {fileID: 5185200679666950157}
   - component: {fileID: 5185200679666950159}
   - component: {fileID: 5185200679666950158}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: 44cal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1527,7 +1527,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5185200679735185476}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: ARMOR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1559,7 +1559,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5185200679853492479}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: bulletSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1592,7 +1592,7 @@ GameObject:
   - component: {fileID: 5185200679885807678}
   - component: {fileID: 5185200679885807664}
   - component: {fileID: 5185200679885807679}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: rocket_launcher
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1677,7 +1677,7 @@ GameObject:
   - component: {fileID: 5185200680090893803}
   - component: {fileID: 5185200680090893800}
   - component: {fileID: 5185200680090893783}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: Pick up
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1699,7 +1699,7 @@ Transform:
   - {fileID: 5185200679138515163}
   - {fileID: 8744370932087776719}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5185200680090893803
 MonoBehaviour:
@@ -1778,7 +1778,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5185200680106876693}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: HEALTH
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1812,7 +1812,7 @@ GameObject:
   - component: {fileID: 5185200680158594143}
   - component: {fileID: 5185200680158594129}
   - component: {fileID: 5185200680158594128}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: key red
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1893,7 +1893,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5185200680239983834}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: bulletSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1924,7 +1924,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5185200680267241507}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: bulletSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1955,7 +1955,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5185200680327661404}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: AMMO
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1996,7 +1996,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5185200680366963926}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: WEAPONS
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2042,7 +2042,7 @@ GameObject:
   - component: {fileID: 5185200680476905193}
   - component: {fileID: 5185200680476905195}
   - component: {fileID: 5185200680476905194}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: rifle_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2124,7 +2124,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5185200680616009139}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: KEY
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2160,7 +2160,7 @@ GameObject:
   - component: {fileID: 5185200680674502418}
   - component: {fileID: 5185200680674502420}
   - component: {fileID: 5185200680674502419}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: sword
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2242,7 +2242,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5185200680804911938}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: bulletSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2275,7 +2275,7 @@ GameObject:
   - component: {fileID: 5787296526413567491}
   - component: {fileID: 5776442723324267133}
   - component: {fileID: 5767749035982233521}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: key blue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2358,7 +2358,7 @@ GameObject:
   - component: {fileID: 6127353230817854470}
   - component: {fileID: 6160711178291580136}
   - component: {fileID: 6148970350803143116}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: 762mm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2441,7 +2441,7 @@ GameObject:
   - component: {fileID: 2414475208782984315}
   - component: {fileID: 6657580398645650979}
   - component: {fileID: 5389709685808636329}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: flamethrower
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2522,7 +2522,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3519272492856304436}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: bulletSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2555,7 +2555,7 @@ GameObject:
   - component: {fileID: 7231953310115913580}
   - component: {fileID: 7222366060410079156}
   - component: {fileID: 7212550710411488392}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: SM_Icon_Health_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2638,7 +2638,7 @@ GameObject:
   - component: {fileID: 7241269752580249035}
   - component: {fileID: 7212820877676205245}
   - component: {fileID: 7223110788037672015}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: 12gauge
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2721,7 +2721,7 @@ GameObject:
   - component: {fileID: 7620329553318739126}
   - component: {fileID: 7612600009796279932}
   - component: {fileID: 7603228526139586570}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: 9mm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2804,7 +2804,7 @@ GameObject:
   - component: {fileID: 7850462288233804369}
   - component: {fileID: 7824132625202747649}
   - component: {fileID: 7833904030692142175}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: fuel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2887,7 +2887,7 @@ GameObject:
   - component: {fileID: 7927668695714688373}
   - component: {fileID: 5450154904586645290}
   - component: {fileID: 1796421168819500146}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: 303rem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2970,7 +2970,7 @@ GameObject:
   - component: {fileID: 8744370932087776719}
   - component: {fileID: 8736273667309971107}
   - component: {fileID: 8726044520648360251}
-  m_Layer: 0
+  m_Layer: 18
   m_Name: SM_FX_Glow_Ring_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -5,11 +5,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using Sirenix.OdinInspector;
 
-public class Player : GlobalEventManager, IActivation, IFactionTarget, IMaterial
+public class Player : GlobalEventManager, IActivation, IFaction, IMaterial
 {
     GameManager _gm;
     public Transform camPosition;
-    public CapsuleCollider capsuleCollider;
     public Rigidbody rigid;
     public bool IsActive
     {
@@ -23,7 +22,8 @@ public class Player : GlobalEventManager, IActivation, IFactionTarget, IMaterial
 
     [field: SerializeField] public Transform MyTransform { get; set; }
     [field:SerializeField] public Faction Fact { get; set; }
-    public IFactionTarget Owner { get; set; }
+    public IFaction Owner { get; set; }
+    [field: SerializeField] public Collider MyCollider { get; set; }
     [field: SerializeField] public MatType MaterialType { get; set; }
     public Transform MyHead { get => _gm.camTr; set { } }
 
@@ -53,10 +53,13 @@ public class Player : GlobalEventManager, IActivation, IFactionTarget, IMaterial
         _alfaKeys[6] = KeyCode.Alpha7;
         _alfaKeys[7] = KeyCode.Alpha8;
         _alfaKeys[8] = KeyCode.Alpha9;
+        Owner = this;
     }
     protected override void CallEv_PlayerDead()
     {
         IsActive = false;
+        MyCollider.enabled = false;
+        offense.Death();
         _gm.camRigTr.DOLocalMoveY(controls._camHeights.z, 1.5f)
               .SetSpeedBased(true)
               .SetEase(Ease.OutBounce);

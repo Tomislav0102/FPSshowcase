@@ -115,12 +115,6 @@ namespace FirstCollection
         Follow,
         Immobile
     }
-    public enum IkState
-    {
-        NotFighting,
-        Fighting,
-        Hit
-    }
     public enum BodyPart
     {
         Head,
@@ -218,13 +212,15 @@ namespace FirstCollection
     #endregion
 
     #region//INTERFACES
-    public interface IFactionTarget
+    public interface IFaction 
     {
         Transform MyTransform { get; set; }
         Transform MyHead { get; set; }
+        Collider MyCollider { get; set; }
         Faction Fact { get; set; }
-        IFactionTarget Owner { get; set; }
+        IFaction Owner { get; set; }
     }
+
     public interface IMaterial
     {
         MatType MaterialType { get; set; }
