@@ -38,12 +38,11 @@ public class HealthEnemy : HealthMain
         }
     }
     RagdollBodyPart _lastBodyPart;
-    Transform _attackerTr;
     ElementType _elType = ElementType.Normal;
 
     float _parDamage;
     float _timerAgro;
-
+    /*[HideInInspector] */public Transform attacker;
 
     protected override void Init()
     {
@@ -54,17 +53,20 @@ public class HealthEnemy : HealthMain
     public void PassFromBodyPart(RagdollBodyPart ragdoll, ElementType elementType, int damage, Transform attackerTransform, DamageOverTime damageOverTime)
     {
         _lastBodyPart = ragdoll;
-        bool ragdollAfterHit = Random.value < 0.3f && elementType == ElementType.Normal;
-        if (ragdollAfterHit && !OnFire && _eRef.enemyBehaviour.EnState != EnemyState.Immobile)
-        {
-            _eRef.enemyBehaviour.ragToAnimTransition.RagdollMe(ragdoll.GetComponent<Rigidbody>(), attackerTransform);
-        }
+        print(_lastBodyPart.name);
         TakeDamage(elementType, damage, attackerTransform, damageOverTime);
+
+        //bool ragdollAfterHit = !IsDead && Random.value < 0.3f && elementType == ElementType.Normal;
+        //if (ragdollAfterHit && !OnFire && _eRef.enemyBehaviour.EnState != EnemyState.Immobile)
+        //{
+        //    _eRef.enemyBehaviour.ragToAnimTransition.RagdollMe(ragdoll.GetComponent<Rigidbody>(), attackerTransform);
+        //    _eRef.anim.ResetTrigger("hit");
+        //}
     }
     public override void TakeDamage(ElementType elementType, int damage, Transform attackerTransform, DamageOverTime damageOverTime)
     {
-        _attackerTr = attackerTransform;
         base.TakeDamage(elementType, damage, attackerTransform, damageOverTime);
+        attacker = attackerTransform;
         _elType = elementType;
 
         if (damage > 0)
@@ -97,7 +99,6 @@ public class HealthEnemy : HealthMain
         }
     }
 
-
     IEnumerator AgroCooldown()
     {
         while(_timerAgro < 10f)
@@ -114,8 +115,8 @@ public class HealthEnemy : HealthMain
     void Die()
     {
         //print(_attackerTr);
-        _lastBodyPart.attacker = _attackerTr;
         Dead?.Invoke();
+        if(_lastBodyPart != null) StartCoroutine(_lastBodyPart.PushbackDeath());
         _eRef.enemyBehaviour.psOnFire.Stop();
 
         switch (_elType)

@@ -6,16 +6,15 @@ using UnityEngine;
 public class RagdollBodyPart : MonoBehaviour, ITakeDamage, IMaterial
 {
     GameManager _gm;
-    EnemyRef _eRef;
     [SerializeField] FirstCollection.BodyPart bodyPart;
     [SerializeField] bool usedForExplosions;
     public bool IsDead { get; set; }
+    public EnemyRef EnRef { get; set; }
     public MatType MaterialType { get ; set; }
 
     Transform _myTransform;
     Rigidbody _rigid;
     Collider _collider;
-    [HideInInspector] public Transform attacker;
 
 
     void Awake()
@@ -27,67 +26,66 @@ public class RagdollBodyPart : MonoBehaviour, ITakeDamage, IMaterial
     void OnEnable()
     {
         IsDead = false;
-        attacker = null;
     }
     void OnDisable()
     {
-        _eRef.enemyHealth.Dead -= Dead;
+        EnRef.enemyHealth.Dead -= Dead;
     }
     void Dead()
     {
         _rigid.isKinematic = false;
         _collider.isTrigger = false;
-        if (attacker != null) StartCoroutine(PushbackDeath());
         IsDead = true;
     }
-    IEnumerator PushbackDeath() //needs to be changed. When dead, gameobject is dactivated so this never happens
+    public IEnumerator PushbackDeath() 
     {
         yield return null;
-        Vector3 dir = (_myTransform.position - attacker.position).normalized;
+        if (EnRef.enemyHealth.attacker == null) yield break;
+        Vector3 dir = (_myTransform.position - EnRef.enemyHealth.attacker.position).normalized;
         _rigid.AddForce(50f * dir, ForceMode.VelocityChange);
-
     }
     public void InitializeMe(EnemyRef eRef)
     {
-        _eRef = eRef;
+        EnRef = eRef;
         _myTransform = transform;
         _rigid = GetComponent<Rigidbody>();
         _collider = GetComponent<Collider>();
 
-        _eRef.enemyHealth.Dead += Dead;
+        EnRef.enemyHealth.Dead += Dead;
         _rigid.isKinematic = true;
         _collider.isTrigger = false;
     }
     public void TakeDamage(ElementType elementType, int damage, Transform attackerTransform, DamageOverTime damageOverTime)
     {
 
-        switch (elementType)
+        //switch (elementType)
+        //{
+        //    case ElementType.Normal:
+        //        break;
+        //    case ElementType.Fire:
+        //        break;
+        //    case ElementType.Explosion:
+        //        if (!usedForExplosions) return;
+        //        break;
+        //    case ElementType.Cold:
+        //        break;
+        //    case ElementType.Electricity:
+        //        break;
+        //    case ElementType.Poison:
+        //        break;
+        //}
+
+        if (IsDead)
         {
-            case ElementType.Normal:
-                break;
-            case ElementType.Fire:
-                break;
-            case ElementType.Explosion:
-                if (!usedForExplosions) return;
-                break;
-            case ElementType.Cold:
-                break;
-            case ElementType.Electricity:
-                break;
-            case ElementType.Poison:
-                break;
+            StartCoroutine(PushbackDeath());
+            return;
         }
 
-        if (IsDead) 
-        {
-            attacker = attackerTransform;
-            StartCoroutine(PushbackDeath());
-        }
-        else if (damage > 0)
+        if (damage > 0)
         {
             _gm.poolManager.GetFloatingDamage(_myTransform.position, damage.ToString(), elementType);
         }
 
-        _eRef.enemyHealth.PassFromBodyPart(this, elementType, damage, attackerTransform, damageOverTime);
+        EnRef.enemyHealth.PassFromBodyPart(this, elementType, damage, attackerTransform, damageOverTime);
     }
 }

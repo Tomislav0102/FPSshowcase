@@ -10,6 +10,7 @@ using UnityEngine.UI;
 using DG.Tweening;
 using Sirenix.OdinInspector;
 using UnityEngine.Rendering.PostProcessing;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -27,6 +28,7 @@ public class GameManager : MonoBehaviour
     [HideInInspector] public Transform camTr, camRigTr;
     [HideInInspector] public CameraBehaviour cameraBehaviour;
     [HideInInspector] public Animator weaponCamAnim;
+    [HideInInspector] public LevelManager levelManager;
     public UImanager uiManager;
     public PoolManager poolManager;
     public PostprocessMan postProcess;
@@ -47,6 +49,14 @@ public class GameManager : MonoBehaviour
         Time.timeScale = gameSpeed;
         layerPl = LayerMask.NameToLayer("Player");
         layerEn = LayerMask.NameToLayer("Enemy");
+    }
+    private void Start()
+    {
+#if (UNITY_EDITOR)
+        if (!SceneManager.GetSceneByBuildIndex(1).isLoaded) SceneManager.LoadScene(1, LoadSceneMode.Additive);
+#else
+SceneManager.LoadScene(1, LoadSceneMode.Additive);
+#endif
     }
     private void Update()
     {
@@ -136,6 +146,8 @@ public class AttackClass
 {
     GameManager _gm;
     Transform _camTr;
+    EnemyRef _targetEnemyRef;
+    bool _oneHit;
     RaycastHit _hit;
     RaycastHit[] _multipleHits = new RaycastHit[10];
     readonly HashSet<Collider> _colliders = new HashSet<Collider>();
@@ -199,13 +211,15 @@ public class AttackClass
     public void Attack(SoItem weaponItem)
     {
         if (weaponItem == null) return;
+        _targetEnemyRef = null;
         switch (weaponItem.weaponType)
         {
             case WeaponMechanics.Melee:
                 Physics.SphereCastNonAlloc(MeleeDirection(), weaponItem.areaOfEffect * 0.5f, _multipleHits, weaponItem.range, _gm.layShooting, QueryTriggerInteraction.Ignore);
                 foreach (RaycastHit item in _multipleHits)
                 {
-                    if (item.collider == null || _colliders.Contains(item.collider)) continue;
+                    Collider coll = item.collider;
+                    if (coll == null || _colliders.Contains(coll)) continue;
                     ApplyDamage(weaponItem, item, false);
                 }
                 break;
@@ -271,7 +285,12 @@ public class AttackClass
 
         if (col.TryGetComponent(out ITakeDamage damagable))
         {
-            damagable.TakeDamage(ElementType.Normal, HelperScript.Damage(weaponItem.damage), _myFactionInterface.MyTransform, null);
+            if (_targetEnemyRef == null || _targetEnemyRef != damagable.EnRef)
+            {
+                _targetEnemyRef = damagable.EnRef;
+                damagable.TakeDamage(ElementType.Normal, HelperScript.Damage(weaponItem.damage), _myFactionInterface.MyTransform, null);
+            }
+            else return;
         }
         if (col.TryGetComponent(out IMaterial iMat))
         {
@@ -606,7 +625,7 @@ public class Controls
             if (IsDucked)
             {
                 _moveDuck = 0.3f;
-                _player.camPosition.DOLocalMoveY(_camHeights.y, 0.1f)
+                _player.camPosition.DOLocalMoveY(camHeights.y, 0.1f)
                     .SetEase(Ease.InFlash);
                 _plCapsuleColl.center = 0.5f * Vector3.up;
                 _plCapsuleColl.height = 1f;
@@ -614,7 +633,7 @@ public class Controls
             else
             {
                 _moveDuck = 1f;
-                _player.camPosition.DOLocalMoveY(_camHeights.x, 0.1f)
+                _player.camPosition.DOLocalMoveY(camHeights.x, 0.1f)
                        .SetEase(Ease.InFlash);
                 _plCapsuleColl.center = Vector3.up;
                 _plCapsuleColl.height = 2f;
@@ -662,9 +681,10 @@ public class Controls
     bool _isGrounded, _isDucked, _isSprinting;
     float _moveDuck = 1f;
     float _moveSprint = 1f;
+    float _timerJump;
     [HideInInspector] public float moveAim = 1f;
     [HideInInspector] public float airMove = 1f;
-    [HideInInspector] public Vector3 _camHeights;
+    [HideInInspector] public Vector3 camHeights;
     Rigidbody _rigid;
     float _hor, _ver, _mouseX, _mouseY;
     Vector3 _projectedCamForward, _projectedCamRight, _moveDir;
@@ -680,7 +700,7 @@ public class Controls
         _player = _gm.player;
         _plCapsuleColl = _gm.plCollider.GetComponent<CapsuleCollider>();
         _rigid = _player.rigid;
-        _camHeights = new Vector3(1.6f, 0.8f, 0.2f); //normal, duck, dead
+        camHeights = new Vector3(1.6f, 0.8f, 0.2f); //normal, duck, dead
         IsDucked = false;
         IsSprinting = false;
     }
@@ -716,10 +736,14 @@ public class Controls
         }
         IsSprinting = Input.GetKey(KeyCode.LeftShift);
 
-        if (IsGrounded && Input.GetKey(KeyCode.Space))
+        if (IsGrounded)
         {
-             _rigid.velocity = new Vector3(_rigid.velocity.x, jumpForce, _rigid.velocity.z);
-           // _rigid.AddForce(jumpForce * Vector3.up, ForceMode.VelocityChange);
+            _timerJump += Time.deltaTime;
+            if (Input.GetKey(KeyCode.Space) && _timerJump > 0.2f)
+            {
+                _timerJump = 0f;
+                _rigid.velocity = new Vector3(_rigid.velocity.x, jumpForce, _rigid.velocity.z);
+            }
         }
 
         DefineLookRotation();
@@ -753,7 +777,7 @@ public class Controls
         int num = Physics.SphereCastNonAlloc(_player.MyTransform.position, 0.4f, Vector3.down, _hitsGrounded, 0f, layersGrounded);
         IsGrounded = num > 0;
 
-        if (Mathf.Approximately(_moveDir.sqrMagnitude, 0f) || !IsGrounded) _player.offense.MoveSpeed(MoveType.Stationary);
+        if (Mathf.Approximately(_moveDir.sqrMagnitude, 0f)/* || !IsGrounded*/) _player.offense.MoveSpeed(MoveType.Stationary);
         else if (_moveSprint > 1f) _player.offense.MoveSpeed(MoveType.Run);
         else _player.offense.MoveSpeed(MoveType.Walk);
 
@@ -772,7 +796,7 @@ public class Controls
         {
             if (_lastVelocityY < fallDamageTreshold)
             {
-               // _player.TakeDamage(ElementType.Normal, -3 * (int)(_lastVelocityY - fallDamageTreshold), (ElementType e, int b) => { });
+                _player.GetComponent<ITakeDamage>().TakeDamage(ElementType.Normal, -3 * (int)(_lastVelocityY - fallDamageTreshold), null, null);
             }
             _lastVelocityY = 0f;
         }

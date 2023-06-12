@@ -230,6 +230,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     {
         AttackTarget = null;
         CancelInvoke();
+        _displayState.text = "Dead";
     }
 
     private void Update()

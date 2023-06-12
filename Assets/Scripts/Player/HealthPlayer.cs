@@ -15,6 +15,7 @@ public class HealthPlayer : HealthMain, ITakeDamage
             if (value) PlayerDead?.Invoke();
         }
     }
+    public EnemyRef EnRef { get; set; }
     [SerializeField] ParticleSystem psOnFire;
 
 

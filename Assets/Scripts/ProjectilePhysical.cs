@@ -13,10 +13,12 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
     ElementType _elType;
     [field:SerializeField] public MatType MaterialType { get; set; }
     public bool IsDead { get; set; }
+    public EnemyRef EnRef { get; set; }
 
     [SerializeField] float forceSpeed = 50f;
     HashSet<Collider> _colliders = new HashSet<Collider>();
     RaycastHit[] _hitsForContactPoint = new RaycastHit[1];
+    EnemyRef _targetEnemyRef;
 
     private void Awake()
     {
@@ -95,20 +97,25 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
                 _gm.player.offense.attack.ApplyDamage(weaponUsingThisProjectile, GetHit(), false);
                 break;
             default:
-              //  print($"Collision with {other.name}. I AM EXPLODING NOW!!!");
+                //  print($"Collision with {other.name}. I AM EXPLODING NOW!!!");
+                _targetEnemyRef = null;
                 Collider[] allAffectedCollider = Physics.OverlapSphere(_myTransform.position, weaponUsingThisProjectile.areaOfEffect);
+                _gm.poolManager.GetExplosion(weaponUsingThisProjectile.ammoType == AmmoType.Rocket ? ExplosionType.Big : ExplosionType.Small, _myTransform.position);
                 foreach (Collider item in allAffectedCollider)
                 {
                     if (item.TryGetComponent(out ITakeDamage damagable))
                     {
-                        damagable.TakeDamage(_elType, HelperScript.Damage(weaponUsingThisProjectile.damage), _myTransform, null);
+                        if (_targetEnemyRef == null || _targetEnemyRef != damagable.EnRef)
+                        {
+                            _targetEnemyRef = damagable.EnRef;
+                            damagable.TakeDamage(_elType, HelperScript.Damage(weaponUsingThisProjectile.damage), _myTransform, null);
+                        }
                     }
                     else if (item.TryGetComponent(out Rigidbody rigids) && !rigids.isKinematic)
                     {
                         rigids.AddExplosionForce(200f, _myTransform.position, weaponUsingThisProjectile.areaOfEffect, 0.2f);
                     }
                 }
-                _gm.poolManager.GetExplosion(weaponUsingThisProjectile.ammoType == AmmoType.Rocket ? ExplosionType.Big : ExplosionType.Small, _myTransform.position);
                 break;
         }
 

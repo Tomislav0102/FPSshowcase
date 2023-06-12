@@ -21,8 +21,6 @@ public class CameraBehaviour : GlobalEventManager
     {
         base.CallEv_PlayerDead();
         _active = false;
-        _myTransform.DOLocalMoveY(-1f, 0.5f)
-            .SetEase(Ease.OutBounce);
     }
 
     private void LateUpdate()

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: pistol
   m_EditorClassIdentifier: 
   itemName: Pistol
-  ordinalLookup: 1
+  ordinalLookup: 2
   weaponType: 1
   ammoType: 1
   has2ndAttack: 0
@@ -22,7 +22,7 @@ MonoBehaviour:
   partialReload: 0
   hasCrosshair: 1
   startSpread: 50
-  damage: {x: 1, y: 1}
+  damage: {x: 50, y: 80}
   damageOverTime:
     elementType: 0
     damagePerTick: 0
@@ -37,3 +37,4 @@ MonoBehaviour:
     flashlight: 0
     scope: 0
     silencer: 0
+  enemyWeaponUsed: 0

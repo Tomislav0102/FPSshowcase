@@ -60,7 +60,7 @@ public class Player : GlobalEventManager, IActivation, IFaction, IMaterial
         IsActive = false;
         MyCollider.enabled = false;
         offense.Death();
-        _gm.camRigTr.DOLocalMoveY(controls._camHeights.z, 1.5f)
+        _gm.camRigTr.DOLocalMoveY(controls.camHeights.z, 1.5f)
               .SetSpeedBased(true)
               .SetEase(Ease.OutBounce);
     }
@@ -106,6 +106,7 @@ public class Player : GlobalEventManager, IActivation, IFaction, IMaterial
     }
     void LateUpdate()
     {
+        if (!IsActive) return;
         _gm.camRigTr.position = camPosition.position;
     }
 

@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Threading;
 using System.Threading.Tasks;
+using Sirenix.OdinInspector;
 
 public class TestScript : MonoBehaviour
 {
@@ -18,9 +19,22 @@ public class TestScript : MonoBehaviour
     //public LayerMask layerMask;
     //public bool isPlayer;
     // public Animator anim;
-    public int num;
-    public SomeClass someClass;
+    public int maska;
 
+    [System.Flags]
+    enum Days
+    {
+        Monday = 1,
+        Tuesday = 2,
+        Wednesday = 4,
+        Thursday,
+        Friday,
+        Saturday,
+        Sunday
+    }
+    Days days = Days.Monday | Days.Wednesday;
+    public LayerMask layerMask = ((1 << 5) + (1 << 16));
+    public int layerIndex;
     private void Awake()
     {
         _cam = Camera.main;
@@ -32,16 +46,14 @@ public class TestScript : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space)) AddNumber(someClass);
     }
 
-    void AddNumber(SomeClass cl)
+    [Button]
+    void MaskaEditor()
     {
-        cl.someNum++;
-    }
-    [System.Serializable]
-    public class SomeClass
-    {
-        public int someNum;
+        maska = ((1 << 2) | (1 << 4));
+
+        if ((layerMask & (1 << layerIndex)) != 0) print($"Layer {LayerMask.LayerToName(layerIndex)} is in mask");
+        else print($"Layer {LayerMask.LayerToName(layerIndex)}  is not in the mask");
     }
 }

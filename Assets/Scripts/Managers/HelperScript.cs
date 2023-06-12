@@ -233,6 +233,7 @@ namespace FirstCollection
     {
         void TakeDamage(ElementType elementType, int damage, Transform attackerTransform, DamageOverTime damageOverTime);
         bool IsDead { get; set; }
+        EnemyRef EnRef { get; set; }
     }
     #endregion
 }
