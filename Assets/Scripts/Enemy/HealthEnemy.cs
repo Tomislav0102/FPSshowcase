@@ -42,7 +42,7 @@ public class HealthEnemy : HealthMain
 
     float _parDamage;
     float _timerAgro;
-    /*[HideInInspector] */public Transform attacker;
+    [HideInInspector] public Transform attacker;
 
     protected override void Init()
     {
@@ -53,15 +53,18 @@ public class HealthEnemy : HealthMain
     public void PassFromBodyPart(RagdollBodyPart ragdoll, ElementType elementType, int damage, Transform attackerTransform, DamageOverTime damageOverTime)
     {
         _lastBodyPart = ragdoll;
-        print(_lastBodyPart.name);
+       // print($"{_lastBodyPart.name} hit by {attackerTransform.name}");
         TakeDamage(elementType, damage, attackerTransform, damageOverTime);
 
-        //bool ragdollAfterHit = !IsDead && Random.value < 0.3f && elementType == ElementType.Normal;
-        //if (ragdollAfterHit && !OnFire && _eRef.enemyBehaviour.EnState != EnemyState.Immobile)
-        //{
-        //    _eRef.enemyBehaviour.ragToAnimTransition.RagdollMe(ragdoll.GetComponent<Rigidbody>(), attackerTransform);
-        //    _eRef.anim.ResetTrigger("hit");
-        //}
+        if (!IsDead &&
+            Random.value < damage / _maxHitPoints && 
+            !OnFire &&
+            elementType == ElementType.Normal &&
+            _eRef.enemyBehaviour.EnState != EnemyState.Immobile)
+        {
+            _eRef.enemyBehaviour.ragToAnimTransition.RagdollMe(ragdoll.GetComponent<Rigidbody>(), attackerTransform);
+            _eRef.anim.ResetTrigger("hit");
+        }
     }
     public override void TakeDamage(ElementType elementType, int damage, Transform attackerTransform, DamageOverTime damageOverTime)
     {

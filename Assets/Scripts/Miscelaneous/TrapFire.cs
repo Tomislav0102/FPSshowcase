@@ -10,6 +10,6 @@ public class TrapFire : MonoBehaviour
 
     private void Start()
     {
-        breathCollider.Init(colliders, weapon);
+        breathCollider.Init(null, colliders, weapon);
     }
 }

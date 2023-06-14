@@ -7,7 +7,6 @@ public class RagdollBodyPart : MonoBehaviour, ITakeDamage, IMaterial
 {
     GameManager _gm;
     [SerializeField] FirstCollection.BodyPart bodyPart;
-    [SerializeField] bool usedForExplosions;
     public bool IsDead { get; set; }
     public EnemyRef EnRef { get; set; }
     public MatType MaterialType { get ; set; }
@@ -57,24 +56,6 @@ public class RagdollBodyPart : MonoBehaviour, ITakeDamage, IMaterial
     }
     public void TakeDamage(ElementType elementType, int damage, Transform attackerTransform, DamageOverTime damageOverTime)
     {
-
-        //switch (elementType)
-        //{
-        //    case ElementType.Normal:
-        //        break;
-        //    case ElementType.Fire:
-        //        break;
-        //    case ElementType.Explosion:
-        //        if (!usedForExplosions) return;
-        //        break;
-        //    case ElementType.Cold:
-        //        break;
-        //    case ElementType.Electricity:
-        //        break;
-        //    case ElementType.Poison:
-        //        break;
-        //}
-
         if (IsDead)
         {
             StartCoroutine(PushbackDeath());

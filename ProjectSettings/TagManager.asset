@@ -21,16 +21,16 @@ TagManager:
   - 
   - 
   - 
-  - Player
+  - 
   - WeaponsPlayer
   - Pickup
   - 
   - 
-  - Enemy
+  - EnemyParts
   - 
   - 
-  - Detectables
-  - 
+  - Det-Characters
+  - Det-Misc
   - Postprocessing
   - Postprocessing2
   - 

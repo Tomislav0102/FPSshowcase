@@ -18,12 +18,11 @@ public class GameManager : MonoBehaviour
 
     public float gameSpeed = 1f;
 
-    [BoxGroup("Colors for gizmo")]
+    [BoxGroup("Behaviour colors")]
     [HideLabel]
     public Color[] gizmoColorsByState;
 
     public Player player;
-    [HideInInspector] public Collider plCollider;
     public Camera mainCam, weaponCam;
     [HideInInspector] public Transform camTr, camRigTr;
     [HideInInspector] public CameraBehaviour cameraBehaviour;
@@ -32,13 +31,13 @@ public class GameManager : MonoBehaviour
     public UImanager uiManager;
     public PoolManager poolManager;
     public PostprocessMan postProcess;
-    public LayerMask layFOV_Overlap, layFOV_Ray, layShooting;
+    [BoxGroup]
+    public LayerMask layFOV_Overlap, layFOV_Ray, layFOV_RayAll, layShooting;
     int layerPl, layerEn;
     public Transform wayPointParent;
     private void Awake()
     {
         Instance = this;
-        plCollider = player.GetComponent<IFaction>().MyCollider;
         camTr = mainCam.transform;
         camRigTr = camTr.parent.transform;
         cameraBehaviour = mainCam.GetComponent<CameraBehaviour>();
@@ -150,8 +149,6 @@ public class AttackClass
     bool _oneHit;
     RaycastHit _hit;
     RaycastHit[] _multipleHits = new RaycastHit[10];
-    readonly HashSet<Collider> _colliders = new HashSet<Collider>();
-   // [ShowInInspector]
     GameObject projec; 
     Vector2 _screenCenter;
     IFaction _myFactionInterface;
@@ -199,11 +196,10 @@ public class AttackClass
 
         return r;
     }
-    public AttackClass(HashSet<Collider> attackerColliders, IFaction factionTarget)
+    public AttackClass(IFaction factionTarget)
     {
         _gm = GameManager.Instance;
         _camTr = _gm.mainCam.transform;
-        _colliders = attackerColliders;
         _screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
         _myFactionInterface = factionTarget;
     }
@@ -215,12 +211,12 @@ public class AttackClass
         switch (weaponItem.weaponType)
         {
             case WeaponMechanics.Melee:
-                Physics.SphereCastNonAlloc(MeleeDirection(), weaponItem.areaOfEffect * 0.5f, _multipleHits, weaponItem.range, _gm.layShooting, QueryTriggerInteraction.Ignore);
-                foreach (RaycastHit item in _multipleHits)
+                int num = Physics.SphereCastNonAlloc(MeleeDirection(), weaponItem.areaOfEffect * 0.5f, _multipleHits, weaponItem.range, _gm.layShooting, QueryTriggerInteraction.Ignore);
+                for (int i = 0; i < num; i++)
                 {
-                    Collider coll = item.collider;
-                    if (coll == null || _colliders.Contains(coll)) continue;
-                    ApplyDamage(weaponItem, item, false);
+                    Collider coll = _multipleHits[i].collider;
+                    if (coll == null || coll == _myFactionInterface.MyCollider) continue;
+                    ApplyDamage(weaponItem, _multipleHits[i], false);
                 }
                 break;
 
@@ -240,7 +236,7 @@ public class AttackClass
                     default:
                         projec = _gm.poolManager.GetProjectile(weaponItem.ammoType);
                         bulletSpawnPosition.LookAt(HitPoint(weaponItem));
-                        projec.GetComponent<ProjectilePhysical>().IniThrowable(bulletSpawnPosition, _colliders);
+                        projec.GetComponent<ProjectilePhysical>().IniThrowable(bulletSpawnPosition, _myFactionInterface.MyCollider);
                         projec.SetActive(true);
                         break;
                 }
@@ -281,7 +277,7 @@ public class AttackClass
     public void ApplyDamage(SoItem weaponItem, RaycastHit hit, bool showBulletHole)
     {
         Collider col = hit.collider;
-        if (_colliders.Contains(col) || col.GetComponent<DetectableObject>() != null) return;
+        if (col == _myFactionInterface.MyCollider || col.GetComponent<DetectableObject>() != null) return;
 
         if (col.TryGetComponent(out ITakeDamage damagable))
         {
@@ -301,7 +297,7 @@ public class AttackClass
             _gm.poolManager.GetImpactObject(MatType.Plaster, hit, showBulletHole);
         }
 
-        _gm.poolManager.GetDetecable(hit.point/* + 0.01f * hit.normal*/, 2f, _myFactionInterface);
+        _gm.poolManager.GetDetecable(hit.point/* + 0.01f * hit.normal*/, 1f, _myFactionInterface);
     }
 }
 
@@ -698,9 +694,9 @@ public class Controls
     {
         _gm = GameManager.Instance;
         _player = _gm.player;
-        _plCapsuleColl = _gm.plCollider.GetComponent<CapsuleCollider>();
+        _plCapsuleColl = _player.GetComponent<IFaction>().MyCollider.GetComponent<CapsuleCollider>();
         _rigid = _player.rigid;
-        camHeights = new Vector3(1.6f, 0.8f, 0.2f); //normal, duck, dead
+        camHeights = new Vector3(1.6f, 0.8f, 0.3f); //normal, duck, dead
         IsDucked = false;
         IsSprinting = false;
     }
@@ -850,7 +846,6 @@ public class Offense
     int _wi;
     int _nextWeaponIndex;
     bool _isReloading, _healSyringActive; 
-    readonly HashSet<Collider> _actorColliders = new HashSet<Collider>();
     public AttackClass attack; 
     readonly Dictionary<AmmoType, int> _ammoCapacity = new Dictionary<AmmoType, int>();
     readonly Dictionary<AmmoType, int> _ammoCurrent = new Dictionary<AmmoType, int>();
@@ -891,8 +886,7 @@ public class Offense
             weapons[i].ordinalLookup = i;
         }
 
-        _actorColliders.Add(_gm.plCollider);
-        attack = new AttackClass(_actorColliders, factionTarget);
+        attack = new AttackClass(factionTarget);
 
         _ammoCapacity.Add(AmmoType.None, 0);
         _ammoCapacity.Add(AmmoType._9mm, 100);

@@ -1,7 +1,10 @@
 
 ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+Flee behaviour (maybe not in EnState enum) - also apply it to following, so ally moves away if he is too close
 
+- detection TargetFov's isn't working
+- shooting (ApplyDamage()) isn't working
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

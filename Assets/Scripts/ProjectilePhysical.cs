@@ -16,7 +16,7 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
     public EnemyRef EnRef { get; set; }
 
     [SerializeField] float forceSpeed = 50f;
-    HashSet<Collider> _colliders = new HashSet<Collider>();
+    Collider _collToIgnore;
     RaycastHit[] _hitsForContactPoint = new RaycastHit[1];
     EnemyRef _targetEnemyRef;
 
@@ -27,10 +27,10 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
         _myTransform = transform;
         ReturnToPool();
     }
-    public void IniThrowable(Transform spawPoint, HashSet<Collider> colsToIgnore)
+    public void IniThrowable(Transform spawPoint, Collider ownerCollider)
     {
         _myTransform.SetPositionAndRotation(spawPoint.position, spawPoint.rotation);
-        _colliders = colsToIgnore;
+        _collToIgnore = ownerCollider;
         switch (weaponUsingThisProjectile.ammoType)
         {
             case AmmoType.Rocket:
@@ -89,7 +89,7 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
     }
     private void OnTriggerEnter(Collider other)
     {
-        if (_colliders.Contains(other) || other.isTrigger) return;
+        if (_collToIgnore || other.isTrigger) return;
 
         switch (weaponUsingThisProjectile.ammoType)
         {

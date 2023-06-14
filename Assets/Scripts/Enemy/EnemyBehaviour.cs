@@ -1,19 +1,17 @@
 using FirstCollection;
 using Sirenix.OdinInspector;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Animations.Rigging;
-using Random = UnityEngine.Random;
 
 public class EnemyBehaviour : MonoBehaviour, IFaction
 {
     #region//INTERFACE
     [field: SerializeField] public Transform MyTransform { get; set; }
-    public Collider MyCollider { get; set; }
+    [field: SerializeField] public Collider MyCollider { get; set; }
     [field: SerializeField] public Transform MyHead { get; set; }
     [field: SerializeField] public Faction Fact { get; set; }
     public IFaction Owner { get; set; }
@@ -29,7 +27,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     MoveType _moveType;
     public RagToAnimTranstions ragToAnimTransition;
     [Title("General", null, TitleAlignments.Centered)]
-    [SerializeField] DetectableObject detectable;
+    //[SerializeField] DetectableObject detectable;
     public ParticleSystem psOnFire;
     [HideInInspector] public Transform movePoint;
 
@@ -45,6 +43,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
             _eRef.agent.stoppingDistance = 0f;
             Attack_Animation(false);
             _enState = value;
+          //  print(value);
             _moveType = MoveType.Stationary;
             if (value != EnemyState.Attack) AttackTarget = null;
             switch (value)
@@ -132,25 +131,6 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     {
         return !_eRef.agent.pathPending && _eRef.agent.remainingDistance <= 0.5f;
     }
-    bool HostileFaction(Faction attackerFaction)
-    {
-        if (Fact == attackerFaction) return false;
-
-        switch (attackerFaction)
-        {
-            case Faction.Player:
-                if (Fact == Faction.Enemy) return true;
-                break;
-            case Faction.Enemy:
-                if (Fact == Faction.Ally) return true;
-                break;
-            case Faction.Ally:
-                if (Fact == Faction.Enemy) return true;
-                break;
-        }
-
-        return false;
-    }
     [Title("Animations", null, TitleAlignments.Centered)]
     [GUIColor(0.5f, 1f, 0f, 1f)]
     [SerializeField] Transform[] ragdollTransform;
@@ -178,22 +158,22 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     public float speedAnimRoot;
     public float speedAgent;
     public float remainDistance;
-    public string namOfAttacker;
+    public string nameOfTarget;
 
 
     #region //MAIN
-    public void InitAwake(EnemyRef eRef, Transform moveP, TextMeshPro displayT, out HashSet<Collider> hs, out DetectableObject detectObject)
+    public void InitAwake(EnemyRef eRef, Transform moveP, TextMeshPro displayT, out HashSet<Collider> hs/*, out DetectableObject detectObject*/)
     {
         _gm = GameManager.Instance;
         _cam = _gm.mainCam;
         _eRef = eRef;
         movePoint = moveP;
         _displayState = displayT;
+      //  MyCollider = detectable.MyCollider;
         _startPos = _eRef.agentTr.position;
         _startRot = _eRef.agentTr.rotation;
         _searchCenter = movePoint.position;
         EnState = startingState;
-        Owner = this;
 
         //idle
         _startRotY = _eRef.agentTr.eulerAngles.y;
@@ -215,7 +195,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         _eRef.anim.SetFloat("rof", weaponUsed.rofModifier);
         ragToAnimTransition = new RagToAnimTranstions(_eRef, ragdollTransform);
        
-        detectObject = detectable;
+      //  detectObject = detectable;
     }
     public void InitAttackRange(float sightRange)
     {
@@ -267,14 +247,13 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         _eRef.agent.speed = speedAnimRoot;
         _eRef.animTr.SetPositionAndRotation(_eRef.agentTr.position - 0.06152725f * Vector3.up, _eRef.agentTr.rotation);
 
-        rigRightHandAiming.weight = _weightRightHandAim;
-        rigLeftHand.weight = Mathf.MoveTowards(rigLeftHand.weight, _weightLeftHand, 2f * Time.deltaTime);
-
+       // rigRightHandAiming.weight = _weightRightHandAim;
+        rigRightHandAiming.weight = Mathf.MoveTowards(rigRightHandAiming.weight, _weightRightHandAim, 4f * Time.deltaTime);
+        rigLeftHand.weight = Mathf.MoveTowards(rigLeftHand.weight, _weightLeftHand, 4f * Time.deltaTime);
         _weightHit = Mathf.MoveTowards(_weightHit, isHit ? 1f : 0f, 2f * Time.deltaTime);
         _eRef.anim.SetLayerWeight(1, _weightHit);
 
-
-        if (EnState == EnemyState.Attack || EnState == EnemyState.Immobile) return;
+        if (EnState == EnemyState.Attack) return;
         if (_canUpdateFOV)
         {
             AttackTarget = _eRef.fov.FindFovTargets();
@@ -293,7 +272,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         pathStatus = _eRef.agent.pathStatus;
         remainDistance = _eRef.agent.remainingDistance;
         speedAgent = _eRef.agent.velocity.magnitude;
-        namOfAttacker = AttackTarget == null ? "no target" : AttackTarget.MyTransform.name.ToString();
+        nameOfTarget = AttackTarget == null ? "no target" : AttackTarget.MyTransform.name.ToString();
     }
     void CanUpdateFOVMethod() => _canUpdateFOV = _canUpdateDestination = true;
     void TrackMovingTarget()
@@ -320,7 +299,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
 
         void NewTarget()
         {
-            if (attackerTr.TryGetComponent(out IFaction target) && HostileFaction(target.Fact))
+            if (attackerTr != null && attackerTr.TryGetComponent(out IFaction target) && EnemyRef.HostileFaction(Fact, target.Fact))
             {
                 AttackTarget = target;
                 EnState = EnemyState.Search;
@@ -357,13 +336,19 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         if (weaponUsed.enemyWeaponUsed == EnemyWeaponUsed.Melee) return;
         _offsetTar = new Vector3(Random.Range(-_spreadWeapon, _spreadWeapon), 0f, Random.Range(-_spreadWeapon, _spreadWeapon));
     }
-    void SetAim_Animation(Vector3 pos)
+    void SetAim_Animation()
     {
-        _aimIK.position = pos;
+        _aimIK.position = AimPoint();
         if (weaponUsed.enemyWeaponUsed == EnemyWeaponUsed.Melee) return;
 
         multiAimConstraintRightHand.data.offset =
             Vector3.Lerp(multiAimConstraintRightHand.data.offset, _offsetTar, 0.3f * Time.deltaTime);
+
+        Vector3 AimPoint()
+        {
+            if (AttackTarget.Owner == null) return AttackTarget.MyHead.position;
+            else return AttackTarget.Owner.MyHead.position;
+        }
 
     }
     void SetSpeed_Animation(MoveType movetype)
@@ -433,7 +418,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         }
 
 
-        if (!_eRef.fov.TargetStillVisible(AttackTarget))
+        if (!_eRef.fov.TargetStillVisible(AttackTarget, _gm.layFOV_Ray))
         {
             Attack_Animation(false);
             TrackMovingTarget();
@@ -452,7 +437,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         {
             if (_eRef.agent.hasPath) _eRef.agent.ResetPath();
             _timerAttack = 0f;
-            SetAim_Animation(AttackTarget.Owner.MyHead.position); //for some reason it only works in AttackBehaviour()
+            SetAim_Animation(); //for some reason it only works in AttackBehaviour()
             Attack_Animation(true);
         }
         else
@@ -461,6 +446,9 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
             TrackMovingTarget();
 
         }
+
+
+
     }
 
     public void AE_Attacking()
@@ -580,11 +568,6 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
 
         public void RagdollStandingUp()
         {
-            if (_anim.GetCurrentAnimatorStateInfo(0).IsName("Rifle Idle"))
-            {
-                _eRef.enemyBehaviour.EnState = EnemyState.Attack;
-
-            }
             if (!_readyToStandUp) return;
 
             _timer += Time.deltaTime;
@@ -607,6 +590,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
                 {
                     _ragdollRigids[i].isKinematic = true;
                 }
+                _eRef.enemyBehaviour.EnState = EnemyState.Attack;
             }
 
         }

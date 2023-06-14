@@ -5349,8 +5349,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 2
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!136 &6766369222150761432
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -5712,8 +5710,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 4
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!136 &2022621824862104875
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -5891,8 +5887,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 4
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!136 &5483744364872681780
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -6891,8 +6885,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 5
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!136 &1149669568227967102
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -7038,8 +7030,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 5
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!136 &5491215752333379114
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -7451,8 +7441,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 0
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!135 &8249117768633058165
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -7596,8 +7584,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 2
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!136 &6928915624713991122
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -8018,8 +8004,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 3
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!136 &6846284896294236062
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -8407,7 +8391,9 @@ GameObject:
   - component: {fileID: 3718415612249610278}
   - component: {fileID: 5458902715401782888}
   - component: {fileID: 5849411500700576134}
-  m_Layer: 21
+  - component: {fileID: 8683664992785173903}
+  - component: {fileID: 228005287927211169}
+  m_Layer: 24
   m_Name: Model - SWAT
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -8449,6 +8435,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <MyTransform>k__BackingField: {fileID: 7302843789854544062}
+  <MyCollider>k__BackingField: {fileID: 228005287927211169}
   <MyHead>k__BackingField: {fileID: 1462241272819904910}
   <Fact>k__BackingField: 1
   detectable: {fileID: 1112558878734734444}
@@ -8538,6 +8525,56 @@ MonoBehaviour:
       position: {x: 0, y: 0, z: 0}
       rotation: {x: 0, y: 0, z: 0}
     m_Visible: 1
+--- !u!54 &8683664992785173903
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7031359852143264810}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!136 &228005287927211169
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7031359852143264810}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.3
+  m_Height: 1.8
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!1 &7498909075909470477
 GameObject:
   m_ObjectHideFlags: 0
@@ -8839,8 +8876,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 3
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!136 &7048988789679748950
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -9018,8 +9053,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 1
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!65 &8752482947379295595
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9314,8 +9347,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 1
-  usedForExplosions: 1
-  attacker: {fileID: 0}
 --- !u!65 &8320471118381387837
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9443,6 +9474,10 @@ PrefabInstance:
     - target: {fileID: 619093844783352844, guid: 5c8e36bd9a8728b4080d4026995d8575, type: 3}
       propertyPath: m_Name
       value: Target FOV - swat
+      objectReference: {fileID: 0}
+    - target: {fileID: 619093844783352844, guid: 5c8e36bd9a8728b4080d4026995d8575, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7684178193443575101, guid: 5c8e36bd9a8728b4080d4026995d8575, type: 3}
       propertyPath: m_RootOrder

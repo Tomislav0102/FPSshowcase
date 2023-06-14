@@ -302,8 +302,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 0
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!1 &524947600853413332
 GameObject:
   m_ObjectHideFlags: 0
@@ -842,8 +840,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 2
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!1 &1474300642981107983
 GameObject:
   m_ObjectHideFlags: 0
@@ -1173,7 +1169,9 @@ GameObject:
   - component: {fileID: 5334301535381648719}
   - component: {fileID: 7083825994443822372}
   - component: {fileID: 5156902798078162263}
-  m_Layer: 21
+  - component: {fileID: 9158278852449464523}
+  - component: {fileID: 3685936342429544713}
+  m_Layer: 24
   m_Name: Model - ALEX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1215,9 +1213,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <MyTransform>k__BackingField: {fileID: 2621534109985894066}
+  <MyCollider>k__BackingField: {fileID: 3685936342429544713}
   <MyHead>k__BackingField: {fileID: 14567789972859850}
   <Fact>k__BackingField: 2
-  detectable: {fileID: 8054436613216510433}
   psOnFire: {fileID: 194830828701127938}
   movePoint: {fileID: 0}
   startingState: 5
@@ -1288,6 +1286,56 @@ MonoBehaviour:
   - m_Rig: {fileID: 482492974230922560}
     m_Active: 1
   m_Effectors: []
+--- !u!54 &9158278852449464523
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2920547233606408994}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!136 &3685936342429544713
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2920547233606408994}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.3
+  m_Height: 1.8
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!1 &3013307984049931696
 GameObject:
   m_ObjectHideFlags: 0
@@ -1433,8 +1481,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 5
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!1 &3142815031441258248
 GameObject:
   m_ObjectHideFlags: 0
@@ -1580,8 +1626,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 4
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!1 &3343418923392736271
 GameObject:
   m_ObjectHideFlags: 0
@@ -1845,8 +1889,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 2
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!1 &3909326199577577344
 GameObject:
   m_ObjectHideFlags: 0
@@ -1992,8 +2034,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 3
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!1 &3940070532214108779
 GameObject:
   m_ObjectHideFlags: 0
@@ -2611,8 +2651,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 1
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!1 &5525801183815854459
 GameObject:
   m_ObjectHideFlags: 0
@@ -3337,8 +3375,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 1
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!1 &7362764505508451866
 GameObject:
   m_ObjectHideFlags: 0
@@ -3548,8 +3584,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 3
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!1 &7562199634926484809
 GameObject:
   m_ObjectHideFlags: 0
@@ -8785,8 +8819,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 4
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!1 &8740925888967721179
 GameObject:
   m_ObjectHideFlags: 0
@@ -8932,8 +8964,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyPart: 5
-  usedForExplosions: 0
-  attacker: {fileID: 0}
 --- !u!1 &8860413701261487082
 GameObject:
   m_ObjectHideFlags: 0
@@ -9175,6 +9205,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Target FOV - alex
       objectReference: {fileID: 0}
+    - target: {fileID: 619093844783352844, guid: 5c8e36bd9a8728b4080d4026995d8575, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7684178193443575101, guid: 5c8e36bd9a8728b4080d4026995d8575, type: 3}
       propertyPath: m_RootOrder
       value: -1
@@ -9276,14 +9310,3 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7684178193443575101, guid: 5c8e36bd9a8728b4080d4026995d8575, type: 3}
   m_PrefabInstance: {fileID: 346341101428058929}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8054436613216510433 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7712810226811341520, guid: 5c8e36bd9a8728b4080d4026995d8575, type: 3}
-  m_PrefabInstance: {fileID: 346341101428058929}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 889748963241879357}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 38fda66ee78af73429c7bc9449719f70, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

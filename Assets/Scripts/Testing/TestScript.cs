@@ -19,22 +19,32 @@ public class TestScript : MonoBehaviour
     //public LayerMask layerMask;
     //public bool isPlayer;
     // public Animator anim;
-    public int maska;
+    //public int maska;
 
-    [System.Flags]
-    enum Days
+    //[System.Flags]
+    public enum Days
     {
-        Monday = 1,
-        Tuesday = 2,
-        Wednesday = 4,
+        Monday,
+        Tuesday,
+        Wednesday,
         Thursday,
         Friday,
         Saturday,
         Sunday
     }
-    Days days = Days.Monday | Days.Wednesday;
-    public LayerMask layerMask = ((1 << 5) + (1 << 16));
-    public int layerIndex;
+    public Days days;
+    //Days days = Days.Monday | Days.Wednesday;
+    //public LayerMask layerMask = ((1 << 5) + (1 << 16));
+    //public int layerIndex;
+    //[Button]
+    //void MaskaEditor()
+    //{
+    //    maska = ((1 << 2) | (1 << 4));
+
+    //    if ((layerMask & (1 << layerIndex)) != 0) print($"Layer {LayerMask.LayerToName(layerIndex)} is in mask");
+    //    else print($"Layer {LayerMask.LayerToName(layerIndex)}  is not in the mask");
+    //}
+
     private void Awake()
     {
         _cam = Camera.main;
@@ -48,12 +58,5 @@ public class TestScript : MonoBehaviour
     {
     }
 
-    [Button]
-    void MaskaEditor()
-    {
-        maska = ((1 << 2) | (1 << 4));
 
-        if ((layerMask & (1 << layerIndex)) != 0) print($"Layer {LayerMask.LayerToName(layerIndex)} is in mask");
-        else print($"Layer {LayerMask.LayerToName(layerIndex)}  is not in the mask");
-    }
 }

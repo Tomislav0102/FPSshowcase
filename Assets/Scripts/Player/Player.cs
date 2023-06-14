@@ -53,7 +53,6 @@ public class Player : GlobalEventManager, IActivation, IFaction, IMaterial
         _alfaKeys[6] = KeyCode.Alpha7;
         _alfaKeys[7] = KeyCode.Alpha8;
         _alfaKeys[8] = KeyCode.Alpha9;
-        Owner = this;
     }
     protected override void CallEv_PlayerDead()
     {
