@@ -45,8 +45,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38fda66ee78af73429c7bc9449719f70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MyTransform>k__BackingField: {fileID: 7684178193443575101}
-  <MyCollider>k__BackingField: {fileID: 3863256139698586852}
+  myTransform: {fileID: 7684178193443575101}
+  myCollider: {fileID: 3863256139698586852}
 --- !u!135 &3863256139698586852
 SphereCollider:
   m_ObjectHideFlags: 0

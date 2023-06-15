@@ -23,6 +23,7 @@ public class GameManager : MonoBehaviour
     public Color[] gizmoColorsByState;
 
     public Player player;
+    public IFaction plFaction;
     public Camera mainCam, weaponCam;
     [HideInInspector] public Transform camTr, camRigTr;
     [HideInInspector] public CameraBehaviour cameraBehaviour;
@@ -38,6 +39,7 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        plFaction = player.GetComponent<IFaction>();
         camTr = mainCam.transform;
         camRigTr = camTr.parent.transform;
         cameraBehaviour = mainCam.GetComponent<CameraBehaviour>();
@@ -297,7 +299,7 @@ public class AttackClass
             _gm.poolManager.GetImpactObject(MatType.Plaster, hit, showBulletHole);
         }
 
-        _gm.poolManager.GetDetecable(hit.point/* + 0.01f * hit.normal*/, 1f, _myFactionInterface);
+        _gm.poolManager.GetDetecable(hit.point/* + 0.01f * hit.normal*/, 2f, _myFactionInterface);
     }
 }
 

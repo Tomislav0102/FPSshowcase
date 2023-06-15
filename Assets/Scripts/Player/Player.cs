@@ -22,7 +22,6 @@ public class Player : GlobalEventManager, IActivation, IFaction, IMaterial
 
     [field: SerializeField] public Transform MyTransform { get; set; }
     [field:SerializeField] public Faction Fact { get; set; }
-    public IFaction Owner { get; set; }
     [field: SerializeField] public Collider MyCollider { get; set; }
     [field: SerializeField] public MatType MaterialType { get; set; }
     public Transform MyHead { get => _gm.camTr; set { } }

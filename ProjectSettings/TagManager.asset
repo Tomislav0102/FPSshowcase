@@ -21,7 +21,7 @@ TagManager:
   - 
   - 
   - 
-  - 
+  - Player
   - WeaponsPlayer
   - Pickup
   - 
@@ -29,7 +29,7 @@ TagManager:
   - EnemyParts
   - 
   - 
-  - Det-Characters
+  - Det-Char
   - Det-Misc
   - Postprocessing
   - Postprocessing2

@@ -113,7 +113,8 @@ namespace FirstCollection
         Search,
         Attack,
         Follow,
-        Immobile
+        Immobile,
+        Flee
     }
     public enum BodyPart
     {
@@ -218,7 +219,6 @@ namespace FirstCollection
         Transform MyHead { get; set; }
         Collider MyCollider { get; set; }
         Faction Fact { get; set; }
-        IFaction Owner { get; set; }
     }
 
     public interface IMaterial

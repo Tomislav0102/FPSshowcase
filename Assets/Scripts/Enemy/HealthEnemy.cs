@@ -40,9 +40,14 @@ public class HealthEnemy : HealthMain
     RagdollBodyPart _lastBodyPart;
     ElementType _elType = ElementType.Normal;
 
-    float _parDamage;
+    float ParDamage(int damage)
+    {
+        return (float)damage / (float)_maxHitPoints;
+    }
     float _timerAgro;
     [HideInInspector] public Transform attacker;
+    [SerializeField][Range(0f, 1f)] float fleeTreshold = 0.1f;
+    
 
     protected override void Init()
     {
@@ -57,7 +62,7 @@ public class HealthEnemy : HealthMain
         TakeDamage(elementType, damage, attackerTransform, damageOverTime);
 
         if (!IsDead &&
-            Random.value < damage / _maxHitPoints && 
+            Random.value < ParDamage(damage) && 
             !OnFire &&
             elementType == ElementType.Normal &&
             _eRef.enemyBehaviour.EnState != EnemyState.Immobile)
@@ -86,13 +91,12 @@ public class HealthEnemy : HealthMain
                     }
                     break;
             }
-            _eRef.enemyBehaviour.PassFromHealth_Attacked(attackerTransform, CanSwitchAgro());
+            _eRef.enemyBehaviour.PassFromHealth_Attacked(attackerTransform, CanSwitchAgro(), fleeTreshold > (float)_hitPoints / (float)_maxHitPoints);
         }
 
         bool CanSwitchAgro() 
         {
-            _parDamage = damage / _maxHitPoints;
-            if (_timerAgro == 0f && Random.value < _parDamage)
+            if (_timerAgro == 0f && Random.value < ParDamage(damage))
             {
                 StartCoroutine(AgroCooldown());
                 return true;
@@ -119,7 +123,7 @@ public class HealthEnemy : HealthMain
     {
         //print(_attackerTr);
         Dead?.Invoke();
-        if(_lastBodyPart != null) StartCoroutine(_lastBodyPart.PushbackDeath());
+        if(_lastBodyPart != null && _elType != ElementType.Fire) StartCoroutine(_lastBodyPart.PushbackDeath());
         _eRef.enemyBehaviour.psOnFire.Stop();
 
         switch (_elType)

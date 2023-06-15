@@ -63,9 +63,9 @@ public class EnemyRef : GlobalEventManager
     }
     protected override void CallEv_PlayerDead()
     {
-        if (/*enemyBehaviour.AttackTarget != null &&*/ enemyBehaviour.AttackTarget == _gm.player.GetComponent<IFaction>())
+        if (/*enemyBehaviour.AttackTarget != null &&*/ enemyBehaviour.attackTarget == _gm.plFaction)
         {
-            enemyBehaviour.AttackTarget = null;
+            enemyBehaviour.attackTarget = null;
         }
         base.CallEv_PlayerDead();
     }
@@ -116,7 +116,12 @@ public class FieldOvView
     Ray _ray;
     RaycastHit _hit;
     Collider[] _colls = new Collider[30];
+
+    List<IFaction> _allChars = new List<IFaction>();
+    List<DetectableObject> _allDetects = new List<DetectableObject>();
     IFaction _currTarget;
+    DetectableObject _currDetect;
+
 
     bool _conseoleDisplay;
     public void Init(EnemyRef eRef, bool consoleDis)
@@ -145,22 +150,22 @@ public class FieldOvView
         }
         return r;
     }
-    public bool TargetStillVisible(IFaction ent, LayerMask layerMask)
+    public bool TargetVisible(Transform targetTr, Collider targetColl, LayerMask layerMask)
     {
-        _ray.direction = (ent.MyTransform.position - _myTransform.position).normalized;
+        _ray.direction = (targetTr.position - _myTransform.position).normalized;
         for (int i = 0; i < 2; i++)
         {
             _ray.origin = _myTransform.position + (i + 0.6f) * Vector3.up;
-            if (Physics.Raycast(_ray, out _hit, EffectiveRange(ent.MyTransform.position), layerMask, QueryTriggerInteraction.Ignore))
+            if (Physics.Raycast(_ray, out _hit, EffectiveRange(targetTr.position), layerMask, QueryTriggerInteraction.Ignore))
             {
                 if (_eRef._allColliders.Contains(_hit.collider))
                 {
                     Debug.Log(_hit.collider.name);
                     continue;
                 }
-                if (_hit.collider == ent.MyCollider) return true;
-                else Debug.Log($"I am {_eRef.name} and {_hit.collider.name} is blocking");
-               //   else Debug.Log($"Hit coll is {_hit.collider.GetHashCode()} and target should be {tr.GetComponent<Collider>().GetHashCode()}");
+                if (_hit.collider == targetColl) return true;
+              //  else Debug.Log($"I am {_eRef.name} and {_hit.collider.name} is blocking");
+                //   else Debug.Log($"Hit coll is {_hit.collider.GetHashCode()} and target should be {tr.GetComponent<Collider>().GetHashCode()}");
                 //  else Debug.Log($"Hit coll is {_hit.collider.name} and target should be {tr.GetComponent<Collider>().name}");
                 // else Debug.Log($"Hit coll is {_hit.collider.transform.position} and target should be {tr.GetComponent<Collider>().transform.position}");
                 //else
@@ -170,9 +175,79 @@ public class FieldOvView
                 //}
             }
         }
-        Debug.Log($"I am {_eRef.name} and {ent.MyTransform.name} is not visible, but in range");
+        //  Debug.Log($"I am {_eRef.name} and {ent.MyTransform.name} is not visible, but in range");
         return false;
     }
+    public void GetAllTargets(out IFaction tarCharacter, out DetectableObject tarDetectable)
+    {
+        IFaction character = null;
+        DetectableObject detect = null;
+
+        int num = Physics.OverlapSphereNonAlloc(_myTransform.position, _sightRange, _colls, _gm.layFOV_Overlap, QueryTriggerInteraction.Ignore);
+        _allChars.Clear();
+        _allDetects.Clear();
+        for (int i = 0; i < num; i++)
+        {
+            if (_colls[i].TryGetComponent(out IFaction ifa)) _allChars.Add(ifa);
+            else if (_colls[i].TryGetComponent(out DetectableObject det)) _allDetects.Add(det);
+        }
+
+        for (int i = 0; i < _allChars.Count; i++)
+        {
+            _currTarget = _allChars[i];
+            if (_currTarget == null ||
+            _currTarget == _myIFactionTarget ||
+            !TargetVisible(_currTarget.MyTransform, _currTarget.MyCollider, _gm.layFOV_Ray)) continue;
+
+            if (EnemyRef.HostileFaction(_myIFactionTarget.Fact, _currTarget.Fact))
+            {
+                character = _currTarget;
+            }
+            else if (_currTarget.MyTransform.TryGetComponent(out EnemyBehaviour en))
+            {
+                switch (en.EnState)
+                {
+                    case EnemyState.Attack:
+                        character = en.attackTarget;
+                        break;
+                    case EnemyState.Search:
+                        if (_enemyBehaviour.EnState == EnemyState.Search || _enemyBehaviour.hasSearched)
+                        {
+                            character = null;
+                        }
+                        else
+                        {
+                            detect = en.detectObject;
+                        }
+                        break;
+                }
+            }
+
+            if (character != null) break;
+        }
+
+        for (int i = 0; i < _allDetects.Count; i++)
+        {
+            if (character != null) break;
+
+            _currDetect = _allDetects[i];
+            if (_currDetect == null ||
+                _currDetect.owner == null ||
+                _currDetect.owner == _myIFactionTarget ||
+                !EnemyRef.HostileFaction(_myIFactionTarget.Fact, _currDetect.owner.Fact) ||
+                !TargetVisible(_currDetect.myTransform, _currDetect.myCollider, _gm.layFOV_RayAll)) continue;
+
+            detect = _currDetect;
+            break;
+        }
+
+        tarCharacter = character;
+        tarDetectable = detect;
+    }
+}
+
+
+    /*
     public IFaction FindFovTargets()
     {
         int num = Physics.OverlapSphereNonAlloc(_myTransform.position, _sightRange, _colls, _gm.layFOV_Overlap, QueryTriggerInteraction.Ignore);
@@ -184,35 +259,25 @@ public class FieldOvView
         {
             _currTarget = _colls[i].GetComponent<IFaction>();
             if (_currTarget == null ||
-            _currTarget == _myIFactionTarget ||
-            (_currTarget.Owner != null && _currTarget.Owner == _myIFactionTarget)) continue;
+            _currTarget == _myIFactionTarget) continue;
 
-            if (_currTarget.Owner == null)
-            {
-                if (EnemyRef.HostileFaction(_myIFactionTarget.Fact, _currTarget.Fact)) allChars.Insert(0, _currTarget);
-                else allChars.Add(_currTarget);
-            }
-            else
-            {
-                if (EnemyRef.HostileFaction(_myIFactionTarget.Fact, _currTarget.Fact)) allDetects.Insert(0, _currTarget);
-                else allDetects.Add(_currTarget);
-            }
+            if (EnemyRef.HostileFaction(_myIFactionTarget.Fact, _currTarget.Fact)) allChars.Add(_currTarget);
         }
 
         for (int i = 0; i < allChars.Count; i++)
         {
             _currTarget = allChars[i];
-            if (!TargetStillVisible(_currTarget, _gm.layFOV_Ray)) continue;
+           // if (!TargetStillVisible(_currTarget, _gm.layFOV_Ray)) continue;
 
             return FinalTarget(_currTarget);
         }
-        for (int i = 0; i < allDetects.Count; i++)
-        {
-            _currTarget = allDetects[i];
-            if (!TargetStillVisible(_currTarget, _gm.layFOV_RayAll)) continue;
+        //for (int i = 0; i < allDetects.Count; i++)
+        //{
+        //    _currTarget = allDetects[i];
+        //    if (!TargetStillVisible(_currTarget, _gm.layFOV_RayAll)) continue;
 
-            return FinalTarget(_currTarget.Owner);
-        }
+        //    return FinalTarget(_currTarget.Owner);
+        //}
 
         return null;
 
@@ -275,8 +340,7 @@ public class FieldOvView
         }
 
 
-    }
-}
+    }*/
 
 
 //   Debug.Log($"I am {_eRef.name} and {target.MyTransform.name} is my traget");

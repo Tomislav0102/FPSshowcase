@@ -14,7 +14,6 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     [field: SerializeField] public Collider MyCollider { get; set; }
     [field: SerializeField] public Transform MyHead { get; set; }
     [field: SerializeField] public Faction Fact { get; set; }
-    public IFaction Owner { get; set; }
     #endregion
 
     GameManager _gm;
@@ -27,7 +26,6 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     MoveType _moveType;
     public RagToAnimTranstions ragToAnimTransition;
     [Title("General", null, TitleAlignments.Centered)]
-    //[SerializeField] DetectableObject detectable;
     public ParticleSystem psOnFire;
     [HideInInspector] public Transform movePoint;
 
@@ -38,23 +36,25 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         get => _enState;
         set
         {
-            _timerIdleRotate = _timerSearch = _timerAttack = 0f;
+            _timerIdleRotate = _timerSearch = _timerAttack = _timerFlee = 0f;
             _eRef.agent.ResetPath();
             _eRef.agent.stoppingDistance = 0f;
             Attack_Animation(false);
             _enState = value;
           //  print(value);
             _moveType = MoveType.Stationary;
-            if (value != EnemyState.Attack) AttackTarget = null;
             switch (value)
             {
                 case EnemyState.Idle:
+                    attackTarget = null;
                     _moveType = MoveType.Walk;
                     break;
                 case EnemyState.Patrol:
+                    attackTarget = null;
                     _moveType = MoveType.Walk;
                     break;
                 case EnemyState.Roam:
+                    attackTarget = null;
                     _moveType = MoveType.Walk;
                     break;
                 case EnemyState.Search:
@@ -63,11 +63,22 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
                     break;
                 case EnemyState.Attack:
                     hasSearched = false;
+                    detectObject = null;
                     _timerAttack = Mathf.Infinity;
                     _moveType = MoveType.Run;
                     break;
                 case EnemyState.Follow:
+                    attackTarget = null;
                     _eRef.agent.stoppingDistance = 3f;
+                    break;
+                case EnemyState.Flee:
+                    if (attackTarget != null)
+                    {
+                        _moveType = MoveType.Run;
+                        Vector3 dir = (MyTransform.position - attackTarget.MyTransform.position).normalized;
+                        movePoint.position = GetRdnPos(MyTransform.position + 50f * dir, 0f);
+                    }
+                    else EnState = startingState;
                     break;
             }
             SetSpeed_Animation(_moveType);
@@ -103,9 +114,9 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     [ShowIf("startingState", EnemyState.Roam)]
     [GUIColor(1f, 0f, 1f, 1f)]
     [SerializeField] float roamRadius = 10f;
-    Vector3 GetRdnPos(Vector3 center)
+    Vector3 GetRdnPos(Vector3 center, float radius)
     {
-        Vector3 pos = center + roamRadius * Random.insideUnitSphere;
+        Vector3 pos = center + radius * Random.insideUnitSphere;
         if (NavMesh.SamplePosition(pos, out _navHit, 2f * roamRadius, NavMesh.AllAreas))
         {
             return _navHit.position;
@@ -116,21 +127,26 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     NavMeshHit _navHit;
 
     //attack
-    public IFaction AttackTarget;
+    public IFaction attackTarget;
     float _attackRangeSquared;
     float _timerAttack, _timerCheckTargetVisible;
     float _weightHit;
 
     //search
     float _timerSearch;
-    [HideInInspector] public bool hasSearched;
+    public DetectableObject detectObject;
+    /*[HideInInspector]*/ public bool hasSearched;
     Vector3 _searchCenter;
+
+    //flee
+    float _timerFlee;
     #endregion
 
     bool ReadyToMove()
     {
         return !_eRef.agent.pathPending && _eRef.agent.remainingDistance <= 0.5f;
     }
+
     [Title("Animations", null, TitleAlignments.Centered)]
     [GUIColor(0.5f, 1f, 0f, 1f)]
     [SerializeField] Transform[] ragdollTransform;
@@ -146,9 +162,9 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     [GUIColor(0.5f, 1f, 0f, 1f)]
     [SerializeField] MultiAimConstraint multiAimConstraintRightHand; //needed for accuracy (together with '_spreadWeapon')
     Transform _aimIK;
-    float _spreadWeapon = 0f;
-    Vector3 _offsetTar;
-    /*[HideInInspector] */public bool isHit;
+    float _spreadWeapon = 50f;
+    public Vector3 _offsetTar;
+    [HideInInspector] public bool isHit;
     float _weightRightHandAim, _weightLeftHand;
 
 
@@ -208,7 +224,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     }
     void OnDisable()
     {
-        AttackTarget = null;
+        attackTarget = null;
         CancelInvoke();
         _displayState.text = "Dead";
     }
@@ -240,6 +256,9 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
             case EnemyState.Immobile:
                 ImmobileBehaviour();
                 return;
+            case EnemyState.Flee: 
+                FleeBehaviour();
+                break;
         }
 
         speedAnimRoot = _eRef.anim.velocity.magnitude;
@@ -253,11 +272,24 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         _weightHit = Mathf.MoveTowards(_weightHit, isHit ? 1f : 0f, 2f * Time.deltaTime);
         _eRef.anim.SetLayerWeight(1, _weightHit);
 
-        if (EnState == EnemyState.Attack) return;
+        if (EnState == EnemyState.Attack || EnState == EnemyState.Flee) return;
         if (_canUpdateFOV)
         {
-            AttackTarget = _eRef.fov.FindFovTargets();
-            if (AttackTarget != null) movePoint.position = AttackTarget.MyTransform.position;
+            _eRef.fov.GetAllTargets(out attackTarget, out detectObject);
+            if (attackTarget != null)
+            {
+                EnState = EnemyState.Attack;
+                movePoint.position = attackTarget.MyTransform.position;
+            }
+            else if (detectObject != null)
+            {
+                if (!hasSearched)
+                {
+                    movePoint.position = detectObject.owner.MyTransform.position;
+                    SearchStart();
+                }
+            }
+
             _canUpdateFOV = false;
         }
     }
@@ -272,7 +304,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         pathStatus = _eRef.agent.pathStatus;
         remainDistance = _eRef.agent.remainingDistance;
         speedAgent = _eRef.agent.velocity.magnitude;
-        nameOfTarget = AttackTarget == null ? "no target" : AttackTarget.MyTransform.name.ToString();
+        nameOfTarget = attackTarget == null ? "no target" : attackTarget.MyTransform.name.ToString();
     }
     void CanUpdateFOVMethod() => _canUpdateFOV = _canUpdateDestination = true;
     void TrackMovingTarget()
@@ -286,11 +318,20 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         }
     }
 
-    public void PassFromHealth_Attacked(Transform attackerTr, bool switchAgro)
+    public void PassFromHealth_Attacked(Transform attackerTr, bool switchAgro, bool lowHP)
     {
-        if (EnState == EnemyState.Immobile) return;
+        if (EnState == EnemyState.Immobile || attackerTr == null) return;
+        if (lowHP)
+        {
+            if (attackerTr.TryGetComponent(out IFaction target) && EnemyRef.HostileFaction(Fact, target.Fact))
+            {
+                attackTarget = target;
+                EnState = EnemyState.Flee;
+            }
+            return;
+        }
 
-        if (EnState == EnemyState.Attack || AttackTarget != null)
+        if (EnState == EnemyState.Attack)
         {
             if (switchAgro) NewTarget();
             return;
@@ -299,9 +340,9 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
 
         void NewTarget()
         {
-            if (attackerTr != null && attackerTr.TryGetComponent(out IFaction target) && EnemyRef.HostileFaction(Fact, target.Fact))
+            if (attackerTr.TryGetComponent(out IFaction target) && EnemyRef.HostileFaction(Fact, target.Fact))
             {
-                AttackTarget = target;
+                attackTarget = target;
                 EnState = EnemyState.Search;
             }
         }
@@ -333,22 +374,16 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     {
         GetIK_Animation(isAttacking);
         _eRef.anim.SetBool("attack", isAttacking);
-        if (weaponUsed.enemyWeaponUsed == EnemyWeaponUsed.Melee) return;
+        if (weaponUsed.enemyWeaponUsed == EnemyWeaponUsed.Melee || !isAttacking) return;
         _offsetTar = new Vector3(Random.Range(-_spreadWeapon, _spreadWeapon), 0f, Random.Range(-_spreadWeapon, _spreadWeapon));
     }
     void SetAim_Animation()
     {
-        _aimIK.position = AimPoint();
+        _aimIK.position = attackTarget.MyHead.position;
         if (weaponUsed.enemyWeaponUsed == EnemyWeaponUsed.Melee) return;
 
         multiAimConstraintRightHand.data.offset =
             Vector3.Lerp(multiAimConstraintRightHand.data.offset, _offsetTar, 0.3f * Time.deltaTime);
-
-        Vector3 AimPoint()
-        {
-            if (AttackTarget.Owner == null) return AttackTarget.MyHead.position;
-            else return AttackTarget.Owner.MyHead.position;
-        }
 
     }
     void SetSpeed_Animation(MoveType movetype)
@@ -404,13 +439,13 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     {
         if (ReadyToMove())
         {
-            movePoint.position = GetRdnPos(center);
+            movePoint.position = GetRdnPos(center, roamRadius);
             _eRef.agent.SetDestination(movePoint.position);
         }
     }
     void AttackBehaviour()
     {
-        if (AttackTarget == null)
+        if (attackTarget == null)
         {
             movePoint.SetPositionAndRotation(_startPos, _startRot);
             EnState = startingState;
@@ -418,7 +453,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         }
 
 
-        if (!_eRef.fov.TargetStillVisible(AttackTarget, _gm.layFOV_Ray))
+        if (!_eRef.fov.TargetVisible(attackTarget.MyTransform, attackTarget.MyCollider, _gm.layFOV_Ray))
         {
             Attack_Animation(false);
             TrackMovingTarget();
@@ -428,7 +463,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
             }
             return;
         }
-        movePoint.position = AttackTarget.MyTransform.position;
+        movePoint.position = attackTarget.MyTransform.position;
 
 
         Vector3 dir = movePoint.position - _eRef.agentTr.position;
@@ -437,7 +472,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         {
             if (_eRef.agent.hasPath) _eRef.agent.ResetPath();
             _timerAttack = 0f;
-            SetAim_Animation(); //for some reason it only works in AttackBehaviour()
+            SetAim_Animation(); 
             Attack_Animation(true);
         }
         else
@@ -455,7 +490,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     {
         if (isHit) return;
 
-        if (AttackTarget == null)
+        if (attackTarget == null)
         {
             EnState = EnemyState.Search;
             return;
@@ -481,29 +516,71 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
             movePoint.SetPositionAndRotation(_startPos, _startRot);
             _searchCenter = movePoint.position;
             EnState = startingState;
+            Invoke(nameof(CoolDownHasSearched), 5f);
         }
+    }
+    void CoolDownHasSearched()
+    {
+        hasSearched = false;
     }
     void FollowBehaviour()
     {
-        AttackTarget = null;
-        movePoint.position = _gm.player.GetComponent<IFaction>().MyTransform.position;
+        attackTarget = null;
+        Vector3 pos = _gm.plFaction.MyTransform.position;
 
         MoveType mt = MoveType.Stationary;
-        if (_eRef.agent.remainingDistance > _eRef.agent.stoppingDistance)
+        float dist = Vector3.SqrMagnitude(MyTransform.position - pos);
+        if (dist > 50f)
         {
-            mt = Vector3.SqrMagnitude(_eRef.agentTr.position - movePoint.position) > 50f ? MoveType.Run : MoveType.Walk;
+            mt = MoveType.Run;
+            movePoint.position = pos;
         }
-        SetSpeed_Animation(mt);
+        else 
+        {
+            mt = MoveType.Walk;
+            if (_eRef.agent.remainingDistance < _eRef.agent.stoppingDistance)
+            {
+                Vector3 dir = (MyTransform.position - pos).normalized;
+                movePoint.position = MyTransform.position + 10f * dir;
+            }
+            else
+            {
+                movePoint.position = pos;
+            }
+        }
+        //else if (dist > _eRef.agent.stoppingDistance * _eRef.agent.stoppingDistance * 0.9f)
+        //{
+        //    mt = MoveType.Walk;
+        //    movePoint.position = pos;
+        //}
+        //else if (dist < 2f)
+        //{
+        //    mt = MoveType.Walk;
+        //    Vector3 dir = (MyTransform.position - pos).normalized;
+        //    movePoint.position = MyTransform.position + 10f * dir;
+        //}
 
+
+        SetSpeed_Animation(mt);
         TrackMovingTarget();
     }
-    private void ImmobileBehaviour()
+    void ImmobileBehaviour()
     {
         ragToAnimTransition.RagdollStandingUp();
         _eRef.agentTr.SetPositionAndRotation(new Vector3(_eRef.animTr.position.x, _eRef.agentTr.position.y, _eRef.animTr.position.z), _eRef.animTr.rotation);
         rigRightHandAiming.weight = rigLeftHand.weight = 0f;
     }
-
+    void FleeBehaviour()
+    {
+        TrackMovingTarget();
+        _timerFlee += Time.deltaTime;
+        if(_timerFlee > 10f)
+        {
+            _timerFlee = 0f;
+            movePoint.SetPositionAndRotation(_startPos, _startRot);
+            EnState = startingState;
+        }
+    }
     #endregion
 
 
