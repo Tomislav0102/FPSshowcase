@@ -4,9 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace FirstCollection
-{
-
     public class HelperScript
     {
 
@@ -116,7 +113,7 @@ namespace FirstCollection
         Immobile,
         Flee
     }
-    public enum BodyPart
+    public enum BodyPartRagdoll
     {
         Head,
         Torso,
@@ -236,5 +233,4 @@ namespace FirstCollection
         EnemyRef EnRef { get; set; }
     }
     #endregion
-}
 

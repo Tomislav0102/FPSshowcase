@@ -1,7 +1,8 @@
 
 ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+- idle behaviour look around - use animations, not transform.rotate
+- attack behaviour is too simple - add cover, throwing grenades etc...
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

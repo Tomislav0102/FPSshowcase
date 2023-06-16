@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using FirstCollection;
 using Sirenix.OdinInspector;
 using UnityEngine.Animations.Rigging;
 using DG.Tweening;

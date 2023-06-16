@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: sniper 02
   m_EditorClassIdentifier: 
   itemName: Sniper Rifle 02
-  ordinalLookup: 2
+  ordinalLookup: 8
   weaponType: 1
   ammoType: 4
   has2ndAttack: 0
@@ -23,6 +23,10 @@ MonoBehaviour:
   hasCrosshair: 1
   startSpread: 100
   damage: {x: 30, y: 50}
+  damageOverTime:
+    elementType: 0
+    damagePerTick: 0
+    effectDuration: 0
   range: 500
   rofModifier: 1
   noOfPelletsPerShot: 1
@@ -31,6 +35,6 @@ MonoBehaviour:
   weaponDetail:
     flameArrester: 0
     flashlight: 0
-    frame: 0
     scope: 1
     silencer: 1
+  enemyWeaponUsed: 0

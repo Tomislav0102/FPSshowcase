@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Machine gun 05
   m_EditorClassIdentifier: 
   itemName: Machinegun 05
-  ordinalLookup: 1
+  ordinalLookup: 4
   weaponType: 1
   ammoType: 3
   has2ndAttack: 0
@@ -37,3 +37,4 @@ MonoBehaviour:
     flashlight: 0
     scope: 1
     silencer: 0
+  enemyWeaponUsed: 0

@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using FirstCollection;
 using TMPro;
 using System.Threading.Tasks;
 using System.Threading;
@@ -152,7 +151,6 @@ public class AttackClass
     RaycastHit _hit;
     RaycastHit[] _multipleHits = new RaycastHit[10];
     GameObject projec; 
-    Vector2 _screenCenter;
     IFaction _myFactionInterface;
     public Transform bulletSpawnPosition;
 
@@ -162,9 +160,7 @@ public class AttackClass
         switch (_myFactionInterface.Fact)
         {
             case Faction.Player:
-                r.origin = _camTr.position;
-                r.direction = _camTr.forward;
-                break;
+                return _gm.player.offense.RayShooting();
             default:
                 r.origin = _myFactionInterface.MyHead.position;
                 r.direction = _myFactionInterface.MyTransform.forward;
@@ -179,17 +175,7 @@ public class AttackClass
         switch (_myFactionInterface.Fact)
         {
             case Faction.Player:
-                if (_gm.player.offense.IsAiming)
-                {
-                    r.origin = _camTr.position;
-                    r.direction = _gm.player.offense.AimDirection();
-                }
-                else
-                {
-                    Vector2 pos = _screenCenter + _gm.uiManager.crosshairObject.Spread * Random.insideUnitCircle;
-                    r = _gm.mainCam.ScreenPointToRay(pos);
-                }
-                break;
+                return _gm.player.offense.RayShooting();
             default:
                 r.origin = bulletSpawnPosition.position;
                 r.direction = bulletSpawnPosition.forward;
@@ -202,7 +188,6 @@ public class AttackClass
     {
         _gm = GameManager.Instance;
         _camTr = _gm.mainCam.transform;
-        _screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
         _myFactionInterface = factionTarget;
     }
 
@@ -602,7 +587,6 @@ public class PoolManager
 }
 #endregion
 
-
 #region//PLAYER CLASSES
 [System.Serializable]
 public class Controls
@@ -815,14 +799,28 @@ public class Offense
     Hands[] _hands;
     Transform[] _bulletSpawnPositions;
     [HideInInspector] public Transform[] aimPoints;
-    public Vector3 AimDirection()
+    Vector2 _screenCenter;
+
+
+    public Ray RayShooting()
     {
-        if (aimPoints[Windex] == null) return _gm.camTr.forward;
+        Ray r = new Ray();
+        if (_gm.player.offense.IsAiming)
+        {
+            if (_currWeapon.weaponDetail.scope) r.origin = aimPoints[Windex].position;
+            else r.origin = _gm.camTr.position;
+
+            r.direction = _gm.camTr.forward;
+        }
         else
         {
-            if (_currWeapon.weaponDetail.scope) return aimPoints[Windex].forward;
-             else return (aimPoints[Windex].position - _gm.camTr.position).normalized;
+            r.origin = _gm.camTr.position;
+            Vector2 pos = _screenCenter + _gm.uiManager.crosshairObject.Spread * Random.insideUnitCircle;
+            r = _gm.mainCam.ScreenPointToRay(pos);
         }
+
+
+        return r;
     }
     public int Windex
     {
@@ -875,6 +873,7 @@ public class Offense
     {
         _gm = GameManager.Instance;
         _player = _gm.player;
+        _screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
 
         weapons = new SoItem[parWeapons.childCount];
         _wAnims = new Animator[weapons.Length];
@@ -1183,6 +1182,641 @@ public class Offense
 
 #endregion
 
+#region//AI CLASSES
+[System.Serializable]
+public class FieldOvView
+{
+    GameManager _gm;
+    EnemyRef _eRef;
+    EnemyBehaviour _enemyBehaviour;
+    IFaction _myIFactionTarget;
+    Transform _myTransform;
+    [SerializeField] Transform sightSphere, hearSphere;
+    float _sightRange, _hearingRange;
+    [SerializeField] float sightAngle = 120f;
+    float _sightAngleTrigonometry;
+
+    Ray _ray;
+    RaycastHit _hit;
+    Collider[] _colls = new Collider[30];
+
+    List<IFaction> _allChars = new List<IFaction>();
+    List<DetectableObject> _allDetects = new List<DetectableObject>();
+    IFaction _currTarget;
+    DetectableObject _currDetect;
+
+
+    bool _conseoleDisplay;
+    public void Init(EnemyRef eRef, bool consoleDis)
+    {
+        _gm = GameManager.Instance;
+        _eRef = eRef;
+        _enemyBehaviour = _eRef.enemyBehaviour;
+        _myIFactionTarget = _eRef.myFactionInterface;
+        _myTransform = _myIFactionTarget.MyTransform;
+        _sightRange = sightSphere.localScale.x * 0.5f;
+        _hearingRange = hearSphere.localScale.x * 0.5f;
+        sightSphere.gameObject.SetActive(false);
+        hearSphere.gameObject.SetActive(false);
+        _sightAngleTrigonometry = Mathf.Cos(sightAngle * 0.5f * Mathf.Deg2Rad);
+        _conseoleDisplay = consoleDis;
+
+        _enemyBehaviour.attack.InitAttackRange(_sightRange);
+    }
+
+    float EffectiveRange(Vector3 targetPos)
+    {
+        float r = _sightRange;
+        if (Vector3.Dot(_myTransform.forward, (targetPos - _myTransform.position).normalized) < _sightAngleTrigonometry)
+        {
+            r = _hearingRange;
+        }
+        return r;
+    }
+    public bool TargetVisible(Transform targetTr, Collider targetColl, LayerMask layerMask)
+    {
+        _ray.direction = (targetTr.position - _myTransform.position).normalized;
+        for (int i = 0; i < 2; i++)
+        {
+            _ray.origin = _myTransform.position + (i + 0.6f) * Vector3.up;
+            if (Physics.Raycast(_ray, out _hit, EffectiveRange(targetTr.position), layerMask, QueryTriggerInteraction.Ignore))
+            {
+                if (_eRef._allColliders.Contains(_hit.collider))
+                {
+                    Debug.Log(_hit.collider.name);
+                    continue;
+                }
+                if (_hit.collider == targetColl) return true;
+                //  else Debug.Log($"I am {_eRef.name} and {_hit.collider.name} is blocking");
+                //   else Debug.Log($"Hit coll is {_hit.collider.GetHashCode()} and target should be {tr.GetComponent<Collider>().GetHashCode()}");
+                //  else Debug.Log($"Hit coll is {_hit.collider.name} and target should be {tr.GetComponent<Collider>().name}");
+                // else Debug.Log($"Hit coll is {_hit.collider.transform.position} and target should be {tr.GetComponent<Collider>().transform.position}");
+                //else
+                //{
+                //    _hit.collider.transform.position = 10f * Vector3.forward;
+                //  //  tr.GetComponent<Collider>().transform.position = 12f * Vector3.forward;
+                //}
+            }
+        }
+        //  Debug.Log($"I am {_eRef.name} and {ent.MyTransform.name} is not visible, but in range");
+        return false;
+    }
+    public void GetAllTargets(out IFaction tarCharacter, out DetectableObject tarDetectable)
+    {
+        IFaction character = null;
+        DetectableObject detect = null;
+
+        int num = Physics.OverlapSphereNonAlloc(_myTransform.position, _sightRange, _colls, _gm.layFOV_Overlap, QueryTriggerInteraction.Ignore);
+        _allChars.Clear();
+        _allDetects.Clear();
+        for (int i = 0; i < num; i++)
+        {
+            if (_colls[i].TryGetComponent(out IFaction ifa)) _allChars.Add(ifa);
+            else if (_colls[i].TryGetComponent(out DetectableObject det)) _allDetects.Add(det);
+        }
+
+        for (int i = 0; i < _allChars.Count; i++)
+        {
+            _currTarget = _allChars[i];
+            if (_currTarget == null ||
+            _currTarget == _myIFactionTarget ||
+            !TargetVisible(_currTarget.MyTransform, _currTarget.MyCollider, _gm.layFOV_Ray)) continue;
+
+            if (EnemyRef.HostileFaction(_myIFactionTarget.Fact, _currTarget.Fact))
+            {
+                character = _currTarget;
+            }
+            else if (_currTarget.MyTransform.TryGetComponent(out EnemyBehaviour en))
+            {
+                switch (en.EnState)
+                {
+                    case EnemyState.Attack:
+                        character = en.attackTarget;
+                        break;
+                    case EnemyState.Search:
+                        if (_enemyBehaviour.EnState == EnemyState.Search || _enemyBehaviour.hasSearched)
+                        {
+                            character = null;
+                        }
+                        else
+                        {
+                            detect = en.detectObject;
+                        }
+                        break;
+                }
+            }
+
+            if (character != null) break;
+        }
+
+        for (int i = 0; i < _allDetects.Count; i++)
+        {
+            if (character != null) break;
+
+            _currDetect = _allDetects[i];
+            if (_currDetect == null ||
+                _currDetect.owner == null ||
+                _currDetect.owner == _myIFactionTarget ||
+                !EnemyRef.HostileFaction(_myIFactionTarget.Fact, _currDetect.owner.Fact) ||
+                !TargetVisible(_currDetect.myTransform, _currDetect.myCollider, _gm.layFOV_RayAll)) continue;
+
+            detect = _currDetect;
+            break;
+        }
+
+        tarCharacter = character;
+        tarDetectable = detect;
+    }
+}
+
+public class RagToAnimTranstions
+{
+    struct BoneTransforms
+    {
+        public Vector3 pos;
+        public Quaternion rot;
+    }
+
+    EnemyRef _eRef;
+    Transform _myTransform;
+    Animator _anim;
+    readonly string[] _clipNames = { "Stand Up", "Zombie Stand Up" };
+    string _currentClip;
+    Transform[] _ragdollTransforms;
+    Rigidbody[] _ragdollRigids;
+    Transform _hipsBone;
+
+    List<Transform> _bones = new List<Transform>();
+    BoneTransforms[] _standingFaceUpBones;
+    BoneTransforms[] _standingFaceDownBones;
+    BoneTransforms[] _standingCurrent;
+    BoneTransforms[] _ragdollBones;
+
+    bool FacingUp() => _hipsBone.forward.y > 0f;
+    bool _readyToStandUp;
+    const float CONST_TIMETOSTANDUP = 2f;
+    float _timer;
+    float _elapsedPercentage;
+
+    public RagToAnimTranstions(EnemyRef eRef, Transform[] ragParts)
+    {
+        _eRef = eRef;
+        _ragdollTransforms = ragParts;
+        _myTransform = _eRef.animTr;
+        _anim = _eRef.anim;
+
+        _hipsBone = _anim.GetBoneTransform(HumanBodyBones.Hips);
+
+        _ragdollRigids = new Rigidbody[_ragdollTransforms.Length];
+        for (int i = 0; i < _ragdollTransforms.Length; i++)
+        {
+            _ragdollRigids[i] = _ragdollTransforms[i].GetComponent<Rigidbody>();
+        }
+
+        Transform[] bon = _hipsBone.GetComponentsInChildren<Transform>();
+        for (int i = 0; i < bon.Length; i++)
+        {
+            if (bon[i].name.StartsWith("mixamorig")) _bones.Add(bon[i]);
+        }
+        _standingFaceUpBones = new BoneTransforms[_bones.Count];
+        _standingFaceDownBones = new BoneTransforms[_bones.Count];
+        _ragdollBones = new BoneTransforms[_bones.Count];
+
+        PopulateAnimationBones(true);
+        PopulateAnimationBones(false);
+
+    }
+
+    public void RagdollStandingUp()
+    {
+        if (!_readyToStandUp) return;
+
+        _timer += Time.deltaTime;
+        _elapsedPercentage = _timer / CONST_TIMETOSTANDUP;
+        for (int i = 0; i < _bones.Count; i++)
+        {
+            _bones[i].localPosition = Vector3.Lerp(_ragdollBones[i].pos, _standingCurrent[i].pos, _elapsedPercentage);
+            _bones[i].localRotation = Quaternion.Lerp(_ragdollBones[i].rot, _standingCurrent[i].rot, _elapsedPercentage);
+        }
+
+
+        //  if (Mathf.Approximately(_elapsedPercentage, 1f))
+        if (_elapsedPercentage >= 1f)
+        {
+            _readyToStandUp = false;
+            _anim.Play(_currentClip, 0, 0);
+            _timer = 0f;
+            _anim.enabled = true;
+            for (int i = 0; i < _ragdollRigids.Length; i++)
+            {
+                _ragdollRigids[i].isKinematic = true;
+            }
+            _eRef.enemyBehaviour.EnState = EnemyState.Attack;
+        }
+
+    }
+
+    public void RagdollMe(Rigidbody ragRigid, Transform attackerTr)
+    {
+        if (!_readyToStandUp)
+        {
+            for (int i = 0; i < _ragdollRigids.Length; i++)
+            {
+                _ragdollRigids[i].isKinematic = false;
+            }
+
+            Vector3 dir = (attackerTr.position - _myTransform.position).normalized;
+            ragRigid.AddForce(-40f * dir, ForceMode.VelocityChange);
+            _anim.enabled = false;
+            _eRef.enemyBehaviour.EnState = EnemyState.Immobile;
+            BeginStandUp();
+        }
+
+    }
+    async void BeginStandUp()
+    {
+        await Task.Delay(2000);
+        _readyToStandUp = true;
+        _standingCurrent = FacingUp() ? _standingFaceUpBones : _standingFaceDownBones;
+        AlignRotationToHips();
+        AlignPositionToHips();
+        PopulateBones(_ragdollBones);
+        _currentClip = FacingUp() ? _clipNames[0] : _clipNames[1];
+
+    }
+
+    void ActivateRagdoll(bool activ)
+    {
+        for (int i = 0; i < _ragdollRigids.Length; i++)
+        {
+            _ragdollRigids[i].isKinematic = !activ;
+        }
+        if (activ)
+        {
+            if (!_readyToStandUp)
+            {
+                _ragdollRigids[8].AddForce(-40f * Vector3.forward, ForceMode.VelocityChange);
+                _anim.enabled = false;
+            }
+        }
+        else
+        {
+            _standingCurrent = FacingUp() ? _standingFaceUpBones : _standingFaceDownBones;
+            AlignRotationToHips();
+            AlignPositionToHips();
+            PopulateBones(_ragdollBones);
+            _readyToStandUp = true;
+            _currentClip = FacingUp() ? _clipNames[0] : _clipNames[1];
+        }
+    }
+    void PopulateBones(BoneTransforms[] bon)
+    {
+        for (int i = 0; i < _bones.Count; i++)
+        {
+            bon[i].pos = _bones[i].localPosition;
+            bon[i].rot = _bones[i].localRotation;
+        }
+    }
+    void PopulateAnimationBones(bool isFacingUp)
+    {
+        Vector3 posBeforeSampling = _myTransform.position;
+        Quaternion rotBeforeSampling = _myTransform.rotation;
+
+        _currentClip = isFacingUp ? _clipNames[0] : _clipNames[1];
+
+        foreach (AnimationClip item in _anim.runtimeAnimatorController.animationClips)
+        {
+            if (item.name == _currentClip)
+            {
+                item.SampleAnimation(_myTransform.gameObject, 0f);
+                PopulateBones(isFacingUp ? _standingFaceUpBones : _standingFaceDownBones);
+                break;
+            }
+        }
+
+        _myTransform.position = posBeforeSampling;
+        _myTransform.rotation = rotBeforeSampling;
+    }
+
+    private void AlignRotationToHips()
+    {
+        Vector3 originalHipsPosition = _hipsBone.position;
+        Quaternion originalHipsRotation = _hipsBone.rotation;
+
+        Vector3 desiredDirection = _hipsBone.up * -1;
+        if (!FacingUp()) desiredDirection *= -1f;
+        desiredDirection.y = 0;
+        desiredDirection.Normalize();
+
+        Quaternion fromToRotation = Quaternion.FromToRotation(_myTransform.forward, desiredDirection);
+        _myTransform.rotation *= fromToRotation;
+
+        _hipsBone.position = originalHipsPosition;
+        _hipsBone.rotation = originalHipsRotation;
+    }
+
+    private void AlignPositionToHips()
+    {
+        Vector3 originalHipsPosition = _hipsBone.position;
+        _myTransform.position = _hipsBone.position;
+
+        Vector3 positionOffset = _standingCurrent[0].pos;
+        positionOffset.y = 0;
+        positionOffset = _myTransform.rotation * positionOffset;
+        _myTransform.position -= positionOffset;
+
+        if (Physics.Raycast(_myTransform.position, Vector3.down, out RaycastHit hitInfo))
+        {
+            _myTransform.position = new Vector3(_myTransform.position.x, hitInfo.point.y, _myTransform.position.z);
+        }
+
+        _hipsBone.position = originalHipsPosition;
+    }
+
+}
+
+public class BehMain
+{
+    internal GameManager _gm;
+    internal EnemyRef _eRef;
+    internal EnemyBehaviour _enBeh;
+    internal float _timer;
+    internal Transform _movePoint;
+
+    public BehMain(EnemyRef eref)
+    {
+        _gm = GameManager.Instance;
+        _eRef = eref;
+        _enBeh = _eRef.enemyBehaviour;
+        _movePoint = _eRef.enemyBehaviour.movePoint;
+    }
+    public virtual void ResetMe()
+    {
+        _timer = 0;
+    }
+}
+public class BehIdle : BehMain
+{
+    float _idleLookAngle;
+    Quaternion _targetRot;
+    float _startRotY;
+    bool _idleOnMove;
+    float _maxTimer;
+
+    public BehIdle(EnemyRef eref, float lookAngle) : base(eref)
+    {
+        _startRotY = _eRef.agentTr.eulerAngles.y;
+        _maxTimer = Random.Range(3f, 10f);
+        _idleLookAngle = lookAngle;
+    }
+
+    public void UpdateLoop(bool lookAround)
+    {
+        if (Vector3.SqrMagnitude(_movePoint.position - _eRef.agentTr.position) < 0.3f)
+        {
+            _enBeh.SetSpeed_Animation(MoveType.Stationary);
+
+            if (_idleOnMove)
+            {
+                _idleOnMove = false;
+                if (_eRef.agent.hasPath) _eRef.agent.ResetPath();
+                _eRef.agentTr.rotation = _enBeh.startRot;
+            }
+
+            if (!lookAround) return;
+
+            _timer += Time.deltaTime;
+            if (_timer > _maxTimer)
+            {
+                _timer = 0f;
+                _maxTimer = Random.Range(3f, 10f);
+                _targetRot = Quaternion.AngleAxis(_startRotY + Random.Range(-_idleLookAngle * 0.5f, _idleLookAngle * 0.5f), Vector3.up);
+            }
+            _eRef.agentTr.rotation = Quaternion.Slerp(_eRef.agentTr.rotation, _targetRot, 10 * Time.deltaTime);
+            return;
+        }
+        _movePoint.position = _enBeh.startPos;
+
+        if (!_eRef.agent.hasPath)
+        {
+            _idleOnMove = true;
+            _eRef.enemyBehaviour.TrackMovingTarget();
+        }
+    }
+
+}
+public class BehPatrol : BehMain
+{
+    Transform[] _wayPoints;
+    int _counterWayPoints;
+
+    public BehPatrol(EnemyRef eref, Transform wPar, Transform[] waypoints) : base(eref)
+    {
+        if (wPar == null) _wayPoints = waypoints;
+        else
+        {
+            _wayPoints = new Transform[wPar.childCount];
+            for (int i = 0; i < _wayPoints.Length; i++)
+            {
+                _wayPoints[i] = wPar.GetChild(i);
+            }
+        }
+    }
+    public void UpdateLoop()
+    {
+        _movePoint.position = _wayPoints[_counterWayPoints].position;
+        _counterWayPoints = (1 + _counterWayPoints) % _wayPoints.Length;
+        _eRef.agent.SetDestination(_movePoint.position);
+    }
+}
+public class BehRoam : BehMain
+{
+    float _roamRadius;
+    public BehRoam(EnemyRef eref, float radius) : base(eref)
+    {
+        _roamRadius = radius;
+    }
+
+    public void UpdateLoop(Vector3 center)
+    {
+        if (!_eRef.ReadyToMove()) return;
+
+        _movePoint.position = EnemyRef.GetRdnPos(center, _roamRadius);
+        _eRef.agent.SetDestination(_movePoint.position);
+    }
+}
+public class BehSearch : BehMain
+{
+    Vector3 _searchCenter;
+    public BehSearch(EnemyRef eref) : base(eref)
+    {
+        _searchCenter = _movePoint.position;
+    }
+
+    public void SearchStart()
+    {
+        _searchCenter = _movePoint.position;
+        _enBeh.EnState = EnemyState.Search;
+    }
+    public void UpdateLoop()
+    {
+        _enBeh.roam.UpdateLoop(_searchCenter);
+        _timer += Time.deltaTime;
+        if (_timer > 10f)
+        {
+            _timer = 0f;
+            _movePoint.SetPositionAndRotation(_enBeh.startPos, _enBeh.startRot);
+            _searchCenter = _movePoint.position;
+            _enBeh.EnState = _enBeh.startingState;
+            CoolDownHasSearched();
+        }
+    }
+
+    async void CoolDownHasSearched()
+    {
+        await Task.Delay(5000);
+        _enBeh.hasSearched = false;
+    }
+}
+public class BehAttack : BehMain
+{
+    float _attackRangeSquared;
+
+    public BehAttack(EnemyRef eref) : base(eref)
+    {
+
+    }
+
+    public void InitAttackRange(float sightRange)
+    {
+        float range = Mathf.Min(_enBeh.weaponUsed.range, sightRange);
+        _attackRangeSquared = Mathf.Pow(range, 2f);
+    }
+
+    public void UpdateLoop()
+    {
+        if (_enBeh.attackTarget == null)
+        {
+            _movePoint.SetPositionAndRotation(_enBeh.startPos, _enBeh.startRot);
+            _enBeh.EnState = _enBeh.startingState;
+            return;
+        }
+
+
+        if (!_eRef.fov.TargetVisible(_enBeh.attackTarget.MyTransform, _enBeh.attackTarget.MyCollider, _gm.layFOV_Ray))
+        {
+            _enBeh.Attack_Animation(false);
+            _enBeh.TrackMovingTarget();
+            if (_eRef.agent.remainingDistance < 1f)
+            {
+                _enBeh.search.SearchStart();
+            }
+            return;
+        }
+        _movePoint.position = _enBeh.attackTarget.MyTransform.position;
+
+
+        Vector3 dir = _movePoint.position - _eRef.agentTr.position;
+        _eRef.agentTr.rotation = Quaternion.Slerp(_eRef.agentTr.rotation, Quaternion.LookRotation(dir), 5f * Time.deltaTime);
+        if (Vector3.SqrMagnitude(dir) <= _attackRangeSquared)
+        {
+            if (_eRef.agent.hasPath) _eRef.agent.ResetPath();
+            _enBeh.SetAim_Animation();
+            _enBeh.Attack_Animation(true);
+        }
+        else
+        {
+            _enBeh.Attack_Animation(false);
+            _enBeh.TrackMovingTarget();
+
+        }
+
+    }
+}
+public class BehFollow : BehMain
+{
+    public BehFollow(EnemyRef eref) : base(eref)
+    {
+
+    }
+
+    public void UpdateLoop()
+    {
+        _enBeh.attackTarget = null;
+        Vector3 pos = _gm.plFaction.MyTransform.position;
+
+        MoveType mt = MoveType.Stationary;
+        float dist = Vector3.SqrMagnitude(_enBeh.MyTransform.position - pos);
+        if (dist > 50f)
+        {
+            mt = MoveType.Run;
+            _movePoint.position = pos;
+        }
+        else
+        {
+            mt = MoveType.Walk;
+            if (_eRef.agent.remainingDistance < _eRef.agent.stoppingDistance)
+            {
+                Vector3 dir = (_enBeh.MyTransform.position - pos).normalized;
+                _movePoint.position = _enBeh.MyTransform.position + 10f * dir;
+            }
+            else
+            {
+                _movePoint.position = pos;
+            }
+        }
+        //else if (dist > _eRef.agent.stoppingDistance * _eRef.agent.stoppingDistance * 0.9f)
+        //{
+        //    mt = MoveType.Walk;
+        //    movePoint.position = pos;
+        //}
+        //else if (dist < 2f)
+        //{
+        //    mt = MoveType.Walk;
+        //    Vector3 dir = (MyTransform.position - pos).normalized;
+        //    movePoint.position = MyTransform.position + 10f * dir;
+        //}
+
+
+        _enBeh.SetSpeed_Animation(mt);
+        _enBeh.TrackMovingTarget();
+    }
+}
+public class BehImmoblie : BehMain
+{
+    public BehImmoblie(EnemyRef eref) : base(eref)
+    {
+
+    }
+    public void UpdateLoop()
+    {
+        _enBeh.ragToAnimTransition.RagdollStandingUp();
+        _eRef.agentTr.SetPositionAndRotation(new Vector3(_eRef.animTr.position.x, _eRef.agentTr.position.y, _eRef.animTr.position.z), _eRef.animTr.rotation);
+    }
+
+}
+public class BehFlee : BehMain
+{
+    public BehFlee(EnemyRef eref) : base(eref)
+    {
+
+    }
+
+    public void UpdateLoop()
+    {
+        _enBeh.TrackMovingTarget();
+        _timer += Time.deltaTime;
+        if (_timer > 10f)
+        {
+            _timer = 0f;
+            _movePoint.SetPositionAndRotation(_enBeh.startPos, _enBeh.startRot);
+            _enBeh.EnState = _enBeh.startingState;
+        }
+
+    }
+
+}
+#endregion
 
 
 

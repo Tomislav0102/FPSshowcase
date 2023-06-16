@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using FirstCollection;
 
 public class SMB_AimPostprocess : SMB_MainPlayer
 {

@@ -1,4 +1,3 @@
-using FirstCollection;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,7 +5,7 @@ using UnityEngine;
 public class RagdollBodyPart : MonoBehaviour, ITakeDamage, IMaterial
 {
     GameManager _gm;
-    [SerializeField] FirstCollection.BodyPart bodyPart;
+    [SerializeField] BodyPartRagdoll bodyPart;
     public bool IsDead { get; set; }
     public EnemyRef EnRef { get; set; }
     public MatType MaterialType { get ; set; }

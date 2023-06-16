@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using FirstCollection;
 using Sirenix.OdinInspector;
 
 public class PickUp : MonoBehaviour
