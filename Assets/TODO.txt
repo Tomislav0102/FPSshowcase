@@ -4,6 +4,8 @@ ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 - idle behaviour look around - use animations, not transform.rotate
 - attack behaviour is too simple - add cover, throwing grenades etc...
 
+- probably need new BaseState - GoToDestination. When in search state looses target (or in attack state and target dies), enemy needs to return to starting position and then resume startState.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 

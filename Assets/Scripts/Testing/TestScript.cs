@@ -52,12 +52,16 @@ public class TestScript : MonoBehaviour
     private void Start()
     {
         print($"Test script is on '{gameObject.name}' gameobject, that is on '{gameObject.scene.name}' scene.");
+        TestMethod();
     }
 
     private void Update()
     {
 
     }
-
-
+    public void TestMethod()
+    {
+        print("kjkdsfjj");
+    }
 }
+
