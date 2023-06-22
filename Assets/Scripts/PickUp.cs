@@ -1,16 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Sirenix.OdinInspector;
 
 public class PickUp : MonoBehaviour
 {
     Transform _myTransform;
     [SerializeField] Transform parMeshes;
     GameObject[] parPickUpGroups;
-    [EnumToggleButtons]
-    [HideLabel]
-    [Title("Type of pickup")]
     public PuType typeOfPickup;
     public PuType PUType
     {
@@ -49,28 +45,14 @@ public class PickUp : MonoBehaviour
         }
     }
     PuType _puType;
-    [ShowIf("typeOfPickup", PuType.Weapon)]
     public SoItem weaponPU;
 
-    [ShowIf("typeOfPickup", PuType.Ammo)]
-    [EnumToggleButtons]
-    [HideLabel]
-    [Title("Ammo type")]
-    [PropertySpace(SpaceBefore = 10)]
     public AmmoType ammoType;
-    [ShowIf("typeOfPickup", PuType.Ammo)]
     public bool bigAmmoPack;
     public Dictionary<AmmoType, int> ammoQuantity = new Dictionary<AmmoType, int>();
 
-    [ShowIf("typeOfPickup", PuType.Health)]
     public int healAmount;
-    [ShowIf("typeOfPickup", PuType.Armor)]
     public int armorAmount;
-    [ShowIf("typeOfPickup", PuType.Key)]
-    [EnumToggleButtons]
-    [Title("Key color")]
-    [HideLabel]
-    [PropertySpace(SpaceBefore = 10)]
     public KeyType keyType;
 
     private void Awake()

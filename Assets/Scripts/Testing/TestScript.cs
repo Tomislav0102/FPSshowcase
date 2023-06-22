@@ -1,11 +1,9 @@
-using Sirenix.Utilities;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using System.Threading;
 using System.Threading.Tasks;
-using Sirenix.OdinInspector;
 
 public class TestScript : MonoBehaviour
 {

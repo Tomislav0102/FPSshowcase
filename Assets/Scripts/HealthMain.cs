@@ -1,4 +1,3 @@
-using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,7 +6,7 @@ public class HealthMain : GlobalEventManager
 {
     internal GameManager _gm;
 
-    [ReadOnly][ShowInInspector] internal int _hitPoints;
+    internal int _hitPoints;
     [SerializeField] internal int _maxHitPoints = 100;
     [SerializeField] internal int _startingPoints = 100;
 

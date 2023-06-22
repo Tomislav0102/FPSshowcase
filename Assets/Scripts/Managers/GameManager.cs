@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using System.Threading;
 using UnityEngine.UI;
 using DG.Tweening;
-using Sirenix.OdinInspector;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.SceneManagement;
 
@@ -17,8 +16,6 @@ public class GameManager : MonoBehaviour
 
     public float gameSpeed = 1f;
 
-    [BoxGroup("Behaviour colors")]
-    [HideLabel]
     public Color[] gizmoColorsByState;
 
     public Player player;
@@ -31,7 +28,6 @@ public class GameManager : MonoBehaviour
     public UImanager uiManager;
     public PoolManager poolManager;
     public PostprocessMan postProcess;
-    [BoxGroup]
     public LayerMask layFOV_Overlap, layFOV_Ray, layFOV_RayAll, layShooting;
     int layerPl, layerEn;
     public Transform wayPointParent;
@@ -93,18 +89,9 @@ public struct WeaponDetail<T>
 [System.Serializable]
 public class DamageOverTime
 {
-    [EnumToggleButtons]
     public ElementType elementType;
-    [BoxGroup("@st", CenterLabel =true)]
-    [HorizontalGroup("@st/b")]
-    [Indent(3)]
     public int damagePerTick;
-    [BoxGroup("@st")]
-    [HorizontalGroup("@st/b")]
-    [Indent(3)]
     public float effectDuration;
-
-    readonly string st = "--2 ticks per second--";
 }
 
 [System.Serializable]
@@ -1213,7 +1200,7 @@ public class FieldOvView
         _sightAngleTrigonometry = Mathf.Cos(sightAngle * 0.5f * Mathf.Deg2Rad);
         _conseoleDisplay = consoleDis;
 
-        _enemyBehaviour.attack.InitAttackRange(_sightRange);
+        _enemyBehaviour.attackState.InitAttackRange(_sightRange);
     }
 
     float EffectiveRange(Vector3 targetPos)
@@ -1280,13 +1267,13 @@ public class FieldOvView
             }
             else if (_currTarget.MyTransform.TryGetComponent(out EnemyBehaviour en))
             {
-                if (en.currentState == en.attack)
+                if (en.currentState == en.attackState)
                 {
                     character = en.attackTarget;
                 }
-                else if (en.currentState == en.search)
+                else if (en.currentState == en.searchState)
                 {
-                    if (_enemyBehaviour.currentState == _enemyBehaviour.search || _enemyBehaviour.hasSearched)
+                    if (_enemyBehaviour.currentState == _enemyBehaviour.searchState || _enemyBehaviour.hasSearched)
                     {
                         character = null;
                     }
@@ -1361,7 +1348,7 @@ public class RagToAnimTranstions
 
     bool FacingUp() => _hipsBone.forward.y > 0f;
     bool _readyToStandUp;
-    const float CONST_TIMETOSTANDUP = 2f;
+    const float CONST_TIMETOSTANDUP = 1f;
     float _timer;
     float _elapsedPercentage;
 
@@ -1405,8 +1392,6 @@ public class RagToAnimTranstions
             _bones[i].localRotation = Quaternion.Lerp(_ragdollBones[i].rot, _standingCurrent[i].rot, _elapsedPercentage);
         }
 
-
-        //  if (Mathf.Approximately(_elapsedPercentage, 1f))
         if (_elapsedPercentage >= 1f)
         {
             _readyToStandUp = false;
@@ -1417,7 +1402,6 @@ public class RagToAnimTranstions
             {
                 _ragdollRigids[i].isKinematic = true;
             }
-            _eRef.enemyBehaviour.ChangeState(_eRef.enemyBehaviour.attack);
         }
 
     }
@@ -1434,7 +1418,7 @@ public class RagToAnimTranstions
             Vector3 dir = (attackerTr.position - _myTransform.position).normalized;
             ragRigid.AddForce(-40f * dir, ForceMode.VelocityChange);
             _anim.enabled = false;
-            _eRef.enemyBehaviour.ChangeState(_eRef.enemyBehaviour._immoblie);
+            _eRef.enemyBehaviour.ChangeState(_eRef.enemyBehaviour.immoblieState);
             BeginStandUp();
         }
 
@@ -1541,389 +1525,6 @@ public class RagToAnimTranstions
 
 }
 
-
-
-public class BaseState
-{
-    internal readonly GameManager gm;
-    internal readonly EnemyRef eRef;
-    internal readonly EnemyBehaviour enBeh;
-    internal float timer;
-    internal Vector3 startPos;
-    internal Quaternion startRot;
-    public int counterForColors;
-    protected BaseState(EnemyRef eref)
-    {
-        gm = GameManager.Instance;
-        eRef = eref;
-        enBeh = eRef.enemyBehaviour;
-        startPos = enBeh.transform.position;
-        startRot = enBeh.transform.rotation;
-    }
-    public virtual void OnEnter()
-    {
-        eRef.agent.ResetPath();
-        enBeh.Attack_Animation(false);
-    }
-    public virtual void OnExit()
-    {
-        timer = 0;
-    }
-    public virtual void UpdateLoop()
-    {
-
-    }
-    public virtual void PhysicsUpdateLoop()
-    {
-
-    }
-}
-public class IdleState : BaseState
-{
-    float _idleLookAngle;
-    Quaternion _targetRot;
-    float _startRotY;
-    bool _idleOnMove;
-    float _maxTimer;
-    bool _lookAround;
-
-    public IdleState(EnemyRef eref, float lookAngle, bool lookAround) : base(eref)
-    {
-        _startRotY = eRef.agentTr.eulerAngles.y;
-        _maxTimer = Random.Range(3f, 10f);
-        _idleLookAngle = lookAngle;
-        _lookAround = lookAround;
-    }
-    public override void OnEnter()
-    {
-        base.OnEnter();
-        enBeh.SetSpeed_Animation(MoveType.Stationary);
-        enBeh.attackTarget = null;
-    }
-
-    public override void UpdateLoop()
-    {
-        base.UpdateLoop();
-        if (Vector3.SqrMagnitude(enBeh.movePoint.position - eRef.agentTr.position) < 0.3f)
-        {
-            enBeh.SetSpeed_Animation(MoveType.Stationary);
-
-            if (_idleOnMove)
-            {
-                _idleOnMove = false;
-                if (eRef.agent.hasPath) eRef.agent.ResetPath();
-                eRef.agentTr.rotation = startRot;
-            }
-
-            if (!_lookAround) return;
-
-            timer += Time.deltaTime;
-            if (timer > _maxTimer)
-            {
-                timer = 0f;
-                _maxTimer = Random.Range(3f, 10f);
-                _targetRot = Quaternion.AngleAxis(_startRotY + Random.Range(-_idleLookAngle * 0.5f, _idleLookAngle * 0.5f), Vector3.up);
-            }
-            eRef.agentTr.rotation = Quaternion.Slerp(eRef.agentTr.rotation, _targetRot, 10 * Time.deltaTime);
-            return;
-        }
-        enBeh.movePoint.position = startPos;
-
-        if (!eRef.agent.hasPath)
-        {
-            _idleOnMove = true;
-            eRef.enemyBehaviour.TrackMovingTarget();
-        }
-    }
-
-}
-public class PatrolState : BaseState
-{
-    Transform[] _wayPoints;
-    int _counterWayPoints;
-
-    public PatrolState(EnemyRef eref, Transform wPar, Transform[] waypoints) : base(eref)
-    {
-        if (wPar == null) _wayPoints = waypoints;
-        else
-        {
-            _wayPoints = new Transform[wPar.childCount];
-            for (int i = 0; i < _wayPoints.Length; i++)
-            {
-                _wayPoints[i] = wPar.GetChild(i);
-            }
-        }
-
-        counterForColors = 1;
-    }
-    public override void OnEnter()
-    {
-        base.OnEnter();
-        enBeh.SetSpeed_Animation(MoveType.Walk);
-        enBeh.attackTarget = null;
-    }
-
-    public override void UpdateLoop()
-    {
-        base.UpdateLoop();
-        enBeh.movePoint.position = _wayPoints[_counterWayPoints].position;
-        _counterWayPoints = (1 + _counterWayPoints) % _wayPoints.Length;
-        eRef.agent.SetDestination(enBeh.movePoint.position);
-    }
-}
-public class SuperWanderState : BaseState
-{
-    readonly float _roamRadius;
-    internal Vector3 center;
-
-    protected SuperWanderState(EnemyRef eref, float roamRadius) : base(eref)
-    {
-        _roamRadius = roamRadius;
-    }
-    public override void UpdateLoop()
-    {
-        base.UpdateLoop();
-        if (!eRef.ReadyToMove())
-        {
-            enBeh.movePoint.position = EnemyRef.GetRdnPos(center, _roamRadius);
-            eRef.agent.SetDestination(enBeh.movePoint.position);
-        }
-
-    }
-}
-public class RoamState : SuperWanderState
-{
-    public RoamState(EnemyRef eref, float roamRadius) : base(eref, roamRadius)
-    {
-        center = startPos;
-        counterForColors = 2;
-    }
-    public override void OnEnter()
-    {
-        base.OnEnter();
-        enBeh.SetSpeed_Animation(MoveType.Walk);
-        enBeh.attackTarget = null;
-    }
-}
-public class SearchState : SuperWanderState
-{
-
-    public SearchState(EnemyRef eref, float roamRadius) : base(eref, roamRadius)
-    {
-        counterForColors = 3;
-    }
-
-    public override void OnEnter()
-    {
-        base.OnEnter();
-        center = enBeh.movePoint.position;
-        enBeh.SetSpeed_Animation(MoveType.Run);
-        enBeh.hasSearched = true;
-    }
-    public override void UpdateLoop()
-    {
-        base.UpdateLoop();
-
-        timer += Time.deltaTime;
-        if (timer > 10f)
-        {
-            timer = 0f;
-            enBeh.movePoint.SetPositionAndRotation(startPos, startRot);
-            center = enBeh.movePoint.position;
-            enBeh.ChangeToStartingState();
-        }
-    }
-    public override void OnExit()
-    {
-        base.OnExit();
-        CoolDownHasSearched();
-    }
-
-    async void CoolDownHasSearched()
-    {
-        await Task.Delay(5000);
-        enBeh.hasSearched = false;
-    }
-}
-public class AttackState : BaseState
-{
-    float _attackRangeSquared;
-
-    public AttackState(EnemyRef eref) : base(eref)
-    {
-        counterForColors = 4;
-    }
-
-    public void InitAttackRange(float sightRange)
-    {
-        float range = Mathf.Min(enBeh.weaponUsed.range, sightRange);
-        _attackRangeSquared = Mathf.Pow(range, 2f);
-    }
-
-    public override void OnEnter()
-    {
-        base.OnEnter();
-        enBeh.SetSpeed_Animation(MoveType.Run);
-        enBeh.hasSearched = false;
-        enBeh.detectObject = null;
-    }
-
-    public override void UpdateLoop()
-    {
-        base.UpdateLoop();
-        if (enBeh.attackTarget == null)
-        {
-            enBeh.movePoint.SetPositionAndRotation(startPos, startRot);
-            enBeh.ChangeToStartingState();
-            return;
-        }
-
-
-        if (!eRef.fov.TargetVisible(enBeh.attackTarget.MyTransform, enBeh.attackTarget.MyCollider, gm.layFOV_Ray))
-        {
-            enBeh.Attack_Animation(false);
-            enBeh.TrackMovingTarget();
-            if (eRef.agent.remainingDistance < 1f)
-            {
-                enBeh.ChangeState(enBeh.search);
-            }
-            return;
-        }
-        enBeh.movePoint.position = enBeh.attackTarget.MyTransform.position;
-
-
-        Vector3 dir = enBeh.movePoint.position - eRef.agentTr.position;
-        eRef.agentTr.rotation = Quaternion.Slerp(eRef.agentTr.rotation, Quaternion.LookRotation(dir), 5f * Time.deltaTime);
-        if (Vector3.SqrMagnitude(dir) <= _attackRangeSquared)
-        {
-            if (eRef.agent.hasPath) eRef.agent.ResetPath();
-            enBeh.SetAim_Animation();
-            enBeh.Attack_Animation(true);
-        }
-        else
-        {
-            enBeh.Attack_Animation(false);
-            enBeh.TrackMovingTarget();
-
-        }
-
-    }
-}
-public class FollowState : BaseState
-{
-    public FollowState(EnemyRef eref) : base(eref)
-    {
-        counterForColors = 5;
-    }
-
-    public override void OnEnter()
-    {
-        base.OnEnter();
-        enBeh.SetSpeed_Animation(MoveType.Walk);
-        eRef.agent.stoppingDistance = 3f;
-    }
-
-    public override void UpdateLoop()
-    {
-        enBeh.attackTarget = null;
-        Vector3 pos = gm.plFaction.MyTransform.position;
-
-        MoveType mt = MoveType.Stationary;
-        float dist = Vector3.SqrMagnitude(enBeh.MyTransform.position - pos);
-        if (dist > 50f)
-        {
-            mt = MoveType.Run;
-            enBeh.movePoint.position = pos;
-        }
-        else
-        {
-            mt = MoveType.Walk;
-            if (eRef.agent.remainingDistance < eRef.agent.stoppingDistance)
-            {
-                Vector3 myPos = enBeh.MyTransform.position;
-                enBeh.movePoint.position = myPos + 10f * (myPos - pos).normalized;
-            }
-            else
-            {
-                enBeh.movePoint.position = pos;
-            }
-        }
-        //else if (dist > _eRef.agent.stoppingDistance * _eRef.agent.stoppingDistance * 0.9f)
-        //{
-        //    mt = MoveType.Walk;
-        //    movePoint.position = pos;
-        //}
-        //else if (dist < 2f)
-        //{
-        //    mt = MoveType.Walk;
-        //    Vector3 dir = (MyTransform.position - pos).normalized;
-        //    movePoint.position = MyTransform.position + 10f * dir;
-        //}
-
-
-        enBeh.SetSpeed_Animation(mt);
-        enBeh.TrackMovingTarget();
-    }
-
-    public override void OnExit()
-    {
-        base.OnExit();
-        eRef.agent.stoppingDistance = 0f;
-    }
-}
-public class ImmobileState : BaseState
-{
-    public ImmobileState(EnemyRef eref) : base(eref)
-    {
-        counterForColors = 6;
-    }
-
-    public override void OnEnter()
-    {
-        base.OnEnter();
-        enBeh.ResetAllWeights();
-    }
-
-    public override void UpdateLoop()
-    {
-        enBeh.ragToAnimTransition.RagdollStandingUp();
-        eRef.agentTr.SetPositionAndRotation(new Vector3(eRef.animTr.position.x, eRef.agentTr.position.y, eRef.animTr.position.z), eRef.animTr.rotation);
-    }
-
-}
-public class FleeState : BaseState
-{
-    public FleeState(EnemyRef eref) : base(eref)
-    {
-        counterForColors = 7;
-    }
-    public override void OnEnter()
-    {
-        base.OnEnter();
-        enBeh.SetSpeed_Animation(MoveType.Run);
-        if (enBeh.attackTarget != null)
-        {
-            Vector3 dir = (enBeh.MyTransform.position - enBeh.attackTarget.MyTransform.position).normalized;
-            enBeh.movePoint.position = EnemyRef.GetRdnPos(enBeh.MyTransform.position + 50f * dir, 0f);
-        }
-        else enBeh.ChangeToStartingState();
-
-    }
-
-    public override void UpdateLoop()
-    {
-        enBeh.TrackMovingTarget();
-        timer += Time.deltaTime;
-        if (timer > 10f)
-        {
-            timer = 0f;
-            enBeh.movePoint.SetPositionAndRotation(startPos, startRot);
-            enBeh.ChangeToStartingState();
-        }
-
-    }
-
-}
 #endregion
 
 
@@ -1987,92 +1588,3 @@ public class FleeState : BaseState
 
 
 
-
-/*
-[System.Serializable]
-public class HealthClass
-{
-    System.Action _dead;
-    System.Action<ElementType, int> _damCallback;
-    [SerializeField] int startingHP = 100;
-    public int maxHP = 100;
-    public int HitPoints
-    {
-        get => _hitPoints;
-        set
-        {
-            _hitPoints = value;
-            if (_hitPoints > maxHP)
-            {
-                _hitPoints = maxHP;
-            }
-            else if (_hitPoints <= 0)
-            {
-                _dead();
-            }
-        }
-    }
-    int _hitPoints;
-
-    int _durationFireInMiliSeconds;
-    bool _fireActive;
-    const int CONST_TICKFIRE = 500;
-    const int CONST_FIREDAMAGE = 1;
-    CancellationTokenSource _cancellationTokenSource;
-
-    public void Init(System.Action isDead)
-    {
-        _dead = isDead;
-        if (startingHP > maxHP) startingHP = maxHP;
-        HitPoints = startingHP;
-        _cancellationTokenSource = new CancellationTokenSource();
-
-    }
-    public void TakeDamage(ElementType elementType, int damage, System.Action<ElementType, int> damCallback)
-    {
-        HitPoints -= damage;
-        _damCallback = damCallback;
-        switch (elementType)
-        {
-            case ElementType.Fire:
-                //if (damage == 0) _takeDamageParent.OnFire(false);
-                //else 
-                //{
-                //    _takeDamageParent.OnFire(true);
-                //    OnFire(damage);
-                //}
-                OnFire(damage);
-                break;
-            default:
-                damCallback(elementType, damage);
-                break;
-        }
-    }
-
-    void OnFire(int durationSeconds)
-    {
-        _durationFireInMiliSeconds += durationSeconds * 1000;
-        if (!_fireActive) DOT_Fire();
-    }
-    async void DOT_Fire()
-    {
-        if (_durationFireInMiliSeconds > 0)
-        {
-            _fireActive = true;
-            _durationFireInMiliSeconds -= CONST_TICKFIRE;
-            HitPoints -= CONST_FIREDAMAGE;
-            _damCallback(ElementType.Fire, CONST_FIREDAMAGE);
-            await Task.Delay(CONST_TICKFIRE, _cancellationTokenSource.Token);
-            DOT_Fire();
-        }
-        else
-        {
-            _damCallback(ElementType.Fire, 0);
-            _fireActive = false;
-        }
-    }
-    public void CancelToken()
-    {
-        _cancellationTokenSource.Cancel();
-    }
-}*/

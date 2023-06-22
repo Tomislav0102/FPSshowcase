@@ -24,7 +24,7 @@ public class HealthEnemy : HealthMain
             base.OnFire = value;
             if (value)
             {
-                if (_eRef.enemyBehaviour.currentState != _eRef.enemyBehaviour._immoblie) _eRef.anim.SetBool("onFire", true);
+                if (_eRef.enemyBehaviour.currentState != _eRef.enemyBehaviour.immoblieState) _eRef.anim.SetBool("onFire", true);
                 _eRef.enemyBehaviour.psOnFire.Play();
 
             }
@@ -64,7 +64,7 @@ public class HealthEnemy : HealthMain
             Random.value < ParDamage(damage) && 
             !OnFire &&
             elementType == ElementType.Normal &&
-            _eRef.enemyBehaviour.currentState != _eRef.enemyBehaviour._immoblie)
+            _eRef.enemyBehaviour.currentState != _eRef.enemyBehaviour.immoblieState)
         {
             _eRef.enemyBehaviour.ragToAnimTransition.RagdollMe(ragdoll.GetComponent<Rigidbody>(), attackerTransform);
             _eRef.anim.ResetTrigger("hit");
@@ -83,7 +83,7 @@ public class HealthEnemy : HealthMain
                 case ElementType.Fire:
                     break;
                 default:
-                    if (!_eRef.enemyBehaviour.isHit && _eRef.enemyBehaviour.currentState != _eRef.enemyBehaviour._immoblie)
+                    if (!_eRef.enemyBehaviour.isHit && _eRef.enemyBehaviour.currentState != _eRef.enemyBehaviour.immoblieState)
                     {
                         _eRef.anim.SetTrigger("hit");
                         _eRef.anim.SetLayerWeight(1, 1f);

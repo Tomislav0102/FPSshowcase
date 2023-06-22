@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Sirenix.OdinInspector;
 using UnityEngine.Animations.Rigging;
 using DG.Tweening;
 
@@ -11,7 +10,6 @@ public class Hands : GlobalEventManager
     PoolManager _poolMan;
     Animator _anim;
     [SerializeField] SoItem weapon;
-    [ShowIf("CanAim", true)]
     [SerializeField] Transform aimPoint;
     [SerializeField] GameObject muzzleFlash;
     [SerializeField] Transform sleeveSpawnPoint;
@@ -20,11 +18,8 @@ public class Hands : GlobalEventManager
     GameObject _sleeveGameobject;
     Rigidbody _rigidSleeve;
 
-    [HideLabel]
-    [BoxGroup("Attachments")]
     [SerializeField] Attachments attachments;
 
-    [ShowIf("IsFlamethrower", true)]
     public FlamethrowerControl flamethrowerControl;
 
     bool CanAim() //only for Odin
@@ -123,7 +118,6 @@ public class Hands : GlobalEventManager
     [System.Serializable]
     public class Attachments
     {
-        [HideLabel]
         [SerializeField] WeaponDetail<GameObject> weaponDetailGameObj;
         Hands _hands;
         Offense _offense;

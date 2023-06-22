@@ -7,7 +7,7 @@ using UnityEngine.Animations;
 public class SMB_MainEnemy : StateMachineBehaviour
 {
     internal GameManager _gm;
-    internal EnemyRef _eRef;
+    internal EnemyRef eRef;
     //internal EnemyBehaviour _enemyBehaviour;
     //internal EnemyAnim _enemyAnim;
     private void Awake()
@@ -21,18 +21,25 @@ public class SMB_MainEnemy : StateMachineBehaviour
 
     public override void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        if (_eRef == null)
+        if (eRef == null)
         {
-            _eRef = animator.transform.parent.GetComponent<EnemyRef>();
+            eRef = animator.transform.parent.GetComponent<EnemyRef>();
         }
-
     }
+
+    public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+        if (eRef == null)
+        {
+            eRef = animator.transform.parent.GetComponent<EnemyRef>();
+        }
+    }
+
     public override void OnStateMachineEnter(Animator animator, int stateMachinePathHash)
     {
-        if (_eRef == null)
+        if (eRef == null)
         {
-            _eRef = animator.transform.parent.GetComponent<EnemyRef>();
+            eRef = animator.transform.parent.GetComponent<EnemyRef>();
         }
-
     }
 }

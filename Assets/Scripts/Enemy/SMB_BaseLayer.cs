@@ -9,6 +9,6 @@ public class SMB_BaseLayer : SMB_MainEnemy
     {
         base.OnStateMachineEnter(animator, stateMachinePathHash);
         Debug.Log("enter machine");
-        _eRef.enemyBehaviour.isHit = false;
+        eRef.enemyBehaviour.isHit = false;
     }
 }

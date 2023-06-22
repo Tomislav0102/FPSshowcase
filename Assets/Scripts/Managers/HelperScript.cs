@@ -90,10 +90,7 @@ using UnityEngine;
 
             return list;
         }
-        public static int Damage(Vector2Int dam)
-        {
-            return Random.Range(dam.x, dam.y);
-        }
+        public static int Damage(Vector2Int dam) => Random.Range(dam.x, dam.y);
     }
     #region//ENUMS
     public enum Faction
@@ -111,7 +108,8 @@ using UnityEngine;
         Attack,
         Follow,
         Immobile,
-        Flee
+        Flee,
+        MoveToPoint
     }
     public enum BodyPartRagdoll
     {

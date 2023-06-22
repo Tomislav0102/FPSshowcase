@@ -7,7 +7,7 @@ public class SMB_UpperLayer : SMB_MainEnemy
     public override void OnStateMachineEnter(Animator animator, int stateMachinePathHash)
     {
         base.OnStateMachineEnter(animator, stateMachinePathHash);
-        _eRef.enemyBehaviour.isHit = false;
+        eRef.enemyBehaviour.isHit = false;
 
     }
 }

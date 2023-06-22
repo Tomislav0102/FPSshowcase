@@ -1,4 +1,3 @@
-using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -108,9 +107,7 @@ public class RagdollToAnimator : MonoBehaviour
         transform.rotation = rotBeforeSampling;
     }
 
-    [Button]
     void ActivateRagdoll() => ActivateRagdoll(true);
-    [Button]
     void DeactivateRagdoll() => ActivateRagdoll(false);
 
     void ActivateRagdoll(bool activ)

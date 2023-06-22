@@ -1,4 +1,3 @@
-using Sirenix.OdinInspector;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -19,7 +18,6 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     TextMeshPro _displayState;
     Camera _cam;
     bool _canUpdateFOV, _canUpdateDestination;
-    //MoveType _moveType;
     public RagToAnimTranstions ragToAnimTransition;
     public ParticleSystem psOnFire;
     [HideInInspector] public Transform movePoint;
@@ -28,106 +26,38 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     [HideInInspector] public DetectableObject detectObject;
     float _weightHit;
 
-
     #region BEHAVIOUR SPECIFIC
-    [Title("Behaviours", null, TitleAlignments.Centered)]
-    [GUIColor(0f, 0.64f, 1f, 1f)]
-    public EnemyState startingState;
-    // public EnemyState EnState
-    // {
-    //     get => _enState;
-    //     set
-    //     {
-    //        // _eRef.agent.ResetPath();
-    //        // _eRef.agent.stoppingDistance = 0f;
-    //       //  Attack_Animation(false);
-    //         _enState = value;
-    //       //  print(value);
-    //        // _moveType = MoveType.Stationary;
-    //         switch (value)
-    //         {
-    //             case EnemyState.Idle:
-    //               //  attackTarget = null;
-    //              //   _moveType = MoveType.Walk;
-    //                 break;
-    //             case EnemyState.Patrol:
-    //               //  attackTarget = null;
-    //              //   _moveType = MoveType.Walk;
-    //                 break;
-    //             case EnemyState.Roam:
-    //              //   attackTarget = null;
-    //              //   _moveType = MoveType.Walk;
-    //                 break;
-    //             case EnemyState.Search:
-    //              //   hasSearched = true;
-    //             //    _moveType = MoveType.Run;
-    //                 break;
-    //             case EnemyState.Attack:
-    //             //    hasSearched = false;
-    //              //   detectObject = null;
-    //              //   _moveType = MoveType.Run;
-    //                 break;
-    //             case EnemyState.Follow:
-    //               //  attackTarget = null;
-    //               //  _eRef.agent.stoppingDistance = 3f;
-    //                 break;
-    //             case EnemyState.Immobile:
-    //               //  rigRightHandAiming.weight = rigLeftHand.weight = 0f;
-    //                 break;
-    //             case EnemyState.Flee:
-    //                 // if (attackTarget != null)
-    //                 // {
-    //                 //   //  _moveType = MoveType.Run;
-    //                 //     Vector3 dir = (MyTransform.position - attackTarget.MyTransform.position).normalized;
-    //                 //     movePoint.position = EnemyRef.GetRdnPos(MyTransform.position + 50f * dir, 0f);
-    //                 // }
-    //                 // else EnState = startingState;
-    //                 break;
-    //         }
-    //         // SetSpeed_Animation(_moveType);
-    //         // _displayState.text = value.ToString();
-    //         // _displayState.color = GameManager.Instance.gizmoColorsByState[(int)value];
-    //     }
-    // }
-    EnemyState _enState;
 
+    public EnemyState beginState;
+    List<BaseState> _allStates = new List<BaseState>();
     public BaseState currentState;
     BaseState _startState;
-    IdleState _idle;
-    PatrolState _patrol;
-    public RoamState roam;
-    public SearchState search;
-    public AttackState attack;
-    FollowState _follow;
-    public ImmobileState _immoblie;
-    FleeState _flee;
+    IdleState _idleState;
+    PatrolState _patrolState;
+    RoamState _roamState;
+    public SearchState searchState;
+    public AttackState attackState;
+    FollowState _followState;
+    public ImmobileState immoblieState;
+    FleeState _fleeState;
+    public MoveToPointState moveToPointState;
 
     [SerializeField]
-    [GUIColor(0f, 0.64f, 1f, 1f)]
     [Range(0f, 360f)]
     float idleLookAngle = 180f;
     [SerializeField]
-    [GUIColor(0f, 0.64f, 1f, 1f)]
     Transform wpParent;
     [SerializeField]
-    [GUIColor(0f, 0.64f, 1f, 1f)]
     float roamRadius = 10f;
     #endregion
 
-
-    [Title("Animations", null, TitleAlignments.Centered)]
-    [GUIColor(0.5f, 1f, 0f, 1f)]
+    [Header("Animations")]
     [SerializeField] Transform[] ragdollTransform;
     RagdollBodyPart[] _bodyParts;
-    [GUIColor(0.5f, 1f, 0f, 1f)]
     public SoItem weaponUsed;
-    [GUIColor(0.5f, 1f, 0f, 1f)]
     public GameObject muzzle;
-    [GUIColor(0.5f, 1f, 0f, 1f)]
     [SerializeField] Rig rigRightHandAiming;
-    [GUIColor(0.5f, 1f, 0f, 1f)]
     [SerializeField] Rig rigLeftHand;
-    [GUIColor(0.5f, 1f, 0f, 1f)]
     [SerializeField] MultiAimConstraint multiAimConstraintRightHand; //needed for accuracy (together with '_spreadWeapon')
     Transform _aimIK;
     float _spreadWeapon = 50f;
@@ -135,7 +65,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     [HideInInspector] public bool isHit;
     float _weightRightHandAim, _weightLeftHand;
 
-    [Title("Debug only")]
+    [Header("Debug only")]
     public bool haspath;
     public NavMeshPathStatus pathStatus;
     public float speedAnimRoot;
@@ -153,18 +83,17 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         movePoint = moveP;
         _displayState = displayT;
         
-        _idle = new IdleState(_eRef, idleLookAngle, false);
-        _patrol = new PatrolState(_eRef, _gm.wayPointParent, null);
-        roam = new RoamState(_eRef, roamRadius);
-        search = new SearchState(_eRef, roamRadius);
-        _follow = new FollowState(_eRef);
-        attack = new AttackState(_eRef);
-        _immoblie = new ImmobileState(_eRef);
-        _flee = new FleeState(_eRef);
-        _startState = _idle;
+        _idleState = new IdleState(_eRef, _allStates, idleLookAngle, false);
+        _patrolState = new PatrolState(_eRef, _allStates, _gm.wayPointParent, null);
+        _roamState = new RoamState(_eRef, _allStates, roamRadius);
+        searchState = new SearchState(_eRef, _allStates, roamRadius);
+        attackState = new AttackState(_eRef, _allStates);
+        _followState = new FollowState(_eRef, _allStates);
+        immoblieState = new ImmobileState(_eRef, _allStates);
+        _fleeState = new FleeState(_eRef, _allStates);
+        moveToPointState = new MoveToPointState(_eRef, _allStates);
+        _startState = _allStates[(int) beginState];
         ChangeState(_startState);
-        
-        //EnState = startingState;
 
         _aimIK = multiAimConstraintRightHand.data.sourceObjects[0].transform;
         _bodyParts = new RagdollBodyPart[ragdollTransform.Length];
@@ -196,36 +125,8 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         if (currentState == null) return;
         Debugs();
 
-        // switch (EnState)
-        // {
-        //     case EnemyState.Idle:
-        //         _idle.UpdateLoop();
-        //         break;
-        //     case EnemyState.Patrol:
-        //         _patrol.UpdateLoop();
-        //         break;
-        //     case EnemyState.Roam:
-        //        // roam.UpdateLoop(startPos);
-        //         break;
-        //     case EnemyState.Search:
-        //        search.UpdateLoop();
-        //         break;
-        //     case EnemyState.Attack:
-        //        attack.UpdateLoop();
-        //         break;
-        //     case EnemyState.Follow:
-        //        _follow.UpdateLoop();
-        //         break;
-        //     case EnemyState.Immobile:
-        //         _immoblie.UpdateLoop();
-        //         return;
-        //     case EnemyState.Flee: 
-        //        _flee.UpdateLoop();
-        //         break;
-        // }
-
         currentState.UpdateLoop();
-        if (currentState == _immoblie) return;
+        if (currentState == immoblieState) return;
         
         speedAnimRoot = _eRef.anim.velocity.magnitude;
         if (speedAnimRoot < 0.05f) speedAnimRoot = 0f;
@@ -237,13 +138,13 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         _weightHit = Mathf.MoveTowards(_weightHit, isHit ? 1f : 0f, 2f * Time.deltaTime);
         _eRef.anim.SetLayerWeight(1, _weightHit);
 
-        if (currentState == attack || currentState == _flee) return;
+        if (currentState == attackState || currentState == _fleeState) return;
         if (_canUpdateFOV)
         {
             _eRef.fov.GetAllTargets(out attackTarget, out detectObject);
             if (attackTarget != null)
             {
-                ChangeState(attack);
+                ChangeState(attackState);
                 movePoint.position = attackTarget.MyTransform.position;
             }
             else if (detectObject != null)
@@ -251,7 +152,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
                 if (!hasSearched)
                 {
                     movePoint.position = detectObject.owner.MyTransform.position;
-                    ChangeState(search);
+                    ChangeState(searchState);
                 }
             }
 
@@ -303,20 +204,20 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         }
     }
 
-    public void PassFromHealth_Attacked(Transform attackerTr, bool switchAgro, bool lowHP)
+    public void PassFromHealth_Attacked(Transform attackerTr, bool switchAgro, bool lowHp)
     {
-        if (currentState == attack || attackerTr == null) return;
-        if (lowHP)
+        if (currentState == immoblieState || currentState == _fleeState || attackerTr == null) return;
+        if (lowHp)
         {
             if (attackerTr.TryGetComponent(out IFaction target) && EnemyRef.HostileFaction(Fact, target.Fact))
             {
                 attackTarget = target;
-                ChangeState(_flee);
+                ChangeState(_fleeState);
             }
             return;
         }
 
-        if (currentState == attack )
+        if (currentState == attackState )
         {
             if (switchAgro) NewTarget();
             return;
@@ -328,7 +229,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
             if (attackerTr.TryGetComponent(out IFaction target) && EnemyRef.HostileFaction(Fact, target.Fact))
             {
                 attackTarget = target;
-                ChangeState(search);
+                ChangeState(searchState);
             }
         }
     }
@@ -338,7 +239,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
 
         if (attackTarget == null)
         {
-            ChangeState(search);
+            ChangeState(searchState);
             return;
         }
 

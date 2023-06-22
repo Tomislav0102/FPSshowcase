@@ -4,7 +4,7 @@ ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 - idle behaviour look around - use animations, not transform.rotate
 - attack behaviour is too simple - add cover, throwing grenades etc...
 
-- probably need new BaseState - GoToDestination. When in search state looses target (or in attack state and target dies), enemy needs to return to starting position and then resume startState.
+- fix follow behaviour
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -12,7 +12,7 @@ ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1
-	mouse sensitvity should be dependant of zoom (especially for sniper and maybe only for sniper)
+	mouse sensitivity should be dependant of zoom (especially for sniper and maybe only for sniper)
 
 2
 	various weapons (implement all from asset pack?)
