@@ -1,14 +1,13 @@
 
 ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-- idle behaviour look around - use animations, not transform.rotate
 - attack behaviour is too simple - add cover, throwing grenades etc...
 
-- fix follow behaviour
+- search (and maybe roam) should be combined with idle: after reaching a end point, AI should stop, look around (thats idle sm) and after some time continue with next point
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+sin(L(0, 2*pi))*13
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1
@@ -35,3 +34,9 @@ ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 8
 	finish pickup models/visuals
 
+
+NOTES $$$$$$$$$$$$$$$$$
+
+- player has a big collider beacuse melee enemies are too close while attacking
+
+$$$$$$$$$$$$$$$$$$$$$$$

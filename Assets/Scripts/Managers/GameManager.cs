@@ -1200,7 +1200,7 @@ public class FieldOvView
         _sightAngleTrigonometry = Mathf.Cos(sightAngle * 0.5f * Mathf.Deg2Rad);
         _conseoleDisplay = consoleDis;
 
-        _enemyBehaviour.attackState.InitAttackRange(_sightRange);
+        _enemyBehaviour.sm.attackState.InitAttackRange(_sightRange);
     }
 
     float EffectiveRange(Vector3 targetPos)
@@ -1226,18 +1226,8 @@ public class FieldOvView
                     continue;
                 }
                 if (_hit.collider == targetColl) return true;
-                //  else Debug.Log($"I am {_eRef.name} and {_hit.collider.name} is blocking");
-                //   else Debug.Log($"Hit coll is {_hit.collider.GetHashCode()} and target should be {tr.GetComponent<Collider>().GetHashCode()}");
-                //  else Debug.Log($"Hit coll is {_hit.collider.name} and target should be {tr.GetComponent<Collider>().name}");
-                // else Debug.Log($"Hit coll is {_hit.collider.transform.position} and target should be {tr.GetComponent<Collider>().transform.position}");
-                //else
-                //{
-                //    _hit.collider.transform.position = 10f * Vector3.forward;
-                //  //  tr.GetComponent<Collider>().transform.position = 12f * Vector3.forward;
-                //}
             }
         }
-        //  Debug.Log($"I am {_eRef.name} and {ent.MyTransform.name} is not visible, but in range");
         return false;
     }
     public void GetAllTargets(out IFaction tarCharacter, out DetectableObject tarDetectable)
@@ -1267,13 +1257,13 @@ public class FieldOvView
             }
             else if (_currTarget.MyTransform.TryGetComponent(out EnemyBehaviour en))
             {
-                if (en.currentState == en.attackState)
+                if (en.sm.currentState == en.sm.attackState)
                 {
                     character = en.attackTarget;
                 }
-                else if (en.currentState == en.searchState)
+                else if (en.sm.currentState == en.sm.searchState)
                 {
-                    if (_enemyBehaviour.currentState == _enemyBehaviour.searchState || _enemyBehaviour.hasSearched)
+                    if (_enemyBehaviour.sm.currentState == _enemyBehaviour.sm.searchState || _enemyBehaviour.hasSearched)
                     {
                         character = null;
                     }
@@ -1418,7 +1408,7 @@ public class RagToAnimTranstions
             Vector3 dir = (attackerTr.position - _myTransform.position).normalized;
             ragRigid.AddForce(-40f * dir, ForceMode.VelocityChange);
             _anim.enabled = false;
-            _eRef.enemyBehaviour.ChangeState(_eRef.enemyBehaviour.immoblieState);
+            _eRef.enemyBehaviour.sm.ChangeState(_eRef.enemyBehaviour.sm.immobileState);
             BeginStandUp();
         }
 
@@ -1435,30 +1425,30 @@ public class RagToAnimTranstions
 
     }
 
-    void ActivateRagdoll(bool activ)
-    {
-        for (int i = 0; i < _ragdollRigids.Length; i++)
-        {
-            _ragdollRigids[i].isKinematic = !activ;
-        }
-        if (activ)
-        {
-            if (!_readyToStandUp)
-            {
-                _ragdollRigids[8].AddForce(-40f * Vector3.forward, ForceMode.VelocityChange);
-                _anim.enabled = false;
-            }
-        }
-        else
-        {
-            _standingCurrent = FacingUp() ? _standingFaceUpBones : _standingFaceDownBones;
-            AlignRotationToHips();
-            AlignPositionToHips();
-            PopulateBones(_ragdollBones);
-            _readyToStandUp = true;
-            _currentClip = FacingUp() ? _clipNames[0] : _clipNames[1];
-        }
-    }
+    //void ActivateRagdoll(bool activ)
+    //{
+    //    for (int i = 0; i < _ragdollRigids.Length; i++)
+    //    {
+    //        _ragdollRigids[i].isKinematic = !activ;
+    //    }
+    //    if (activ)
+    //    {
+    //        if (!_readyToStandUp)
+    //        {
+    //            _ragdollRigids[8].AddForce(-40f * Vector3.forward, ForceMode.VelocityChange);
+    //            _anim.enabled = false;
+    //        }
+    //    }
+    //    else
+    //    {
+    //        _standingCurrent = FacingUp() ? _standingFaceUpBones : _standingFaceDownBones;
+    //        AlignRotationToHips();
+    //        AlignPositionToHips();
+    //        PopulateBones(_ragdollBones);
+    //        _readyToStandUp = true;
+    //        _currentClip = FacingUp() ? _clipNames[0] : _clipNames[1];
+    //    }
+    //}
     void PopulateBones(BoneTransforms[] bon)
     {
         for (int i = 0; i < _bones.Count; i++)

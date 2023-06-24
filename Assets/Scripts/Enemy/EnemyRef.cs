@@ -88,11 +88,10 @@ public class EnemyRef : GlobalEventManager
     public static Vector3 GetRdnPos(Vector3 center, float radius)
     {
         Vector3 pos = center + radius * Random.insideUnitSphere;
-        if (NavMesh.SamplePosition(pos, out NavMeshHit hit, 2f * radius, NavMesh.AllAreas))
+        if (NavMesh.SamplePosition(pos, out NavMeshHit hit, 20f, NavMesh.AllAreas))
         {
             return hit.position;
         }
-
         return pos;
     }
 

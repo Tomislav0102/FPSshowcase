@@ -21,41 +21,30 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     public RagToAnimTranstions ragToAnimTransition;
     public ParticleSystem psOnFire;
     [HideInInspector] public Transform movePoint;
+    /*[HideInInspector]*/ public Vector3 targetsDirection; //move direction of 'attackTarget' before loosing sight of it
     [HideInInspector] public bool hasSearched;
     public IFaction attackTarget;
     [HideInInspector] public DetectableObject detectObject;
     float _weightHit;
 
     #region BEHAVIOUR SPECIFIC
-
+    [Header("Behaviour")]
     public EnemyState beginState;
-    List<BaseState> _allStates = new List<BaseState>();
-    public BaseState currentState;
-    BaseState _startState;
-    IdleState _idleState;
-    PatrolState _patrolState;
-    RoamState _roamState;
-    public SearchState searchState;
-    public AttackState attackState;
-    FollowState _followState;
-    public ImmobileState immoblieState;
-    FleeState _fleeState;
-    public MoveToPointState moveToPointState;
-
-    [SerializeField]
-    [Range(0f, 360f)]
-    float idleLookAngle = 180f;
+    public StateMachine sm;
     [SerializeField]
     Transform wpParent;
     [SerializeField]
     float roamRadius = 10f;
     #endregion
 
+    #region ANIMATIONS
     [Header("Animations")]
     [SerializeField] Transform[] ragdollTransform;
     RagdollBodyPart[] _bodyParts;
     public SoItem weaponUsed;
     public GameObject muzzle;
+    [SerializeField] Rig rigLookAt;
+    [SerializeField] Transform ikLookAtTransform;
     [SerializeField] Rig rigRightHandAiming;
     [SerializeField] Rig rigLeftHand;
     [SerializeField] MultiAimConstraint multiAimConstraintRightHand; //needed for accuracy (together with '_spreadWeapon')
@@ -64,7 +53,9 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     Vector3 _offsetTar;
     [HideInInspector] public bool isHit;
     float _weightRightHandAim, _weightLeftHand;
+    #endregion
 
+    #region DEBUGS
     [Header("Debug only")]
     public bool haspath;
     public NavMeshPathStatus pathStatus;
@@ -72,9 +63,12 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     public float speedAgent;
     public float remainDistance;
     public string nameOfTarget;
+    public float angleBetweenForwardAndMovePoint;
+    #endregion
 
+    ///////////////////////////////////////////////////////////////////////////
 
-    #region MAIN
+    #region INITIALIZATION AND UNITY CALLBACKS
     public void InitAwake(EnemyRef eRef, Transform moveP, TextMeshPro displayT, out HashSet<Collider> hs/*, out DetectableObject detectObject*/)
     {
         _gm = GameManager.Instance;
@@ -82,18 +76,8 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         _eRef = eRef;
         movePoint = moveP;
         _displayState = displayT;
-        
-        _idleState = new IdleState(_eRef, _allStates, idleLookAngle, false);
-        _patrolState = new PatrolState(_eRef, _allStates, _gm.wayPointParent, null);
-        _roamState = new RoamState(_eRef, _allStates, roamRadius);
-        searchState = new SearchState(_eRef, _allStates, roamRadius);
-        attackState = new AttackState(_eRef, _allStates);
-        _followState = new FollowState(_eRef, _allStates);
-        immoblieState = new ImmobileState(_eRef, _allStates);
-        _fleeState = new FleeState(_eRef, _allStates);
-        moveToPointState = new MoveToPointState(_eRef, _allStates);
-        _startState = _allStates[(int) beginState];
-        ChangeState(_startState);
+
+        sm = new StateMachine(_displayState, _eRef, _gm.wayPointParent, null, roamRadius, (int)beginState);
 
         _aimIK = multiAimConstraintRightHand.data.sourceObjects[0].transform;
         _bodyParts = new RagdollBodyPart[ragdollTransform.Length];
@@ -116,17 +100,18 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     void OnDisable()
     {
         attackTarget = null;
+        detectObject = null;
         CancelInvoke();
         _displayState.text = "Dead";
     }
 
     private void Update()
     {
-        if (currentState == null) return;
+        if (sm.currentState == null) return;
         Debugs();
 
-        currentState.UpdateLoop();
-        if (currentState == immoblieState) return;
+        sm.currentState.UpdateLoop();
+        if (sm.currentState == sm.immobileState) return;
         
         speedAnimRoot = _eRef.anim.velocity.magnitude;
         if (speedAnimRoot < 0.05f) speedAnimRoot = 0f;
@@ -138,43 +123,26 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         _weightHit = Mathf.MoveTowards(_weightHit, isHit ? 1f : 0f, 2f * Time.deltaTime);
         _eRef.anim.SetLayerWeight(1, _weightHit);
 
-        if (currentState == attackState || currentState == _fleeState) return;
+        if (sm.currentState == sm.attackState || sm.currentState == sm._fleeState) return;
         if (_canUpdateFOV)
         {
             _eRef.fov.GetAllTargets(out attackTarget, out detectObject);
             if (attackTarget != null)
             {
-                ChangeState(attackState);
                 movePoint.position = attackTarget.MyTransform.position;
+                sm.ChangeState(sm.attackState);
             }
             else if (detectObject != null)
             {
                 if (!hasSearched)
                 {
                     movePoint.position = detectObject.owner.MyTransform.position;
-                    ChangeState(searchState);
+                    sm.ChangeState(sm.searchState);
                 }
             }
 
             _canUpdateFOV = false;
         }
-
-    }
-    #endregion
-
-    #region STATE MACHINE
-    public void ChangeToStartingState()
-    {
-        ChangeState(_startState);
-    }
-    public void ChangeState(BaseState nextState)
-    {
-        if (nextState == currentState || nextState == null) return;
-        currentState?.OnExit();
-        currentState = nextState;
-        currentState.OnEnter();
-        _displayState.text = currentState.ToString();
-        _displayState.color = GameManager.Instance.gizmoColorsByState[currentState.counterForColors];
 
     }
     #endregion
@@ -206,18 +174,18 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
 
     public void PassFromHealth_Attacked(Transform attackerTr, bool switchAgro, bool lowHp)
     {
-        if (currentState == immoblieState || currentState == _fleeState || attackerTr == null) return;
+        if (sm.currentState == sm.immobileState || sm.currentState == sm._fleeState || attackerTr == null) return;
         if (lowHp)
         {
             if (attackerTr.TryGetComponent(out IFaction target) && EnemyRef.HostileFaction(Fact, target.Fact))
             {
                 attackTarget = target;
-                ChangeState(_fleeState);
+                sm.ChangeState(sm._fleeState);
             }
             return;
         }
 
-        if (currentState == attackState )
+        if (sm.currentState == sm.attackState )
         {
             if (switchAgro) NewTarget();
             return;
@@ -229,7 +197,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
             if (attackerTr.TryGetComponent(out IFaction target) && EnemyRef.HostileFaction(Fact, target.Fact))
             {
                 attackTarget = target;
-                ChangeState(searchState);
+                sm.ChangeState(sm.searchState);
             }
         }
     }
@@ -239,7 +207,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
 
         if (attackTarget == null)
         {
-            ChangeState(searchState);
+            sm.ChangeState(sm.searchState);
             return;
         }
 
@@ -251,6 +219,11 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     #endregion
 
     #region ANIMATIONS
+    public void IdelLookAround_Animation(bool active, float angle)
+    {
+        rigLookAt.weight = active ? 1f : 0f;
+        ikLookAtTransform.localEulerAngles = angle * Vector3.up;
+    }
     void GetIK_Animation(bool attak)
     {
         _weightRightHandAim = _weightLeftHand = 0f;

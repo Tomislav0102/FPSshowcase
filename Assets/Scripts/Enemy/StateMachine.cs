@@ -2,7 +2,60 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using TMPro;
 
+
+public class StateMachine
+{
+    TextMeshPro _display;
+
+    List<BaseState> _allStates = new List<BaseState>();
+    public BaseState currentState;
+    BaseState _startState;
+    public IdleState _idleState;
+    PatrolState _patrolState;
+    RoamState _roamState;
+    public SearchState searchState;
+    public AttackState attackState;
+    FollowState _followState;
+    public ImmobileState immobileState;
+    public FleeState _fleeState;
+    public MoveToPointState moveToPointState;
+
+    public StateMachine(TextMeshPro display, EnemyRef eref, Transform patrolparent, Transform[] patrolwaypoints, float roamradius, int indexOfStartingState)
+    {
+        _display = display;
+
+        _idleState = new IdleState(eref, _allStates, roamradius);
+        _patrolState = new PatrolState(eref, _allStates, patrolparent, patrolwaypoints);
+        _roamState = new RoamState(eref, _allStates, roamradius);
+        searchState = new SearchState(eref, _allStates, roamradius);
+        attackState = new AttackState(eref, _allStates);
+        _followState = new FollowState(eref, _allStates);
+        immobileState = new ImmobileState(eref, _allStates);
+        _fleeState = new FleeState(eref, _allStates);
+        moveToPointState = new MoveToPointState(eref, _allStates);
+        _startState = _allStates[indexOfStartingState];
+        ChangeState(_startState);
+
+    }
+
+    public void ChangeToStartingState()
+    {
+        ChangeState(_startState);
+    }
+    public void ChangeState(BaseState nextState)
+    {
+        if (nextState == currentState || nextState == null) return;
+        currentState?.OnExit();
+        currentState = nextState;
+        currentState.OnEnter();
+        _display.text = currentState.ToString();
+        _display.color = GameManager.Instance.gizmoColorsByState[currentState.counterForColors];
+
+    }
+
+}
 
 public class BaseState
 {
@@ -41,68 +94,147 @@ public class BaseState
 
     }
 }
-public class IdleState : BaseState
+public class SuperState_Alpha : BaseState //idle, roam, search
 {
-    float _idleLookAngle;
-    Quaternion _targetRot;
-    float _startRotY;
-    bool _idleOnMove;
-    float _maxTimer;
-    bool _lookAround;
+    readonly float _roamRadius;
+    internal Vector3 center;
 
-    public IdleState(EnemyRef eref, List<BaseState> allStates, float lookAngle, bool lookAround) : base(eref, allStates)
+    internal bool _stopMoveSwitch;
+    internal bool _justIdeling;
+    internal MoveType moveTypeMobile;
+
+    float _timerLookingAround;
+    float _maxTimerLookAround = 20f;
+
+    float _maxTimer;
+    float MaxT() => Random.Range(3f, 20f);
+    float nextAngle, sigAngle;
+    float rotSpeed = 2f;
+
+
+    internal bool goTo2; //these two are needed for search state. Actor first goes to targets last know position and then does search behaviour (although he is in search state from the beggining)
+    bool _goTo1;
+
+    protected SuperState_Alpha(EnemyRef eref, List<BaseState> allStates, float roamRadius) : base(eref, allStates)
     {
-        _startRotY = eRef.agentTr.eulerAngles.y;
-        _maxTimer = Random.Range(3f, 10f);
-        _idleLookAngle = lookAngle;
-        _lookAround = lookAround;
+        _roamRadius = roamRadius;
+    }
+    public override void OnEnter()
+    {
+        base.OnEnter();
+        goTo2 = _goTo1 = _justIdeling = false;
+        _timerLookingAround = 0f;
+        _stopMoveSwitch = false;
+        nextAngle = sigAngle = 0f;
+    }
+    public override void UpdateLoop()
+    {
+        base.UpdateLoop();
+
+        if (_justIdeling)
+        {
+            LookAround();
+            return;
+        }
+
+        if (eRef.ReadyToMove())
+        {
+            if (_stopMoveSwitch)
+            {
+                enBeh.SetSpeed_Animation(MoveType.Stationary);
+                LookAround();
+                _timerLookingAround += Time.deltaTime;
+                if(_timerLookingAround > _maxTimerLookAround)
+                {
+                    _timerLookingAround = 0f;
+                    _stopMoveSwitch = false;
+                }
+
+                return;
+            }
+
+
+            _goTo1 = !_goTo1;
+            if (!_goTo1) goTo2 = true;
+
+
+            enBeh.movePoint.position = EnemyRef.GetRdnPos(center, _roamRadius);
+            eRef.agent.SetDestination(enBeh.movePoint.position);
+
+            _stopMoveSwitch = !_stopMoveSwitch;
+        }
+        enBeh.SetSpeed_Animation(moveTypeMobile);
+        enBeh.IdelLookAround_Animation(false, 0f);
+
+    }
+
+    void LookAround()
+    {
+        timer += Time.deltaTime;
+        if (timer > _maxTimer)
+        {
+            timer = 0f;
+            _maxTimer = MaxT();
+            nextAngle = sigAngle;
+            sigAngle = Random.Range(-70f, 70f);
+        }
+        nextAngle = Mathf.Lerp(nextAngle, sigAngle, rotSpeed * Time.deltaTime);
+        enBeh.IdelLookAround_Animation(true, nextAngle);
+
+    }
+}
+
+public class IdleState : SuperState_Alpha
+{
+    //Quaternion _targetRot;
+    //float _startRotY;
+    //bool _idleOnMove;
+
+    //bool _lookAround;
+    //float _maxTimer;
+    //float MaxT() => Random.Range(3f, 20f);
+    //float nextAngle, sigAngle;
+    //float rotSpeed = 2f;
+
+    public IdleState(EnemyRef eref, List<BaseState> allStates, float roamRadius) : base(eref, allStates, roamRadius)
+    {
+        //_startRotY = eRef.agentTr.eulerAngles.y;
+        //_maxTimer = MaxT();
     }
     public override void OnEnter()
     {
         base.OnEnter();
         enBeh.SetSpeed_Animation(MoveType.Stationary);
         enBeh.attackTarget = null;
+      //  nextAngle = sigAngle = 0f;
+        _justIdeling = true;
     }
 
     public override void UpdateLoop()
     {
         base.UpdateLoop();
-        if (Vector3.SqrMagnitude(enBeh.movePoint.position - eRef.agentTr.position) < 0.3f)
-        {
-            enBeh.SetSpeed_Animation(MoveType.Stationary);
+        //if (!_lookAround) return;
 
-            if (_idleOnMove)
-            {
-                _idleOnMove = false;
-                if (eRef.agent.hasPath) eRef.agent.ResetPath();
-                eRef.agentTr.rotation = startRot;
-            }
-
-            if (!_lookAround) return;
-
-            timer += Time.deltaTime;
-            if (timer > _maxTimer)
-            {
-                timer = 0f;
-                _maxTimer = Random.Range(3f, 10f);
-                _targetRot = Quaternion.AngleAxis(_startRotY + Random.Range(-_idleLookAngle * 0.5f, _idleLookAngle * 0.5f), Vector3.up);
-            }
-            eRef.agentTr.rotation = Quaternion.Slerp(eRef.agentTr.rotation, _targetRot, 10 * Time.deltaTime);
-            return;
-        }
-        enBeh.movePoint.position = startPos;
-
-        if (!eRef.agent.hasPath)
-        {
-            _idleOnMove = true;
-            eRef.enemyBehaviour.TrackMovingTarget();
-        }
+        //timer += Time.deltaTime;
+        //if (timer > _maxTimer)
+        //{
+        //    timer = 0f;
+        //    _maxTimer = MaxT();
+        //    nextAngle = sigAngle;
+        //    sigAngle = Random.Range(-160f, 160f);
+        //}
+        //nextAngle = Mathf.Lerp(nextAngle, sigAngle, rotSpeed * Time.deltaTime);
+        //enBeh.IdelLookAround_Animation(true, nextAngle);
     }
-
+    public override void OnExit()
+    {
+        base.OnExit();
+        enBeh.IdelLookAround_Animation(false, 0f);
+    }
 }
 public class PatrolState : BaseState
 {
-    Transform[] _wayPoints;
+    readonly Transform[] _wayPoints;
     int _counterWayPoints;
 
     public PatrolState(EnemyRef eref, List<BaseState> allStates, Transform wPar, Transform[] waypoints) : base(eref, allStates)
@@ -132,27 +264,7 @@ public class PatrolState : BaseState
         eRef.agent.SetDestination(enBeh.movePoint.position);
     }
 }
-public class SuperWanderState : BaseState
-{
-    readonly float _roamRadius;
-    internal Vector3 center;
-
-    protected SuperWanderState(EnemyRef eref, List<BaseState> allStates, float roamRadius) : base(eref, allStates)
-    {
-        _roamRadius = roamRadius;
-    }
-    public override void UpdateLoop()
-    {
-        base.UpdateLoop();
-        if (eRef.ReadyToMove())
-        {
-            enBeh.movePoint.position = EnemyRef.GetRdnPos(center, _roamRadius);
-            eRef.agent.SetDestination(enBeh.movePoint.position);
-        }
-
-    }
-}
-public class RoamState : SuperWanderState
+public class RoamState : SuperState_Alpha
 {
     public RoamState(EnemyRef eref, List<BaseState> allStates, float roamRadius) : base(eref, allStates, roamRadius)
     {
@@ -161,11 +273,12 @@ public class RoamState : SuperWanderState
     public override void OnEnter()
     {
         base.OnEnter();
-        enBeh.SetSpeed_Animation(MoveType.Walk);
+        moveTypeMobile = MoveType.Walk;
         enBeh.attackTarget = null;
+        _justIdeling = false;
     }
 }
-public class SearchState : SuperWanderState
+public class SearchState : SuperState_Alpha
 {
     public SearchState(EnemyRef eref, List<BaseState> allStates, float roamRadius) : base(eref, allStates, roamRadius)
     {
@@ -175,20 +288,23 @@ public class SearchState : SuperWanderState
     {
         base.OnEnter();
         center = enBeh.movePoint.position;
-        enBeh.SetSpeed_Animation(MoveType.Run);
+        moveTypeMobile = MoveType.Run;
         enBeh.hasSearched = true;
+        _justIdeling = false;
     }
     public override void UpdateLoop()
     {
         base.UpdateLoop();
 
+        if (!goTo2) return;
+
         timer += Time.deltaTime;
-        if (timer > 3f)
+        if (timer > 50f)
         {
             timer = 0f;
             enBeh.movePoint.SetPositionAndRotation(startPos, startRot);
             center = enBeh.movePoint.position;
-            enBeh.ChangeState(enBeh.moveToPointState);
+            enBeh.sm.ChangeState(enBeh.sm.moveToPointState);
         }
     }
     public override void OnExit()
@@ -231,7 +347,7 @@ public class AttackState : BaseState
         if (enBeh.attackTarget == null)
         {
             enBeh.movePoint.SetPositionAndRotation(startPos, startRot);
-            enBeh.ChangeToStartingState();
+            enBeh.sm.ChangeToStartingState();
             return;
         }
 
@@ -242,7 +358,7 @@ public class AttackState : BaseState
             enBeh.TrackMovingTarget();
             if (eRef.agent.remainingDistance < 1f)
             {
-                enBeh.ChangeState(enBeh.searchState);
+                enBeh.sm.ChangeState(enBeh.sm.searchState);
             }
             return;
         }
@@ -268,6 +384,8 @@ public class AttackState : BaseState
 }
 public class FollowState : BaseState
 {
+    float _stoppingDistanceSquared;
+    Vector2 _deadZone;
     public FollowState(EnemyRef eref, List<BaseState> allStates) : base(eref, allStates)
     {
     }
@@ -277,6 +395,8 @@ public class FollowState : BaseState
         base.OnEnter();
         enBeh.SetSpeed_Animation(MoveType.Walk);
         eRef.agent.stoppingDistance = 3f;
+        _stoppingDistanceSquared = Mathf.Pow(eRef.agent.stoppingDistance, 2);
+        _deadZone = new Vector2(_stoppingDistanceSquared - 1f, _stoppingDistanceSquared + 1f);
     }
 
     public override void UpdateLoop()
@@ -286,23 +406,24 @@ public class FollowState : BaseState
 
         MoveType mt = MoveType.Stationary;
         float dist = Vector3.SqrMagnitude(enBeh.MyTransform.position - pos);
+        enBeh.movePoint.position = pos;
         if (dist > 50f)
         {
             mt = MoveType.Run;
-            enBeh.movePoint.position = pos;
+        }
+        else if (dist >= _deadZone.y)
+        {
+            mt = MoveType.Walk;
+        }
+        else if (dist > _deadZone.x && dist < _deadZone.y)
+        {
+            mt = MoveType.Stationary;
         }
         else
         {
-            mt = MoveType.Walk;
-            if (eRef.agent.remainingDistance < eRef.agent.stoppingDistance)
-            {
-                Vector3 myPos = enBeh.MyTransform.position;
-                enBeh.movePoint.position = myPos + 10f * (myPos - pos).normalized;
-            }
-            else
-            {
-                enBeh.movePoint.position = pos;
-            }
+            mt = MoveType.Run;
+            Vector3 myPos = enBeh.MyTransform.position;
+            enBeh.movePoint.position = myPos + 10f * (myPos - pos).normalized;
         }
 
         enBeh.SetSpeed_Animation(mt);
@@ -348,7 +469,7 @@ public class FleeState : BaseState
             Vector3 dir = (enBeh.MyTransform.position - enBeh.attackTarget.MyTransform.position).normalized;
             enBeh.movePoint.position = EnemyRef.GetRdnPos(enBeh.MyTransform.position + 50f * dir, 0f);
         }
-        else enBeh.ChangeToStartingState();
+        else enBeh.sm.ChangeToStartingState();
 
     }
 
@@ -360,12 +481,11 @@ public class FleeState : BaseState
         {
             timer = 0f;
             enBeh.movePoint.SetPositionAndRotation(startPos, startRot);
-            enBeh.ChangeToStartingState();
+            enBeh.sm.ChangeState(enBeh.sm.moveToPointState);
         }
 
     }
 }
-
 public class MoveToPointState : BaseState
 {
     public MoveToPointState(EnemyRef eref, List<BaseState> allStates) : base(eref, allStates)
@@ -382,7 +502,7 @@ public class MoveToPointState : BaseState
     public override void UpdateLoop()
     {
         base.UpdateLoop();
-        if (eRef.agent.remainingDistance < 0.1f) enBeh.ChangeToStartingState();
+        if (eRef.agent.remainingDistance < 0.1f) enBeh.sm.ChangeToStartingState();
     }
 
     public override void OnExit()
@@ -391,3 +511,44 @@ public class MoveToPointState : BaseState
         eRef.agentTr.rotation = startRot;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+//if (Vector3.SqrMagnitude(enBeh.movePoint.position - eRef.agentTr.position) < 0.3f)
+//{
+//    enBeh.SetSpeed_Animation(MoveType.Stationary);
+
+//    if (_idleOnMove)
+//    {
+//        _idleOnMove = false;
+//        if (eRef.agent.hasPath) eRef.agent.ResetPath();
+//        eRef.agentTr.rotation = startRot;
+//    }
+
+//    if (!_lookAround) return;
+
+//    timer += Time.deltaTime;
+//    if (timer > _maxTimer)
+//    {
+//        timer = 0f;
+//        _maxTimer = Random.Range(3f, 10f);
+//        _targetRot = Quaternion.AngleAxis(_startRotY + Random.Range(-_idleLookAngle * 0.5f, _idleLookAngle * 0.5f), Vector3.up);
+//    }
+//    eRef.agentTr.rotation = Quaternion.Slerp(eRef.agentTr.rotation, _targetRot, 10 * Time.deltaTime);
+//    return;
+//}
+//enBeh.movePoint.position = startPos;
+
+//if (!eRef.agent.hasPath)
+//{
+//    _idleOnMove = true;
+//    eRef.enemyBehaviour.TrackMovingTarget();
+//}

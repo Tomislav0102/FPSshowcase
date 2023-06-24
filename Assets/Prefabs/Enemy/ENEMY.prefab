@@ -54,12 +54,10 @@ MonoBehaviour:
   agentTr: {fileID: 0}
   anim: {fileID: 0}
   animTr: {fileID: 0}
-  detectableObject: {fileID: 0}
   enemyHealth: {fileID: 5636381991177978536}
   fov:
     sightSphere: {fileID: 374648284135301785}
     hearSphere: {fileID: 4466628684827694054}
-    sightRange: 0
     sightAngle: 120
   consoleDisplay: 0
 --- !u!114 &5636381991177978536
@@ -76,6 +74,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _maxHitPoints: 100
   _startingPoints: 100
+  attacker: {fileID: 0}
+  fleeTreshold: 0.1
 --- !u!1 &2194072017361417643
 GameObject:
   m_ObjectHideFlags: 0
@@ -93,7 +93,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &374648284135301785
 Transform:
   m_ObjectHideFlags: 0
@@ -185,7 +185,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5192759610797324842}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.38, z: 0.9233}
+  m_LocalPosition: {x: 0, y: 0.61, z: 0.9233}
   m_LocalScale: {x: 0.11593673, y: 0.11593673, z: 1.9624901}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -572,7 +572,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4466628684827694054
 Transform:
   m_ObjectHideFlags: 0

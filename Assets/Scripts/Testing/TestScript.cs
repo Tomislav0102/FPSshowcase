@@ -8,6 +8,10 @@ using System.Threading.Tasks;
 public class TestScript : MonoBehaviour
 {
     Camera _cam;
+    public Transform otherTransform;
+    public float angl, signAngle;
+    //public NavMeshAgent agent;
+    //public Transform movePoint;
     //RaycastHit _hit;
     //RaycastHit[] _multipleHits = new RaycastHit[1];
     //public Transform sphere;
@@ -50,16 +54,12 @@ public class TestScript : MonoBehaviour
     private void Start()
     {
         print($"Test script is on '{gameObject.name}' gameobject, that is on '{gameObject.scene.name}' scene.");
-        TestMethod();
     }
 
     private void Update()
     {
-
-    }
-    public void TestMethod()
-    {
-        print("kjkdsfjj");
+        angl = Vector3.Angle(transform.forward, otherTransform.forward);
+        signAngle = Vector3.SignedAngle(transform.forward, otherTransform.forward, Vector3.up);
     }
 }
 
