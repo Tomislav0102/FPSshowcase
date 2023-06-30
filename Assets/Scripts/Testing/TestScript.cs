@@ -10,6 +10,8 @@ public class TestScript : MonoBehaviour
     Camera _cam;
     public Transform otherTransform;
     public float angl, signAngle;
+    public CapsuleCollider capsuleCollider;
+    bool _ducked;
     //public NavMeshAgent agent;
     //public Transform movePoint;
     //RaycastHit _hit;
@@ -58,8 +60,10 @@ public class TestScript : MonoBehaviour
 
     private void Update()
     {
-        angl = Vector3.Angle(transform.forward, otherTransform.forward);
-        signAngle = Vector3.SignedAngle(transform.forward, otherTransform.forward, Vector3.up);
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            GetComponent<Rigidbody>().velocity = 10f * Vector3.forward;
+        }
     }
 }
 

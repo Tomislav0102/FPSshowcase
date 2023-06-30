@@ -4905,6 +4905,7 @@ Transform:
   - {fileID: 3255405416147649780}
   - {fileID: 5822887125080242198}
   - {fileID: 5853536106817182087}
+  - {fileID: 8163652320156838608}
   m_Father: {fileID: 3710268264703138920}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -7903,7 +7904,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdb90b913935e644baaa86c076d788e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Weight: 0.655
+  m_Weight: 0.4
   m_Data:
     m_ConstrainedObject: {fileID: 2406414082188056513}
     m_SourceObjects:
@@ -7984,7 +7985,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Weight: 1
   m_Data:
-    m_ConstrainedObject: {fileID: 0}
+    m_ConstrainedObject: {fileID: 1462241272819904910}
     m_SourceObjects:
       m_Length: 1
       m_Item0:
@@ -8783,9 +8784,10 @@ MonoBehaviour:
   hasSearched: 0
   detectObject: {fileID: 0}
   beginState: 0
-  idleLookAngle: 180
   wpParent: {fileID: 0}
   roamRadius: 10
+  handGreandeSpawnPoint: {fileID: 8163652320156838608}
+  handGrenadeScriptable: {fileID: 11400000, guid: 508d9ba7309b2c140b1a4df31086bfad, type: 2}
   ragdollTransform:
   - {fileID: 4368334889242015716}
   - {fileID: 5962789943609352757}
@@ -8920,6 +8922,37 @@ CapsuleCollider:
   m_Height: 1.8
   m_Direction: 1
   m_Center: {x: 0, y: 0.9, z: 0}
+--- !u!1 &7490086936054317889
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8163652320156838608}
+  m_Layer: 21
+  m_Name: grenade spawn point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8163652320156838608
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7490086936054317889}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0, y: 0.112, z: 0.036}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2225137651862232333}
+  m_RootOrder: -1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7498909075909470477
 GameObject:
   m_ObjectHideFlags: 0
@@ -9122,9 +9155,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdb90b913935e644baaa86c076d788e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Weight: 0.263
+  m_Weight: 0.15
   m_Data:
-    m_ConstrainedObject: {fileID: 0}
+    m_ConstrainedObject: {fileID: 4368334889242015716}
     m_SourceObjects:
       m_Length: 1
       m_Item0:

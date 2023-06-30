@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using System.Linq;
 
 public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
 {
@@ -17,7 +17,10 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
     [SerializeField] float forceSpeed = 50f;
     Collider _collToIgnore;
     RaycastHit[] _hitsForContactPoint = new RaycastHit[1];
+    bool _calculateLaunchVelocity;
+    Vector3 _launchVel;
     EnemyRef _targetEnemyRef;
+
 
     private void Awake()
     {
@@ -45,10 +48,21 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
                 _elType = ElementType.Normal;
                 break;
         }
+        _calculateLaunchVelocity = false;
+    }
+    public void IniThrowable(Transform spawPoint, Collider ownerCollider, Vector3 launchVelocity)
+    {
+        IniThrowable(spawPoint, ownerCollider);
+        _calculateLaunchVelocity = true;
+        _launchVel = launchVelocity;
+        float spread = 1f;
+        _launchVel = new Vector3(_launchVel.x + Random.Range(-spread, spread), _launchVel.y, _launchVel.z + Random.Range(-spread, spread));
     }
     void OnEnable()
     {
-        _rigid.AddRelativeForce(forceSpeed * Vector3.forward, ForceMode.VelocityChange);
+        if (_calculateLaunchVelocity) _rigid.velocity = _launchVel;
+        else _rigid.AddRelativeForce(forceSpeed * Vector3.forward, ForceMode.VelocityChange);
+
         Invoke(nameof(ReturnToPool), 10f);
         
         if (weaponUsingThisProjectile.ammoType != AmmoType.HandGrenade) return;
@@ -88,7 +102,7 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
     }
     private void OnTriggerEnter(Collider other)
     {
-        if (_collToIgnore || other.isTrigger) return;
+        if (_collToIgnore == other || other.isTrigger) return;
 
         switch (weaponUsingThisProjectile.ammoType)
         {
@@ -96,7 +110,7 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
                 _gm.player.offense.attack.ApplyDamage(weaponUsingThisProjectile, GetHit(), false);
                 break;
             default:
-                //  print($"Collision with {other.name}. I AM EXPLODING NOW!!!");
+               // print($"Collision with {other.name}. I AM EXPLODING NOW!!!");
                 _targetEnemyRef = null;
                 Collider[] allAffectedCollider = Physics.OverlapSphere(_myTransform.position, weaponUsingThisProjectile.areaOfEffect);
                 _gm.poolManager.GetExplosion(weaponUsingThisProjectile.ammoType == AmmoType.Rocket ? ExplosionType.Big : ExplosionType.Small, _myTransform.position);
@@ -117,10 +131,8 @@ public class ProjectilePhysical : MonoBehaviour, IMaterial, ITakeDamage
                 }
                 break;
         }
-
         ReturnToPool();
     }
 
-    
 
 }

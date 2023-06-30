@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: hand grenade
   m_EditorClassIdentifier: 
   itemName: Hand Grenade
-  ordinalLookup: 5
+  ordinalLookup: 11
   weaponType: 4
   ammoType: 7
   has2ndAttack: 0
@@ -21,11 +21,20 @@ MonoBehaviour:
   canAim: 0
   partialReload: 0
   hasCrosshair: 0
-  minSpread: 100
-  spreadIncreaseWhileShooting: 90
-  damage: {x: 50, y: 120}
+  startSpread: 50
+  damage: {x: 1, y: 3}
+  damageOverTime:
+    elementType: 0
+    damagePerTick: 0
+    effectDuration: 0
   range: 50
   rofModifier: 1
   noOfPelletsPerShot: 1
   areaOfEffect: 5
   clipCapacity: 1
+  weaponDetail:
+    flameArrester: 0
+    flashlight: 0
+    scope: 0
+    silencer: 0
+  enemyWeaponUsed: 0

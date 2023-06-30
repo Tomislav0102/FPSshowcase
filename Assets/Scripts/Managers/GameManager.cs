@@ -9,6 +9,7 @@ using UnityEngine.UI;
 using DG.Tweening;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.SceneManagement;
+using static UnityEngine.GraphicsBuffer;
 
 public class GameManager : MonoBehaviour
 {
@@ -31,6 +32,9 @@ public class GameManager : MonoBehaviour
     public LayerMask layFOV_Overlap, layFOV_Ray, layFOV_RayAll, layShooting;
     int layerPl, layerEn;
     public Transform wayPointParent;
+
+    [HideInInspector] public Vector3 pointForGizmo;
+
     private void Awake()
     {
         Instance = this;
@@ -76,6 +80,12 @@ SceneManager.LoadScene(1, LoadSceneMode.Additive);
         //}
 
     }
+
+    void OnDrawGizmos()
+    {
+       // Gizmos.DrawWireCube(pointForGizmo, 0.2f * Vector3.one);
+    }
+
 }
 #region GENERAL 
 [System.Serializable]
@@ -126,11 +136,11 @@ public class AttackClass
     GameManager _gm;
     Transform _camTr;
     EnemyRef _targetEnemyRef;
-    bool _oneHit;
     RaycastHit _hit;
     RaycastHit[] _multipleHits = new RaycastHit[10];
     GameObject _projec; 
     IFaction _myFactionInterface;
+    HashSet<Collider> _allColliders = new HashSet<Collider>();
     public Transform bulletSpawnPosition;
 
     Ray MeleeDirection()
@@ -165,10 +175,25 @@ public class AttackClass
     }
     public AttackClass(IFaction factionTarget)
     {
+        Ini(factionTarget);
+    }
+    public AttackClass(IFaction factionTarget, HashSet<Collider> colls, Transform bulletSpawn)
+    {
+        Ini(factionTarget);
+        foreach (Collider item in colls)
+        {
+            _allColliders.Add(item);
+        }
+        bulletSpawnPosition = bulletSpawn;
+    }
+    void Ini(IFaction factionTarget)
+    {
         _gm = GameManager.Instance;
         _camTr = _gm.mainCam.transform;
         _myFactionInterface = factionTarget;
+        _allColliders.Add(_myFactionInterface.MyCollider);
     }
+
 
     public void Attack(SoItem weaponItem)
     {
@@ -181,7 +206,8 @@ public class AttackClass
                 for (int i = 0; i < num; i++)
                 {
                     Collider coll = _multipleHits[i].collider;
-                    if (coll == null || coll == _myFactionInterface.MyCollider) continue;
+                    if (coll == null || _allColliders.Contains(coll)) continue;
+                   // Debug.Log(coll.name);
                     ApplyDamage(weaponItem, _multipleHits[i], false);
                 }
                 break;
@@ -264,6 +290,19 @@ public class AttackClass
         }
 
         _gm.poolManager.GetDetecable(hit.point/* + 0.01f * hit.normal*/, 2f, _myFactionInterface);
+    }
+
+    public Vector3 GetLauchVelocity(Vector3 targetPos, Vector3 myPos)
+    {
+        float height = Mathf.Max(targetPos.y, myPos.y) + 1f;
+        float gravity = Physics.gravity.magnitude;
+
+        float displacementY = targetPos.y - myPos.y;
+        Vector3 displacementXZ = new Vector3(targetPos.x - myPos.x, 0f, targetPos.z - myPos.z);
+
+        Vector3 velY = Mathf.Sqrt(2 * gravity * height) * Vector3.up;
+        Vector3 velXZ = displacementXZ / (Mathf.Sqrt(2 * height / gravity) + Mathf.Sqrt(2 * Mathf.Abs(displacementY - height) / gravity));
+        return velXZ + velY;
     }
 }
 
@@ -588,8 +627,8 @@ public class Controls
                 _moveDuck = 0.3f;
                 _player.camPosition.DOLocalMoveY(camHeights.y, 0.1f)
                     .SetEase(Ease.InFlash);
-                _plCapsuleColl.center = 0.5f * Vector3.up;
                 _plCapsuleColl.height = 1f;
+                _plCapsuleColl.center = 0.5f * Vector3.up;
             }
             else
             {
@@ -1220,7 +1259,7 @@ public class FieldOvView
             _ray.origin = _myTransform.position + (i + 0.6f) * Vector3.up;
             if (Physics.Raycast(_ray, out _hit, EffectiveRange(targetTr.position), layerMask, QueryTriggerInteraction.Ignore))
             {
-                if (_eRef._allColliders.Contains(_hit.collider))
+                if (_eRef.allColliders.Contains(_hit.collider))
                 {
                     Debug.Log(_hit.collider.name);
                     continue;

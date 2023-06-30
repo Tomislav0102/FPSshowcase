@@ -9492,7 +9492,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 205272501147644887, guid: c219f946109e89f4ebb69a8372838652, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.9999359
+      value: 0.6919269
       objectReference: {fileID: 0}
     - target: {fileID: 205272501147644887, guid: c219f946109e89f4ebb69a8372838652, type: 3}
       propertyPath: m_LocalRotation.x
@@ -9500,7 +9500,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 205272501147644887, guid: c219f946109e89f4ebb69a8372838652, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.011319946
+      value: -0.72196764
       objectReference: {fileID: 0}
     - target: {fileID: 205272501147644887, guid: c219f946109e89f4ebb69a8372838652, type: 3}
       propertyPath: m_LocalRotation.z
@@ -9512,7 +9512,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 205272501147644887, guid: c219f946109e89f4ebb69a8372838652, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 1.297
+      value: -92.434
       objectReference: {fileID: 0}
     - target: {fileID: 205272501147644887, guid: c219f946109e89f4ebb69a8372838652, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -9524,11 +9524,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1662587703877912618, guid: c219f946109e89f4ebb69a8372838652, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6124109601703284778, guid: c219f946109e89f4ebb69a8372838652, type: 3}
       propertyPath: beginState
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6124109601703284778, guid: c219f946109e89f4ebb69a8372838652, type: 3}
       propertyPath: roamRadius
@@ -9540,15 +9540,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6296196855609577654, guid: c219f946109e89f4ebb69a8372838652, type: 3}
       propertyPath: fleeTreshold
-      value: 1
+      value: 0.1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6274471934067734134, guid: c219f946109e89f4ebb69a8372838652, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c219f946109e89f4ebb69a8372838652, type: 3}
 --- !u!1001 &2054128650
 PrefabInstance:
@@ -9588,19 +9585,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8594565940149184429, guid: 874b6ee5133e9d14c87a1ef31478990f, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.6759147
       objectReference: {fileID: 0}
     - target: {fileID: 8594565940149184429, guid: 874b6ee5133e9d14c87a1ef31478990f, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 8594565940149184429, guid: 874b6ee5133e9d14c87a1ef31478990f, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0.73697984
       objectReference: {fileID: 0}
     - target: {fileID: 8594565940149184429, guid: 874b6ee5133e9d14c87a1ef31478990f, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 8594565940149184429, guid: 874b6ee5133e9d14c87a1ef31478990f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -9608,7 +9605,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8594565940149184429, guid: 874b6ee5133e9d14c87a1ef31478990f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: -94.95
       objectReference: {fileID: 0}
     - target: {fileID: 8594565940149184429, guid: 874b6ee5133e9d14c87a1ef31478990f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -12370,8 +12367,8 @@ Transform:
   - {fileID: 3840719339538099535}
   - {fileID: 1380454389594452230}
   - {fileID: 6263914847795304534}
-  - {fileID: 6313632831200630038}
   - {fileID: 7131210372554509647}
+  - {fileID: 6313632831200630038}
   - {fileID: 6841340889632226817}
   - {fileID: 6639378188131631617}
   m_Father: {fileID: 8399879960566253182}
@@ -37755,6 +37752,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 3395271511898464811}
     - target: {fileID: 1322688580790495139, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
+      propertyPath: controls.jumpForce
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 1322688580790495139, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
       propertyPath: offense.parWeapons
       value: 
       objectReference: {fileID: 338094474888623336}
@@ -37768,7 +37769,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1593556042056359417, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4645350530128875465, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
+      propertyPath: m_Drag
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 4645350530128875465, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
+      propertyPath: m_Mass
+      value: 70
       objectReference: {fileID: 0}
     - target: {fileID: 5675463718935312824, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
       propertyPath: m_RootOrder
@@ -37813,6 +37822,10 @@ PrefabInstance:
     - target: {fileID: 5675463718935312824, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5865099238005163268, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
+      propertyPath: m_Radius
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 5952592088870533696, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
       propertyPath: psOnFire

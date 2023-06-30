@@ -35,8 +35,9 @@ public class FloatingDamage : MonoBehaviour
 
         if (IsBehindPlayer()) return;
 
-        _height = Mathf.Lerp(0f, 200f, t);
-        _myTransform.position = _cam.WorldToScreenPoint(_startPos) + _height * Vector3.up;
+       // _height = Mathf.Lerp(0f, 200f, t);
+        _height = Mathf.Lerp(0f, 2f, t);
+        _myTransform.position = _cam.WorldToScreenPoint(_startPos + _height * Vector3.up);
         _myTransform.localScale = Vector3.Lerp(_bigSize, _normalSize, _timer * 2f);
         textFloatDam.color = Color.Lerp(_startCol, _endCol, t);
     }
@@ -60,7 +61,7 @@ public class FloatingDamage : MonoBehaviour
         if (_myTransform == null) _myTransform = transform;
 
         _myTransform.localScale = _bigSize;
-        _startPos = pos + Vector3.up + Random.Range(-0.2f, 0.2f) * Vector3.right;
+        _startPos = pos /*+ Vector3.up*/ + Random.Range(-0.2f, 0.2f) * Vector3.right;
         _dir = _startPos - _camtr.position;
         textFloatDam.colorGradientPreset = colorGradients[(int)elementType];
         textFloatDam.text = textToDisplay;

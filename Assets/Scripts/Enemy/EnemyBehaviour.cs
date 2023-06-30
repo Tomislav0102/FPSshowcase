@@ -21,7 +21,6 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     public RagToAnimTranstions ragToAnimTransition;
     public ParticleSystem psOnFire;
     [HideInInspector] public Transform movePoint;
-    /*[HideInInspector]*/ public Vector3 targetsDirection; //move direction of 'attackTarget' before loosing sight of it
     [HideInInspector] public bool hasSearched;
     public IFaction attackTarget;
     [HideInInspector] public DetectableObject detectObject;
@@ -31,10 +30,10 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     [Header("Behaviour")]
     public EnemyState beginState;
     public StateMachine sm;
-    [SerializeField]
-    Transform wpParent;
-    [SerializeField]
-    float roamRadius = 10f;
+    [SerializeField] Transform wpParent;
+    [SerializeField] float roamRadius = 10f;
+    [SerializeField] Transform handGreandeSpawnPoint;
+    [SerializeField] SoItem handGrenadeScriptable;
     #endregion
 
     #region ANIMATIONS
@@ -63,7 +62,6 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     public float speedAgent;
     public float remainDistance;
     public string nameOfTarget;
-    public float angleBetweenForwardAndMovePoint;
     #endregion
 
     ///////////////////////////////////////////////////////////////////////////
@@ -122,7 +120,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         rigLeftHand.weight = Mathf.MoveTowards(rigLeftHand.weight, _weightLeftHand, 4f * Time.deltaTime);
         _weightHit = Mathf.MoveTowards(_weightHit, isHit ? 1f : 0f, 2f * Time.deltaTime);
         _eRef.anim.SetLayerWeight(1, _weightHit);
-
+       // print(_weightRightHandAim);
         if (sm.currentState == sm.attackState || sm.currentState == sm._fleeState) return;
         if (_canUpdateFOV)
         {
@@ -216,12 +214,29 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         _eRef.attackClass.Attack(weaponUsed);
 
     }
+    public void AE_ThrowGrenade()
+    {
+        GameObject greande = _gm.poolManager.GetProjectile(handGrenadeScriptable.ammoType);
+        greande.GetComponent<ProjectilePhysical>().IniThrowable(handGreandeSpawnPoint, ragdollTransform[10].GetComponent<Collider>(),
+            _eRef.attackClass.GetLauchVelocity(attackTarget.MyTransform.position, handGreandeSpawnPoint.position));
+        greande.SetActive(true);
+    }
+    public void ThrowMethod(bool startThrowing)
+    {
+        sm.attackState.isThrowing = startThrowing;
+        Attack_Animation(!startThrowing);
+        if (!startThrowing)
+        {
+            _offsetTar = multiAimConstraintRightHand.data.offset = Vector3.zero;
+        }
+    }
+
     #endregion
 
     #region ANIMATIONS
     public void IdelLookAround_Animation(bool active, float angle)
     {
-        rigLookAt.weight = active ? 1f : 0f;
+        rigLookAt.weight = Mathf.Lerp(rigLookAt.weight, active ? 1f : 0f, 3f * Time.deltaTime);
         ikLookAtTransform.localEulerAngles = angle * Vector3.up;
     }
     void GetIK_Animation(bool attak)

@@ -15,7 +15,7 @@ public class EnemyRef : GlobalEventManager
     [HideInInspector] public Transform agentTr;
     public AttackClass attackClass;
     public IFaction myFactionInterface;
-    public HashSet<Collider> _allColliders = new HashSet<Collider>();
+    public HashSet<Collider> allColliders = new HashSet<Collider>();
     [HideInInspector] public Animator anim;
     [HideInInspector] public Transform animTr;
     public HealthEnemy enemyHealth;
@@ -33,7 +33,7 @@ public class EnemyRef : GlobalEventManager
         agentTr = agent.transform;
         anim = enemyBehaviour.GetComponent<Animator>();
         animTr = enemyBehaviour.transform;
-        enemyBehaviour.InitAwake(this, movePoint, displayState, out _allColliders);
+        enemyBehaviour.InitAwake(this, movePoint, displayState, out allColliders);
         fov.Init(this, consoleDisplay);
     }
 
@@ -41,8 +41,7 @@ public class EnemyRef : GlobalEventManager
     {
         base.OnEnable();
         enemyHealth.Dead += MyDeath;
-        attackClass = new AttackClass(myFactionInterface);
-        attackClass.bulletSpawnPosition = enemyBehaviour.muzzle.transform;
+        attackClass = new AttackClass(myFactionInterface, allColliders, enemyBehaviour.muzzle.transform);
 
     }
     protected override void OnDisable()
