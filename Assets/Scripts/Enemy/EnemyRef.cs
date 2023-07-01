@@ -12,6 +12,7 @@ public class EnemyRef : GlobalEventManager
     public EnemyBehaviour enemyBehaviour;
     [SerializeField] Transform movePoint;
     public NavMeshAgent agent;
+    public SpriteRenderer visibilityMark;
     [HideInInspector] public Transform agentTr;
     public AttackClass attackClass;
     public IFaction myFactionInterface;

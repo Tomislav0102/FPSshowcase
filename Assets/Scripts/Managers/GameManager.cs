@@ -1312,23 +1312,6 @@ public class FieldOvView
                     }
 
                 }
-                
-                // switch (en.EnState)
-                // {
-                //     case EnemyState.Attack:
-                //         character = en.attackTarget;
-                //         break;
-                //     case EnemyState.Search:
-                //         if (_enemyBehaviour.EnState == EnemyState.Search || _enemyBehaviour.hasSearched)
-                //         {
-                //             character = null;
-                //         }
-                //         else
-                //         {
-                //             detect = en.detectObject;
-                //         }
-                //         break;
-                // }
             }
 
             if (character != null) break;

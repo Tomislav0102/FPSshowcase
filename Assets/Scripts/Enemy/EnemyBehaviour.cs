@@ -120,7 +120,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         rigLeftHand.weight = Mathf.MoveTowards(rigLeftHand.weight, _weightLeftHand, 4f * Time.deltaTime);
         _weightHit = Mathf.MoveTowards(_weightHit, isHit ? 1f : 0f, 2f * Time.deltaTime);
         _eRef.anim.SetLayerWeight(1, _weightHit);
-       // print(_weightRightHandAim);
+
         if (sm.currentState == sm.attackState || sm.currentState == sm._fleeState) return;
         if (_canUpdateFOV)
         {
@@ -128,7 +128,8 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
             if (attackTarget != null)
             {
                 movePoint.position = attackTarget.MyTransform.position;
-                sm.ChangeState(sm.attackState);
+                // sm.ChangeState(sm.attackState);
+                sm.ChangeState(sm.scanState);
             }
             else if (detectObject != null)
             {
@@ -141,6 +142,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
 
             _canUpdateFOV = false;
         }
+
 
     }
     #endregion

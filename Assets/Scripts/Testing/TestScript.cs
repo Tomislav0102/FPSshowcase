@@ -60,10 +60,7 @@ public class TestScript : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            GetComponent<Rigidbody>().velocity = 10f * Vector3.forward;
-        }
+
     }
 }
 

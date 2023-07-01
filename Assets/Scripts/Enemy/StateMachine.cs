@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UIElements;
 
 
 public class StateMachine
@@ -16,6 +17,7 @@ public class StateMachine
     PatrolState _patrolState;
     RoamState _roamState;
     public SearchState searchState;
+    public ScanState scanState;
     public AttackState attackState;
     FollowState _followState;
     public ImmobileState immobileState;
@@ -30,6 +32,7 @@ public class StateMachine
         _patrolState = new PatrolState(eref, _allStates, patrolparent, patrolwaypoints);
         _roamState = new RoamState(eref, _allStates, roamradius);
         searchState = new SearchState(eref, _allStates, roamradius);
+        scanState = new ScanState(eref, _allStates);
         attackState = new AttackState(eref, _allStates);
         _followState = new FollowState(eref, _allStates);
         immobileState = new ImmobileState(eref, _allStates);
@@ -308,6 +311,57 @@ public class SearchState : SuperState_Alpha
     {
         await Task.Delay(5000);
         enBeh.hasSearched = false;
+    }
+}
+public class ScanState : BaseState
+{
+    SpriteRenderer _visibleSprite;
+    Transform _visibleTransform;
+
+    float _awareness;
+    const float CONST_TIMETORECONGINZETARGET = 2f;
+    readonly Color _startCol = new Color(0f, 1f, 0f, 0f);
+    readonly Color _endCol = Color.red;
+
+    public ScanState(EnemyRef eref, List<BaseState> allStates) : base(eref, allStates)
+    {
+        _visibleSprite = eref.visibilityMark;
+        _visibleTransform = _visibleSprite.transform;
+    }
+    public override void OnEnter()
+    {
+        base.OnEnter();
+        _awareness = 0;
+        _visibleSprite.color = _startCol;
+        enBeh.SetSpeed_Animation(MoveType.Stationary);
+    }
+    public override void UpdateLoop()
+    {
+        base.UpdateLoop();
+        if (enBeh.attackTarget == null)
+        {
+            enBeh.sm.ChangeToStartingState();
+            return;
+        }
+
+        enBeh.movePoint.position = enBeh.attackTarget.MyTransform.position;
+        Vector3 lookVector = (enBeh.movePoint.position - enBeh.MyTransform.position).normalized;
+        float angle = Vector3.SignedAngle(enBeh.MyTransform.position, lookVector, Vector3.up);
+        enBeh.IdelLookAround_Animation(true, angle);
+
+        _awareness += Time.deltaTime / CONST_TIMETORECONGINZETARGET;
+        _visibleSprite.color = Color.Lerp(_startCol, _endCol, _awareness);
+        _visibleTransform.LookAt(gm.camTr.position);
+        if (_awareness >= 1f)
+        {
+            enBeh.sm.ChangeState(enBeh.sm.attackState);
+        }
+    }
+    public override void OnExit()
+    {
+        base.OnExit();
+        _visibleSprite.color = Color.clear;
+        enBeh.IdelLookAround_Animation(false, 0);
     }
 }
 public class AttackState : BaseState
