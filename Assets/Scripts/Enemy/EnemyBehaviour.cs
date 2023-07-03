@@ -121,29 +121,27 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         _weightHit = Mathf.MoveTowards(_weightHit, isHit ? 1f : 0f, 2f * Time.deltaTime);
         _eRef.anim.SetLayerWeight(1, _weightHit);
 
-        if (sm.currentState == sm.attackState || sm.currentState == sm._fleeState) return;
-        if (_canUpdateFOV)
-        {
-            _eRef.fov.GetAllTargets(out attackTarget, out detectObject);
-            if (attackTarget != null)
-            {
-                movePoint.position = attackTarget.MyTransform.position;
-                // sm.ChangeState(sm.attackState);
-                sm.ChangeState(sm.scanState);
-            }
-            else if (detectObject != null)
-            {
-                if (!hasSearched)
-                {
-                    movePoint.position = detectObject.owner.MyTransform.position;
-                    sm.ChangeState(sm.searchState);
-                }
-            }
+        if (!_canUpdateFOV ||
+            sm.currentState == sm.attackState ||
+            sm.currentState == sm._fleeState) return;
 
-            _canUpdateFOV = false;
+        _eRef.fov.GetAllTargets(out attackTarget, out detectObject);
+        if (attackTarget != null)
+        {
+            movePoint.position = attackTarget.MyTransform.position;
+            if (sm.currentState == sm.searchState) sm.ChangeState(sm.attackState);
+            else sm.ChangeState(sm.scanState);
+        }
+        else if (detectObject != null)
+        {
+            if (!hasSearched)
+            {
+                movePoint.position = detectObject.owner.MyTransform.position;
+                sm.ChangeState(sm.searchState);
+            }
         }
 
-
+        _canUpdateFOV = false;
     }
     #endregion
 
@@ -220,7 +218,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     {
         GameObject greande = _gm.poolManager.GetProjectile(handGrenadeScriptable.ammoType);
         greande.GetComponent<ProjectilePhysical>().IniThrowable(handGreandeSpawnPoint, ragdollTransform[10].GetComponent<Collider>(),
-            _eRef.attackClass.GetLauchVelocity(attackTarget.MyTransform.position, handGreandeSpawnPoint.position));
+            _eRef.attackClass.GetLauchVelocity(movePoint.position, handGreandeSpawnPoint.position));
         greande.SetActive(true);
     }
     public void ThrowMethod(bool startThrowing)
@@ -236,10 +234,15 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     #endregion
 
     #region ANIMATIONS
-    public void IdelLookAround_Animation(bool active, float angle)
+    public void IdelLookAround_Animation(bool active, float angle, float rotSpeed)
     {
         rigLookAt.weight = Mathf.Lerp(rigLookAt.weight, active ? 1f : 0f, 3f * Time.deltaTime);
-        ikLookAtTransform.localEulerAngles = angle * Vector3.up;
+        if (!active) ikLookAtTransform.localRotation = Quaternion.identity;
+        else
+        {
+          //  ikLookAtTransform.localEulerAngles = Vector3.Lerp(ikLookAtTransform.localEulerAngles, angle * Vector3.up, rotSpeed * Time.deltaTime);
+            ikLookAtTransform.localRotation = Quaternion.Lerp(ikLookAtTransform.localRotation, Quaternion.Euler(angle * Vector3.up), rotSpeed * Time.deltaTime);
+        }
     }
     void GetIK_Animation(bool attak)
     {
@@ -276,15 +279,9 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
             Vector3.Lerp(multiAimConstraintRightHand.data.offset, _offsetTar, 0.3f * Time.deltaTime);
 
     }
-    public void SetSpeed_Animation(MoveType movetype)
-    {
-        _eRef.anim.SetInteger("movePhase", (int)movetype);
-    }
+    public void SetSpeed_Animation(MoveType movetype) => _eRef.anim.SetInteger("movePhase", (int)movetype);
 
-    public void ResetAllWeights()
-    {
-        rigRightHandAiming.weight = rigLeftHand.weight = 0f;
-    }
+    public void ResetHandsWeights() => rigRightHandAiming.weight = rigLeftHand.weight = 0f;
     #endregion
 
 

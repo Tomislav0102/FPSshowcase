@@ -1245,7 +1245,7 @@ public class FieldOvView
     float EffectiveRange(Vector3 targetPos)
     {
         float r = _sightRange;
-        if (Vector3.Dot(_myTransform.forward, (targetPos - _myTransform.position).normalized) < _sightAngleTrigonometry)
+        if (Vector3.Dot(_myIFactionTarget.MyHead.forward, (targetPos - _myTransform.position).normalized) < _sightAngleTrigonometry)
         {
             r = _hearingRange;
         }
@@ -1253,7 +1253,7 @@ public class FieldOvView
     }
     public bool TargetVisible(Transform targetTr, Collider targetColl, LayerMask layerMask)
     {
-        _ray.direction = (targetTr.position - _myTransform.position).normalized;
+         _ray.direction = (targetTr.position - _myTransform.position).normalized;
         for (int i = 0; i < 2; i++)
         {
             _ray.origin = _myTransform.position + (i + 0.6f) * Vector3.up;

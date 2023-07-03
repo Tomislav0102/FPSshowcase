@@ -60,7 +60,8 @@ public class TestScript : MonoBehaviour
 
     private void Update()
     {
-
+        angl = Vector3.Angle(Vector3.one, otherTransform.localScale);
+        signAngle = Vector3.SignedAngle(Vector3.one, otherTransform.localScale, Vector3.up);
     }
 }
 

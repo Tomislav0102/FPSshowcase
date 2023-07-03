@@ -3,10 +3,6 @@ ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 - attack behaviour is too simple - add cover, throwing grenades etc...
 
-- throwing greandes needs polishing (define condition to use and cancel throw, etc...)
-
-- scan behaviour is incomplete (shouldn't be trigered in search state, only starts with eye 'sensor', not hearing 'sensor', etc...)
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -41,5 +37,7 @@ ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 NOTES $$$$$$$$$$$$$$$$$
 
 - players collider radius has been decreased - maybe that will create bugs
+
+- throwing grenades - executes when enemy looses sight of player. Only one grenade is throw. Bool that governs that resets when exiting attack state
 
 $$$$$$$$$$$$$$$$$$$$$$$

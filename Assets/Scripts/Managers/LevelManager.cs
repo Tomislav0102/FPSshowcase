@@ -9,6 +9,10 @@ public class LevelManager : MonoBehaviour
     private void Awake()
     {
         GameManager.Instance.levelManager = this;
+    }
+    private void Start()
+    {
         SceneManager.SetActiveScene(gameObject.scene);
+        
     }
 }

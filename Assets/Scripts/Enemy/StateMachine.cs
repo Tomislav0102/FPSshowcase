@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using TMPro;
-using UnityEngine.UIElements;
 
 
 public class StateMachine
@@ -32,7 +31,7 @@ public class StateMachine
         _patrolState = new PatrolState(eref, _allStates, patrolparent, patrolwaypoints);
         _roamState = new RoamState(eref, _allStates, roamradius);
         searchState = new SearchState(eref, _allStates, roamradius);
-        scanState = new ScanState(eref, _allStates);
+        scanState = new ScanState(eref, _allStates, roamradius);
         attackState = new AttackState(eref, _allStates);
         _followState = new FollowState(eref, _allStates);
         immobileState = new ImmobileState(eref, _allStates);
@@ -68,7 +67,9 @@ public class BaseState
     internal float timer;
     internal Vector3 startPos;
     internal Quaternion startRot;
+
     public int counterForColors;
+
     protected BaseState(EnemyRef eref, List<BaseState> allStates)
     {
         gm = GameManager.Instance;
@@ -115,8 +116,8 @@ public class SuperState_Alpha : BaseState //idle, roam, search
     float _maxTimerLookAt;
     float RdnRange() => Random.Range(1f, 3f);
     internal float lookAtInterval = 1f;
-    float _nextAngle, _prevAngle;
-    internal float rotSpeed = 2f;
+    internal float rotSpeed;
+    float _prevAngle;
 
     //these two are needed for search state. Actor first goes to targets last know position and then does search behaviour (although he is in search state from the beggining)
     internal bool goTo2; 
@@ -132,7 +133,7 @@ public class SuperState_Alpha : BaseState //idle, roam, search
         goTo2 = _goTo1 = justIdeling = false;
         _timerStoped = 0f;
         isStoped = false;
-        _nextAngle = _prevAngle = 0f;
+        _prevAngle = 0f;
     }
     public override void UpdateLoop()
     {
@@ -172,7 +173,7 @@ public class SuperState_Alpha : BaseState //idle, roam, search
             isStoped = !isStoped;
         }
         enBeh.SetSpeed_Animation(moveTypeMobile);
-        enBeh.IdelLookAround_Animation(false, 0f);
+       // enBeh.IdelLookAround_Animation(false, 0f);
 
     }
 
@@ -183,17 +184,15 @@ public class SuperState_Alpha : BaseState //idle, roam, search
         {
             timer = 0f;
             _maxTimerLookAt = RdnRange() * lookAtInterval;
-            _nextAngle = _prevAngle;
             _prevAngle = Random.Range(-70f, 70f);
         }
-        _nextAngle = Mathf.Lerp(_nextAngle, _prevAngle, rotSpeed * Time.deltaTime);
-        enBeh.IdelLookAround_Animation(true, _nextAngle);
+        enBeh.IdelLookAround_Animation(true, _prevAngle, rotSpeed);
 
     }
     public override void OnExit()
     {
         base.OnExit();
-        enBeh.IdelLookAround_Animation(false, 0f);
+      //  enBeh.IdelLookAround_Animation(false, 0f);
     }
 }
 
@@ -210,6 +209,7 @@ public class IdleState : SuperState_Alpha
         enBeh.attackTarget = null;
         justIdeling = true;
         lookAtInterval = 5f;
+        rotSpeed = 2f;
     }
 
     public override void UpdateLoop()
@@ -313,20 +313,23 @@ public class SearchState : SuperState_Alpha
         enBeh.hasSearched = false;
     }
 }
-public class ScanState : BaseState
+public class ScanState : SuperState_Alpha
 {
     SpriteRenderer _visibleSprite;
     Transform _visibleTransform;
 
     float _awareness;
-    const float CONST_TIMETORECONGINZETARGET = 2f;
+    const float CONST_TIMETORECONGINZETARGET = 3f;
+    const float CONST_AUTOFINISHDISTANCE = 5f;
+    float _autoFinishDistanceSquared;
     readonly Color _startCol = new Color(0f, 1f, 0f, 0f);
     readonly Color _endCol = Color.red;
 
-    public ScanState(EnemyRef eref, List<BaseState> allStates) : base(eref, allStates)
+    public ScanState(EnemyRef eref, List<BaseState> allStates, float roamRadius) : base(eref, allStates, roamRadius)
     {
         _visibleSprite = eref.visibilityMark;
         _visibleTransform = _visibleSprite.transform;
+        _autoFinishDistanceSquared = CONST_AUTOFINISHDISTANCE * CONST_AUTOFINISHDISTANCE;
     }
     public override void OnEnter()
     {
@@ -334,6 +337,7 @@ public class ScanState : BaseState
         _awareness = 0;
         _visibleSprite.color = _startCol;
         enBeh.SetSpeed_Animation(MoveType.Stationary);
+        rotSpeed = 2f;
     }
     public override void UpdateLoop()
     {
@@ -345,11 +349,14 @@ public class ScanState : BaseState
         }
 
         enBeh.movePoint.position = enBeh.attackTarget.MyTransform.position;
-        Vector3 lookVector = (enBeh.movePoint.position - enBeh.MyTransform.position).normalized;
-        float angle = Vector3.SignedAngle(enBeh.MyTransform.position, lookVector, Vector3.up);
-        enBeh.IdelLookAround_Animation(true, angle);
+        Vector3 lookVector = enBeh.movePoint.position - enBeh.MyTransform.position;
+        float angle = Vector3.SignedAngle(enBeh.MyHead.forward, lookVector.normalized, Vector3.up);
+        enBeh.IdelLookAround_Animation(true, angle, rotSpeed);
+      //  Debug.Log(angle);
+
 
         _awareness += Time.deltaTime / CONST_TIMETORECONGINZETARGET;
+        if (Vector3.SqrMagnitude(lookVector) < _autoFinishDistanceSquared) _awareness = Mathf.Infinity;
         _visibleSprite.color = Color.Lerp(_startCol, _endCol, _awareness);
         _visibleTransform.LookAt(gm.camTr.position);
         if (_awareness >= 1f)
@@ -361,17 +368,27 @@ public class ScanState : BaseState
     {
         base.OnExit();
         _visibleSprite.color = Color.clear;
-        enBeh.IdelLookAround_Animation(false, 0);
+       // enBeh.IdelLookAround_Animation(false, 0);
     }
 }
 public class AttackState : BaseState
 {
     float _attackRangeSquared;
-    float _timerThrow;
-    public bool isThrowing;
+    public bool isThrowing; //start and finish of throw animation
+    bool _hasThrown; //only one grenade after traget is no longer visible
+    LayerMask _layGrenadeThrow;
 
     public AttackState(EnemyRef eref, List<BaseState> allStates) : base(eref, allStates)
     {
+        switch (eref.myFactionInterface.Fact)
+        {
+            case Faction.Enemy:
+                _layGrenadeThrow = 1 << 24;
+                break;
+            case Faction.Ally:
+                _layGrenadeThrow = 1 << 16;
+                break;
+        }
     }
 
     public void InitAttackRange(float sightRange)
@@ -386,6 +403,7 @@ public class AttackState : BaseState
         enBeh.SetSpeed_Animation(MoveType.Run);
         enBeh.hasSearched = false;
         enBeh.detectObject = null;
+        enBeh.IdelLookAround_Animation(false, 0f, 0f);
     }
 
     public override void UpdateLoop()
@@ -407,6 +425,7 @@ public class AttackState : BaseState
         {
             enBeh.Attack_Animation(false);
             enBeh.TrackMovingTarget();
+            if (CanThrowGreande()) eRef.anim.SetTrigger("throw");
             if (eRef.agent.remainingDistance < 1f)
             {
                 enBeh.sm.ChangeState(enBeh.sm.searchState);
@@ -422,27 +441,28 @@ public class AttackState : BaseState
         {
             if (eRef.agent.hasPath) eRef.agent.ResetPath();
             enBeh.SetAim_Animation();
-             enBeh.Attack_Animation(true);
-            _timerThrow += Time.deltaTime;
-            if (_timerThrow > 5f)
-            {
-                eRef.anim.SetTrigger("throw");
-                _timerThrow = 0;
-            }
+            enBeh.Attack_Animation(true);
         }
         else
         {
             enBeh.Attack_Animation(false);
             enBeh.TrackMovingTarget();
-            _timerThrow = 0;
         }
 
     }
     public override void OnExit()
     {
         base.OnExit();
-        _timerThrow = 0f;
-        isThrowing = false;
+        isThrowing = _hasThrown = false;
+    }
+    bool CanThrowGreande()
+    {
+        if(_hasThrown) return false;
+        _hasThrown = true;
+
+        Collider[] coll = Physics.OverlapSphere(enBeh.movePoint.position, 2f, _layGrenadeThrow);
+        if (coll.Length > 0) return false;
+        return true;
     }
 }
 public class FollowState : BaseState
@@ -508,7 +528,7 @@ public class ImmobileState : BaseState
     public override void OnEnter()
     {
         base.OnEnter();
-        enBeh.ResetAllWeights();
+        enBeh.ResetHandsWeights();
     }
 
     public override void UpdateLoop()
