@@ -98,7 +98,7 @@ public class BaseState
 
     }
 }
-public class SuperState_Alpha : BaseState //idle, roam, search
+public class SuperState_Alpha : BaseState //idle, roam, search, scann
 {
     readonly float _roamRadius;
     internal Vector3 center;
@@ -319,7 +319,7 @@ public class ScanState : SuperState_Alpha
     Transform _visibleTransform;
 
     float _awareness;
-    const float CONST_TIMETORECONGINZETARGET = 3f;
+    const float CONST_TIMETORECONGINZETARGET = 1f;
     const float CONST_AUTOFINISHDISTANCE = 5f;
     float _autoFinishDistanceSquared;
     readonly Color _startCol = new Color(0f, 1f, 0f, 0f);
@@ -425,7 +425,7 @@ public class AttackState : BaseState
         {
             enBeh.Attack_Animation(false);
             enBeh.TrackMovingTarget();
-            if (CanThrowGreande()) eRef.anim.SetTrigger("throw");
+           // if (CanThrowGreande()) eRef.anim.SetTrigger("throw");
             if (eRef.agent.remainingDistance < 1f)
             {
                 enBeh.sm.ChangeState(enBeh.sm.searchState);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using TMPro;
+using Sirenix.OdinInspector;
 
 
 public class EnemyRef : GlobalEventManager
@@ -21,9 +22,10 @@ public class EnemyRef : GlobalEventManager
     [HideInInspector] public Transform animTr;
     public HealthEnemy enemyHealth;
 
+    [HideLabel]
     public FieldOvView fov;
 
-    [Header("Debug only")]
+    [Title("Debug only")]
     public bool consoleDisplay;
 
 

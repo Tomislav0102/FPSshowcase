@@ -17,6 +17,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 5082330232970433060}
     - target: {fileID: 3718415612249610278, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: weaponMesh
+      value: 
+      objectReference: {fileID: 6398281303419655918}
+    - target: {fileID: 3718415612249610278, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: weaponUsed
       value: 
       objectReference: {fileID: 11400000, guid: fd9a6dab1c3f2dc42aa76e5b9d858108, type: 2}
@@ -190,5 +194,10 @@ Transform:
 --- !u!1 &5082330232970433060 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7049974126319404115, guid: 4e2c1e64f84d4044bbaf858aec2f82fe, type: 3}
+  m_PrefabInstance: {fileID: 2836874651007243895}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &6398281303419655918 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9193492279329996953, guid: 4e2c1e64f84d4044bbaf858aec2f82fe, type: 3}
   m_PrefabInstance: {fileID: 2836874651007243895}
   m_PrefabAsset: {fileID: 0}

@@ -10,6 +10,7 @@ using DG.Tweening;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.SceneManagement;
 using static UnityEngine.GraphicsBuffer;
+using Sirenix.OdinInspector;
 
 public class GameManager : MonoBehaviour
 {
@@ -91,9 +92,13 @@ SceneManager.LoadScene(1, LoadSceneMode.Additive);
 [System.Serializable]
 public struct WeaponDetail<T>
 {
+    [BoxGroup("Weapon details")]
     public T flameArrester;
+    [BoxGroup("Weapon details")]
     public T flashlight;
+    [BoxGroup("Weapon details")]
     public T scope;
+    [BoxGroup("Weapon details")]
     public T silencer;
 }
 [System.Serializable]
@@ -1209,8 +1214,12 @@ public class FieldOvView
     EnemyBehaviour _enemyBehaviour;
     IFaction _myIFactionTarget;
     Transform _myTransform;
+    [BoxGroup("Field of view")]
+    [GUIColor("yellow")]
     [SerializeField] Transform sightSphere, hearSphere;
     float _sightRange, _hearingRange;
+    [BoxGroup("Field of view")]
+    [GUIColor("yellow")]
     [SerializeField] float sightAngle = 120f;
     float _sightAngleTrigonometry;
 
@@ -1269,10 +1278,11 @@ public class FieldOvView
         }
         return false;
     }
-    public void GetAllTargets(out IFaction tarCharacter, out DetectableObject tarDetectable)
+    public void GetAllTargets(out IFaction tarCharacter, out DetectableObject tarDetectable, ref bool frienDetectsEnemy)
     {
         IFaction character = null;
         DetectableObject detect = null;
+        frienDetectsEnemy = false;
 
         int num = Physics.OverlapSphereNonAlloc(_myTransform.position, _sightRange, _colls, _gm.layFOV_Overlap, QueryTriggerInteraction.Ignore);
         _allChars.Clear();
@@ -1299,6 +1309,7 @@ public class FieldOvView
                 if (en.sm.currentState == en.sm.attackState)
                 {
                     character = en.attackTarget;
+                    frienDetectsEnemy = true;
                 }
                 else if (en.sm.currentState == en.sm.searchState)
                 {

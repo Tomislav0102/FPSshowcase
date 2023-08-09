@@ -17,6 +17,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8104471503991611113}
     - target: {fileID: 3718415612249610278, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
+      propertyPath: weaponMesh
+      value: 
+      objectReference: {fileID: 6382448191910879034}
+    - target: {fileID: 3718415612249610278, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: weaponUsed
       value: 
       objectReference: {fileID: 11400000, guid: 35c2456c36a8ccc4cae192f629d1c724, type: 2}
@@ -162,6 +166,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 949db434158f31f4ead8b40ae0d182e7, type: 3}
+--- !u!1 &6382448191910879034 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3752427031632965316, guid: 949db434158f31f4ead8b40ae0d182e7, type: 3}
+  m_PrefabInstance: {fileID: 7818335065433240062}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &8104471503991611113 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2087580833582083863, guid: 949db434158f31f4ead8b40ae0d182e7, type: 3}

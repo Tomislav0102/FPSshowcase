@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Animations.Rigging;
+using Sirenix.OdinInspector;
 
 public class EnemyBehaviour : MonoBehaviour, IFaction
 {
@@ -19,33 +20,66 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     Camera _cam;
     bool _canUpdateFOV, _canUpdateDestination;
     public RagToAnimTranstions ragToAnimTransition;
-    public ParticleSystem psOnFire;
     [HideInInspector] public Transform movePoint;
     [HideInInspector] public bool hasSearched;
     public IFaction attackTarget;
     [HideInInspector] public DetectableObject detectObject;
     float _weightHit;
+    [PropertySpace(SpaceAfter = 10, SpaceBefore = 0)]
+    public ParticleSystem psOnFire;
 
     #region BEHAVIOUR SPECIFIC
-    [Header("Behaviour")]
+    [BoxGroup("Behaviour")]
+    [GUIColor("green")]
     public EnemyState beginState;
+    [BoxGroup("Behaviour")]
+    [GUIColor("green")]
     public StateMachine sm;
+    [BoxGroup("Behaviour")]
+    [GUIColor("green")]
     [SerializeField] Transform wpParent;
+    [BoxGroup("Behaviour")]
+    [GUIColor("green")]
     [SerializeField] float roamRadius = 10f;
+    [BoxGroup("Behaviour")]
+    [GUIColor("green")]
     [SerializeField] Transform handGreandeSpawnPoint;
+    [BoxGroup("Behaviour")]
+    [GUIColor("green")]
     [SerializeField] SoItem handGrenadeScriptable;
+    [BoxGroup("Behaviour")]
+    [GUIColor("green")]
+    [SerializeField] int handGrenadeCount = 3;
     #endregion
 
     #region ANIMATIONS
-    [Header("Animations")]
+    [BoxGroup("Animations")]
+    [GUIColor("blue")]
     [SerializeField] Transform[] ragdollTransform;
     RagdollBodyPart[] _bodyParts;
+    [BoxGroup("Animations")]
+    [GUIColor("blue")]
     public SoItem weaponUsed;
+    [BoxGroup("Animations")]
+    [GUIColor("blue")]
+    [SerializeField] GameObject weaponMesh;
+    [BoxGroup("Animations")]
+    [GUIColor("blue")]
     public GameObject muzzle;
+    [BoxGroup("Animations")]
+    [GUIColor("blue")]
     [SerializeField] Rig rigLookAt;
+    [BoxGroup("Animations")]
+    [GUIColor("blue")]
     [SerializeField] Transform ikLookAtTransform;
+    [BoxGroup("Animations")]
+    [GUIColor("blue")]
     [SerializeField] Rig rigRightHandAiming;
+    [BoxGroup("Animations")]
+    [GUIColor("blue")]
     [SerializeField] Rig rigLeftHand;
+    [BoxGroup("Animations")]
+    [GUIColor("blue")]
     [SerializeField] MultiAimConstraint multiAimConstraintRightHand; //needed for accuracy (together with '_spreadWeapon')
     Transform _aimIK;
     float _spreadWeapon = 50f;
@@ -55,7 +89,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     #endregion
 
     #region DEBUGS
-    [Header("Debug only")]
+    [Title("Debug only")]
     public bool haspath;
     public NavMeshPathStatus pathStatus;
     public float speedAnimRoot;
@@ -125,12 +159,15 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
             sm.currentState == sm.attackState ||
             sm.currentState == sm._fleeState) return;
 
-        _eRef.fov.GetAllTargets(out attackTarget, out detectObject);
+        bool frienDetectsEnemy = false;
+        _eRef.fov.GetAllTargets(out attackTarget, out detectObject, ref frienDetectsEnemy);
         if (attackTarget != null)
         {
             movePoint.position = attackTarget.MyTransform.position;
             if (sm.currentState == sm.searchState) sm.ChangeState(sm.attackState);
+            else if (frienDetectsEnemy) sm.ChangeState(sm.searchState);
             else sm.ChangeState(sm.scanState);
+                
         }
         else if (detectObject != null)
         {
@@ -223,8 +260,9 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     }
     public void ThrowMethod(bool startThrowing)
     {
+        weaponMesh.SetActive(!startThrowing);
         sm.attackState.isThrowing = startThrowing;
-        Attack_Animation(!startThrowing);
+        if(sm.currentState == sm.attackState) Attack_Animation(!startThrowing);
         if (!startThrowing)
         {
             _offsetTar = multiAimConstraintRightHand.data.offset = Vector3.zero;
