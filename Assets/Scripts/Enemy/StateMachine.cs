@@ -23,7 +23,7 @@ public class StateMachine
     public FleeState _fleeState;
     public MoveToPointState moveToPointState;
 
-    public StateMachine(TextMeshPro display, EnemyRef eref, Transform patrolparent, Transform[] patrolwaypoints, float roamradius, int indexOfStartingState)
+    public StateMachine(TextMeshPro display, EnemyRef eref, Transform patrolparent, Transform[] patrolwaypoints, float roamradius, int indexOfStartingState, int grandes)
     {
         _display = display;
 
@@ -32,7 +32,7 @@ public class StateMachine
         _roamState = new RoamState(eref, _allStates, roamradius);
         searchState = new SearchState(eref, _allStates, roamradius);
         scanState = new ScanState(eref, _allStates, roamradius);
-        attackState = new AttackState(eref, _allStates);
+        attackState = new AttackState(eref, _allStates, grandes);
         _followState = new FollowState(eref, _allStates);
         immobileState = new ImmobileState(eref, _allStates);
         _fleeState = new FleeState(eref, _allStates);
@@ -375,10 +375,10 @@ public class AttackState : BaseState
 {
     float _attackRangeSquared;
     public bool isThrowing; //start and finish of throw animation
-    bool _hasThrown; //only one grenade after traget is no longer visible
-    LayerMask _layGrenadeThrow;
+    int _countGreandes = 0;
+    LayerMask _layGrenadeThrow; //detecting your own to avoid friendly fire
 
-    public AttackState(EnemyRef eref, List<BaseState> allStates) : base(eref, allStates)
+    public AttackState(EnemyRef eref, List<BaseState> allStates, int countGreandes) : base(eref, allStates)
     {
         switch (eref.myFactionInterface.Fact)
         {
@@ -386,9 +386,10 @@ public class AttackState : BaseState
                 _layGrenadeThrow = 1 << 24;
                 break;
             case Faction.Ally:
-                _layGrenadeThrow = 1 << 16;
+                _layGrenadeThrow = 1 << 3;
                 break;
         }
+        _countGreandes = countGreandes;
     }
 
     public void InitAttackRange(float sightRange)
@@ -453,12 +454,12 @@ public class AttackState : BaseState
     public override void OnExit()
     {
         base.OnExit();
-        isThrowing = _hasThrown = false;
+        isThrowing = false;
     }
     bool CanThrowGreande()
     {
-        if(_hasThrown) return false;
-        _hasThrown = true;
+        if(_countGreandes == 0) return false;
+        else _countGreandes--;
 
         Collider[] coll = Physics.OverlapSphere(enBeh.movePoint.position, 2f, _layGrenadeThrow);
         if (coll.Length > 0) return false;

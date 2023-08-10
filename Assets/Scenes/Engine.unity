@@ -262,7 +262,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 709154942071502171, guid: 36997a5b0d08e1d4ca1f18cf1adc87c7, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 13.91
+      value: 14.21
       objectReference: {fileID: 0}
     - target: {fileID: 709154942071502171, guid: 36997a5b0d08e1d4ca1f18cf1adc87c7, type: 3}
       propertyPath: m_LocalPosition.y
@@ -270,7 +270,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 709154942071502171, guid: 36997a5b0d08e1d4ca1f18cf1adc87c7, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -9.89
+      value: -11.63
       objectReference: {fileID: 0}
     - target: {fileID: 709154942071502171, guid: 36997a5b0d08e1d4ca1f18cf1adc87c7, type: 3}
       propertyPath: m_LocalRotation.w
@@ -37758,32 +37758,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 3395271511898464811}
     - target: {fileID: 1322688580790495139, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
-      propertyPath: controls.jumpForce
-      value: 40
-      objectReference: {fileID: 0}
-    - target: {fileID: 1322688580790495139, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
       propertyPath: offense.parWeapons
       value: 
       objectReference: {fileID: 338094474888623336}
     - target: {fileID: 1593556042056359417, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
       propertyPath: m_Name
       value: Player
-      objectReference: {fileID: 0}
-    - target: {fileID: 1593556042056359417, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
-      propertyPath: m_Layer
-      value: 16
-      objectReference: {fileID: 0}
-    - target: {fileID: 1593556042056359417, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4645350530128875465, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
-      propertyPath: m_Drag
-      value: 15
-      objectReference: {fileID: 0}
-    - target: {fileID: 4645350530128875465, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
-      propertyPath: m_Mass
-      value: 70
       objectReference: {fileID: 0}
     - target: {fileID: 5675463718935312824, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
       propertyPath: m_RootOrder
@@ -37828,10 +37808,6 @@ PrefabInstance:
     - target: {fileID: 5675463718935312824, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5865099238005163268, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
-      propertyPath: m_Radius
-      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 5952592088870533696, guid: c3e4d7c60e8fcb848aa28ea3d00f9d90, type: 3}
       propertyPath: psOnFire
@@ -77872,13 +77848,33 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 24710092332611168}
     - target: {fileID: 2066691897583137772, guid: 362bbd4f1d130674bb2ed9f48d606817, type: 3}
+      propertyPath: layCover.m_Bits
+      value: 8388608
+      objectReference: {fileID: 0}
+    - target: {fileID: 2066691897583137772, guid: 362bbd4f1d130674bb2ed9f48d606817, type: 3}
+      propertyPath: layFOV_Ray.m_Bits
+      value: 16777225
+      objectReference: {fileID: 0}
+    - target: {fileID: 2066691897583137772, guid: 362bbd4f1d130674bb2ed9f48d606817, type: 3}
+      propertyPath: layShooting.m_Bits
+      value: 2097161
+      objectReference: {fileID: 0}
+    - target: {fileID: 2066691897583137772, guid: 362bbd4f1d130674bb2ed9f48d606817, type: 3}
       propertyPath: uiManager.displayHP
       value: 
       objectReference: {fileID: 5859577218421782358}
     - target: {fileID: 2066691897583137772, guid: 362bbd4f1d130674bb2ed9f48d606817, type: 3}
+      propertyPath: layFOV_RayAll.m_Bits
+      value: 50331649
+      objectReference: {fileID: 0}
+    - target: {fileID: 2066691897583137772, guid: 362bbd4f1d130674bb2ed9f48d606817, type: 3}
       propertyPath: uiManager.canvasGame
       value: 
       objectReference: {fileID: 5352616690373571835}
+    - target: {fileID: 2066691897583137772, guid: 362bbd4f1d130674bb2ed9f48d606817, type: 3}
+      propertyPath: layFOV_Overlap.m_Bits
+      value: 50331656
+      objectReference: {fileID: 0}
     - target: {fileID: 2066691897583137772, guid: 362bbd4f1d130674bb2ed9f48d606817, type: 3}
       propertyPath: uiManager.displayAmmo
       value: 

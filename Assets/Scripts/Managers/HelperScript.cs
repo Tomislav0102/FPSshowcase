@@ -4,96 +4,113 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-    public class HelperScript
+public class HelperScript
+{
+
+    static Camera _cam;
+    public static Camera Cam
     {
-
-        static Camera _cam;
-        public static Camera Cam
+        get
         {
-            get
-            {
-                if (_cam == null) _cam = Camera.main;
-                return _cam;
-            }
+            if (_cam == null) _cam = Camera.main;
+            return _cam;
         }
-        public static Vector3 MousePoz(Camera cam, LayerMask lay)
-        {
-            Vector3 v3 = Vector3.up;
-            if (Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 100f, lay))
-            {
-                //  Debug.Log(hit.collider.name);
-                v3 = new Vector3(hit.point.x, Mathf.Clamp(hit.point.y, -3.43f, hit.point.y), hit.point.z);
-            }
-
-            return v3;
-        }
-
-        public static Vector2 GetWorldPositionOfCanvasElement(RectTransform rectElement) //sets gameobject behind the UI element
-        {
-            RectTransformUtility.ScreenPointToWorldPointInRectangle(rectElement, rectElement.position, null, out Vector3 result);
-            return result;
-        }
-
-        static readonly Dictionary<float, WaitForSeconds> _waitDictionary = new Dictionary<float, WaitForSeconds>();
-        public static WaitForSeconds GetWait(float time)
-        {
-            if (_waitDictionary.TryGetValue(time, out WaitForSeconds wait)) return wait;
-            _waitDictionary[time] = new WaitForSeconds(time);
-            return _waitDictionary[time];
-        }
-
-        public static void CursorVisible(bool visible)
-        {
-            Cursor.lockState = visible ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = visible;
-        }
-        public static GameObject[] AllChildrenGameObjects(Transform parGos)
-        {
-            GameObject[] gos = new GameObject[parGos.childCount];
-            for (int i = 0; i < gos.Length; ++i)
-            {
-                gos[i] = parGos.GetChild(i).gameObject;
-            }
-            return gos;
-        }
-        public static Transform[] AllChildren(Transform parTransform)
-        {
-            Transform[] childTransforms = new Transform[parTransform.childCount];
-            for (int i = 0; i < childTransforms.Length; ++i)
-            {
-                childTransforms[i] = parTransform.GetChild(i);
-            }
-            return childTransforms;
-        }
-        public static List<int> RandomList(int size)
-        {
-            List<int> brojevi = Enumerable.Range(0, size).ToList();
-            var rnd = new System.Random();
-            var randNums = brojevi.OrderBy(n => rnd.Next());
-            List<int> list = new List<int>();
-            foreach (var item in randNums)
-            {
-                list.Add(item);
-            }
-
-            return list;
-        }
-        public static List<T> RandomListByType<T>(List<T> pocetna)
-        {
-            var rnd = new System.Random();
-            var randNums = pocetna.OrderBy(n => rnd.Next());
-            List<T> list = new List<T>();
-            foreach (var item in randNums)
-            {
-                list.Add(item);
-            }
-
-            return list;
-        }
-        public static int Damage(Vector2Int dam) => Random.Range(dam.x, dam.y);
     }
-    #region//ENUMS
-    public enum Faction
+    public static Vector3 MousePoz(Camera cam, LayerMask lay)
+    {
+        Vector3 v3 = Vector3.up;
+        if (Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 100f, lay))
+        {
+            //  Debug.Log(hit.collider.name);
+            v3 = new Vector3(hit.point.x, Mathf.Clamp(hit.point.y, -3.43f, hit.point.y), hit.point.z);
+        }
+
+        return v3;
+    }
+
+    public static Vector2 GetWorldPositionOfCanvasElement(RectTransform rectElement) //sets gameobject behind the UI element
+    {
+        RectTransformUtility.ScreenPointToWorldPointInRectangle(rectElement, rectElement.position, null, out Vector3 result);
+        return result;
+    }
+
+    static readonly Dictionary<float, WaitForSeconds> _waitDictionary = new Dictionary<float, WaitForSeconds>();
+    public static WaitForSeconds GetWait(float time)
+    {
+        if (_waitDictionary.TryGetValue(time, out WaitForSeconds wait)) return wait;
+        _waitDictionary[time] = new WaitForSeconds(time);
+        return _waitDictionary[time];
+    }
+
+    public static void CursorVisible(bool visible)
+    {
+        Cursor.lockState = visible ? CursorLockMode.None : CursorLockMode.Locked;
+        Cursor.visible = visible;
+    }
+    public static GameObject[] AllChildrenGameObjects(Transform parGos)
+    {
+        GameObject[] gos = new GameObject[parGos.childCount];
+        for (int i = 0; i < gos.Length; ++i)
+        {
+            gos[i] = parGos.GetChild(i).gameObject;
+        }
+        return gos;
+    }
+    public static Transform[] AllChildren(Transform parTransform)
+    {
+        Transform[] childTransforms = new Transform[parTransform.childCount];
+        for (int i = 0; i < childTransforms.Length; ++i)
+        {
+            childTransforms[i] = parTransform.GetChild(i);
+        }
+        return childTransforms;
+    }
+    public static List<int> RandomList(int size)
+    {
+        List<int> brojevi = Enumerable.Range(0, size).ToList();
+        var rnd = new System.Random();
+        var randNums = brojevi.OrderBy(n => rnd.Next());
+        List<int> list = new List<int>();
+        foreach (var item in randNums)
+        {
+            list.Add(item);
+        }
+
+        return list;
+    }
+    public static List<T> RandomListByType<T>(List<T> pocetna)
+    {
+        var rnd = new System.Random();
+        var randNums = pocetna.OrderBy(n => rnd.Next());
+        List<T> list = new List<T>();
+        foreach (var item in randNums)
+        {
+            list.Add(item);
+        }
+
+        return list;
+    }
+    public static int Damage(Vector2Int dam) => Random.Range(dam.x, dam.y);
+
+    public static Transform GetClosestMember(Vector3 myPos, List<Transform> list)
+    {
+        float distance = Mathf.Infinity;
+        int index = 0;
+        for (int i = 0; i < list.Count; i++)
+        {
+            float d = Vector3.Distance(myPos, list[i].position);
+            if (d < distance)
+            {
+                distance = d;
+                index = i;
+            }
+        }
+        return list[index];
+    }
+
+}
+#region//ENUMS
+public enum Faction
     {
         Player,
         Enemy,

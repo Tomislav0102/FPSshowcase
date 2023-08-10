@@ -3,6 +3,7 @@ ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 - attack behaviour is too simple - add cover, throwing grenades etc...
 
+- mixamo animations aren't enough for cover mechanics, it's time to move on. Should import 'Ultimate Animation Collection' package and start implementing that.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

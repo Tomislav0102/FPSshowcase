@@ -8,7 +8,7 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
   - 
@@ -21,14 +21,14 @@ TagManager:
   - 
   - 
   - 
-  - Player
+  - 
   - WeaponsPlayer
   - Pickup
   - 
   - 
   - EnemyParts
   - 
-  - 
+  - Det-Cover
   - Det-Char
   - Det-Misc
   - Postprocessing

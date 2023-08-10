@@ -27,6 +27,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     float _weightHit;
     [PropertySpace(SpaceAfter = 10, SpaceBefore = 0)]
     public ParticleSystem psOnFire;
+    GameObject _coverObj;
 
     #region BEHAVIOUR SPECIFIC
     [BoxGroup("Behaviour")]
@@ -109,7 +110,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         movePoint = moveP;
         _displayState = displayT;
 
-        sm = new StateMachine(_displayState, _eRef, _gm.wayPointParent, null, roamRadius, (int)beginState);
+        sm = new StateMachine(_displayState, _eRef, _gm.wayPointParent, null, roamRadius, (int)beginState, handGrenadeCount);
 
         _aimIK = multiAimConstraintRightHand.data.sourceObjects[0].transform;
         _bodyParts = new RagdollBodyPart[ragdollTransform.Length];
@@ -135,6 +136,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         detectObject = null;
         CancelInvoke();
         _displayState.text = "Dead";
+        _coverObj = null;
     }
 
     private void Update()
