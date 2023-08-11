@@ -4,12 +4,10 @@ using System.Linq;
 using UnityEngine;
 using TMPro;
 using System.Threading.Tasks;
-using System.Threading;
 using UnityEngine.UI;
 using DG.Tweening;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.SceneManagement;
-using static UnityEngine.GraphicsBuffer;
 using Sirenix.OdinInspector;
 
 public class GameManager : MonoBehaviour
@@ -17,24 +15,29 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
 
     public float gameSpeed = 1f;
-
     public Color[] gizmoColorsByState;
-
+    [HideInInspector] public Vector3 pointForGizmo;
     public Player player;
     public IFaction plFaction;
     public Camera mainCam, weaponCam;
+    public Transform wayPointParent;
     [HideInInspector] public Transform camTr, camRigTr;
     [HideInInspector] public CameraBehaviour cameraBehaviour;
     [HideInInspector] public Animator weaponCamAnim;
     [HideInInspector] public LevelManager levelManager;
+
+    [GUIColor("cyan")]
     public UImanager uiManager;
+    [GUIColor("blue")]
     public PoolManager poolManager;
+    [GUIColor("lightred")]
     public PostprocessMan postProcess;
+    [BoxGroup]
+    [GUIColor("lightgreen")]
+    [LabelWidth(100)]
     public LayerMask layFOV_Overlap, layFOV_Ray, layFOV_RayAll, layShooting, layCover;
     int layerPl, layerEn;
-    public Transform wayPointParent;
 
-    [HideInInspector] public Vector3 pointForGizmo;
 
     private void Awake()
     {
@@ -65,20 +68,21 @@ SceneManager.LoadScene(1, LoadSceneMode.Additive);
         {
             Application.Quit();
         }
-        //else if (Input.GetKeyDown(KeyCode.P))
-        //{
-        //    if (Mathf.Approximately(Time.timeScale, 0f))
-        //    {
-        //        Time.timeScale = 1f;
-        //        player.IsActive = true;
-        //    }
-        //    else
-        //    {
-        //        Time.timeScale = 0f;
-        //        player.IsActive = false;
+        else if (Input.GetKeyDown(KeyCode.P))
+        {
+            if (Mathf.Approximately(Time.timeScale, 0f))
+            {
+                Time.timeScale = 1f;
+                player.IsActive = true;
+            }
+            else
+            {
+                Time.timeScale = 0f;
+                player.IsActive = false;
 
-        //    }
-        //}
+            }
+            uiManager.ShowPauseInfo(!player.IsActive);
+        }
 
     }
 
@@ -316,7 +320,7 @@ public class AttackClass
 public class UImanager
 {
     public Canvas canvasGame;
-    [SerializeField] TextMeshProUGUI displayHP, displaySpeed, displayWeaponName, displayAmmo, displayAllAmo;
+    [SerializeField] TextMeshProUGUI displayHP, displaySpeed, displayWeaponName, displayAmmo, displayAllAmo, displayPause;
     [SerializeField] Image pain;
     const float CONST_PAINLENGTH = 0.5f;
     public Crosshair crosshairObject;
@@ -360,6 +364,10 @@ public class UImanager
             .From(0.5f);
 
         GameManager.Instance.postProcess.ShowPlayerDamage();
+    }
+    public void ShowPauseInfo(bool show)
+    {
+        displayPause.enabled = show;
     }
 }
 
@@ -553,6 +561,7 @@ public class PoolManager
         T obj = arr[count];
         count = (1 + count) % arr.Length;
 
+        Coroutine kor = null;
         if (miliSecondsDelayEnd > 0) End(obj, miliSecondsDelayEnd);
         return obj;
     }

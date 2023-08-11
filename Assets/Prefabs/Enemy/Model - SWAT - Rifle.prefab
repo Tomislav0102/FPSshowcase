@@ -35,7 +35,7 @@ PrefabInstance:
     - target: {fileID: 5458902715401782888, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: b0b08d5617a134e4b954df7ee5aa6024, type: 2}
+      objectReference: {fileID: 22100000, guid: cd67864ff0f2855468f108bc77329291, type: 2}
     - target: {fileID: 7031359852143264810, guid: 06f3e475ba1dec84dbea8e5b83c19367, type: 3}
       propertyPath: m_Name
       value: Model - SWAT - Rifle

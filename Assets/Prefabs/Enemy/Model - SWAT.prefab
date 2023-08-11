@@ -7904,7 +7904,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdb90b913935e644baaa86c076d788e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Weight: 0.4
+  m_Weight: 0.3
   m_Data:
     m_ConstrainedObject: {fileID: 2406414082188056513}
     m_SourceObjects:
@@ -8778,15 +8778,16 @@ MonoBehaviour:
   <MyCollider>k__BackingField: {fileID: 228005287927211169}
   <MyHead>k__BackingField: {fileID: 1462241272819904910}
   <Fact>k__BackingField: 1
-  psOnFire: {fileID: 154884694956618767}
   movePoint: {fileID: 0}
   hasSearched: 0
   detectObject: {fileID: 0}
+  psOnFire: {fileID: 154884694956618767}
   beginState: 0
   wpParent: {fileID: 0}
   roamRadius: 10
   handGreandeSpawnPoint: {fileID: 8163652320156838608}
   handGrenadeScriptable: {fileID: 11400000, guid: 508d9ba7309b2c140b1a4df31086bfad, type: 2}
+  handGrenadeCount: 3
   ragdollTransform:
   - {fileID: 4368334889242015716}
   - {fileID: 5962789943609352757}
@@ -8800,10 +8801,11 @@ MonoBehaviour:
   - {fileID: 1644626400755701228}
   - {fileID: 3710268264703138920}
   weaponUsed: {fileID: 0}
+  weaponMesh: {fileID: 0}
   muzzle: {fileID: 0}
   rigLookAt: {fileID: 8060339599827672922}
   ikLookAtTransform: {fileID: 5991082616668122934}
-  rigRightHandAiming: {fileID: 5310640610033313771}
+  rigAiming: {fileID: 5310640610033313771}
   rigLeftHand: {fileID: 1369932270968800905}
   multiAimConstraintRightHand: {fileID: 2167823997769451893}
   isHit: 0

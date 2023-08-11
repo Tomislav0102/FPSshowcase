@@ -75,7 +75,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     [SerializeField] Transform ikLookAtTransform;
     [BoxGroup("Animations")]
     [GUIColor("blue")]
-    [SerializeField] Rig rigRightHandAiming;
+    [SerializeField] Rig rigAiming;
     [BoxGroup("Animations")]
     [GUIColor("blue")]
     [SerializeField] Rig rigLeftHand;
@@ -90,12 +90,17 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     #endregion
 
     #region DEBUGS
-    [Title("Debug only")]
+    [FoldoutGroup("Debugs")]
     public bool haspath;
+    [FoldoutGroup("Debugs")]
     public NavMeshPathStatus pathStatus;
+    [FoldoutGroup("Debugs")]
     public float speedAnimRoot;
+    [FoldoutGroup("Debugs")]
     public float speedAgent;
+    [FoldoutGroup("Debugs")]
     public float remainDistance;
+    [FoldoutGroup("Debugs")]
     public string nameOfTarget;
     #endregion
 
@@ -152,9 +157,9 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         _eRef.agent.speed = speedAnimRoot;
         _eRef.animTr.SetPositionAndRotation(_eRef.agentTr.position - 0.06152725f * Vector3.up, _eRef.agentTr.rotation);
 
-        rigRightHandAiming.weight = Mathf.MoveTowards(rigRightHandAiming.weight, _weightRightHandAim, 4f * Time.deltaTime);
+        rigAiming.weight = Mathf.MoveTowards(rigAiming.weight, _weightRightHandAim, 4f * Time.deltaTime);
         rigLeftHand.weight = Mathf.MoveTowards(rigLeftHand.weight, _weightLeftHand, 4f * Time.deltaTime);
-        _weightHit = Mathf.MoveTowards(_weightHit, isHit ? 1f : 0f, 2f * Time.deltaTime);
+        _weightHit = Mathf.MoveTowards(_weightHit, isHit ? 1f : 0f, 5f * Time.deltaTime);
         _eRef.anim.SetLayerWeight(1, _weightHit);
 
         if (!_canUpdateFOV ||
@@ -277,7 +282,11 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     public void IdelLookAround_Animation(bool active, float angle, float rotSpeed)
     {
         rigLookAt.weight = Mathf.Lerp(rigLookAt.weight, active ? 1f : 0f, 3f * Time.deltaTime);
-        if (!active) ikLookAtTransform.localRotation = Quaternion.identity;
+        if (!active)
+        {
+            ikLookAtTransform.localRotation = Quaternion.identity;
+            rigLookAt.weight = 0f;
+        }
         else
         {
           //  ikLookAtTransform.localEulerAngles = Vector3.Lerp(ikLookAtTransform.localEulerAngles, angle * Vector3.up, rotSpeed * Time.deltaTime);
@@ -321,7 +330,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     }
     public void SetSpeed_Animation(MoveType movetype) => _eRef.anim.SetInteger("movePhase", (int)movetype);
 
-    public void ResetHandsWeights() => rigRightHandAiming.weight = rigLeftHand.weight = 0f;
+    public void ResetHandsWeights() => rigAiming.weight = rigLeftHand.weight = 0f;
     #endregion
 
 

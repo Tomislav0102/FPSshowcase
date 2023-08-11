@@ -192,7 +192,7 @@ public class SuperState_Alpha : BaseState //idle, roam, search, scann
     public override void OnExit()
     {
         base.OnExit();
-      //  enBeh.IdelLookAround_Animation(false, 0f);
+        enBeh.IdelLookAround_Animation(false, 0f, 0f);
     }
 }
 
@@ -404,7 +404,6 @@ public class AttackState : BaseState
         enBeh.SetSpeed_Animation(MoveType.Run);
         enBeh.hasSearched = false;
         enBeh.detectObject = null;
-        enBeh.IdelLookAround_Animation(false, 0f, 0f);
     }
 
     public override void UpdateLoop()
