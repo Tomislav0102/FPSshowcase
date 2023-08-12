@@ -27,7 +27,7 @@ MonoBehaviour:
     elementType: 0
     damagePerTick: 0
     effectDuration: 0
-  range: 1.5
+  range: 2
   rofModifier: 1
   noOfPelletsPerShot: 1
   areaOfEffect: 0.8

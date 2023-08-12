@@ -69,12 +69,6 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     public GameObject muzzle;
     [BoxGroup("Animations")]
     [GUIColor("blue")]
-    [SerializeField] Rig rigLookAt;
-    [BoxGroup("Animations")]
-    [GUIColor("blue")]
-    [SerializeField] Transform ikLookAtTransform;
-    [BoxGroup("Animations")]
-    [GUIColor("blue")]
     [SerializeField] Rig rigAiming;
     [BoxGroup("Animations")]
     [GUIColor("blue")]
@@ -279,20 +273,6 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     #endregion
 
     #region ANIMATIONS
-    public void IdelLookAround_Animation(bool active, float angle, float rotSpeed)
-    {
-        rigLookAt.weight = Mathf.Lerp(rigLookAt.weight, active ? 1f : 0f, 3f * Time.deltaTime);
-        if (!active)
-        {
-            ikLookAtTransform.localRotation = Quaternion.identity;
-            rigLookAt.weight = 0f;
-        }
-        else
-        {
-          //  ikLookAtTransform.localEulerAngles = Vector3.Lerp(ikLookAtTransform.localEulerAngles, angle * Vector3.up, rotSpeed * Time.deltaTime);
-            ikLookAtTransform.localRotation = Quaternion.Lerp(ikLookAtTransform.localRotation, Quaternion.Euler(angle * Vector3.up), rotSpeed * Time.deltaTime);
-        }
-    }
     void GetIK_Animation(bool attak)
     {
         _weightRightHandAim = _weightLeftHand = 0f;

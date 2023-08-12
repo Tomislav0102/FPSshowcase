@@ -27,7 +27,7 @@ public class StateMachine
     {
         _display = display;
 
-        _idleState = new IdleState(eref, _allStates, roamradius);
+        _idleState = new IdleState(eref, _allStates);
         _patrolState = new PatrolState(eref, _allStates, patrolparent, patrolwaypoints);
         _roamState = new RoamState(eref, _allStates, roamradius);
         searchState = new SearchState(eref, _allStates, roamradius);
@@ -98,7 +98,7 @@ public class BaseState
 
     }
 }
-public class SuperState_Alpha : BaseState //idle, roam, search, scann
+public class SuperState_Alpha : BaseState //roam, search, scann
 {
     readonly float _roamRadius;
     internal Vector3 center;
@@ -106,18 +106,15 @@ public class SuperState_Alpha : BaseState //idle, roam, search, scann
 
     //when does the AI stops?
     internal bool isStoped;
-    internal bool justIdeling; //idle state has this on true
     internal MoveType moveTypeMobile;
     float _timerStoped;
     float _maxTimerStoped;
     internal float stopInterval = 1f;
 
     //defines behaviour when stoped.
-    float _maxTimerLookAt;
     float RdnRange() => Random.Range(1f, 3f);
     internal float lookAtInterval = 1f;
     internal float rotSpeed;
-    float _prevAngle;
 
     //these two are needed for search state. Actor first goes to targets last know position and then does search behaviour (although he is in search state from the beggining)
     internal bool goTo2; 
@@ -130,27 +127,20 @@ public class SuperState_Alpha : BaseState //idle, roam, search, scann
     public override void OnEnter()
     {
         base.OnEnter();
-        goTo2 = _goTo1 = justIdeling = false;
+        goTo2 = _goTo1 = false;
         _timerStoped = 0f;
         isStoped = false;
-        _prevAngle = 0f;
     }
     public override void UpdateLoop()
     {
         base.UpdateLoop();
-
-        if (justIdeling)
-        {
-            LookAround();
-            return;
-        }
 
         if (eRef.ReadyToMove())
         {
             if (isStoped)
             {
                 enBeh.SetSpeed_Animation(MoveType.Stationary);
-                LookAround();
+                eRef.anim.SetTrigger("idleLook");
                 _timerStoped += Time.deltaTime;
                 if(_timerStoped > _maxTimerStoped)
                 {
@@ -169,37 +159,21 @@ public class SuperState_Alpha : BaseState //idle, roam, search, scann
 
             enBeh.movePoint.position = EnemyRef.GetRdnPos(center, _roamRadius);
             eRef.agent.SetDestination(enBeh.movePoint.position);
-
-            isStoped = !isStoped;
         }
         enBeh.SetSpeed_Animation(moveTypeMobile);
-       // enBeh.IdelLookAround_Animation(false, 0f);
-
     }
 
-    void LookAround()
-    {
-        timer += Time.deltaTime;
-        if (timer > _maxTimerLookAt)
-        {
-            timer = 0f;
-            _maxTimerLookAt = RdnRange() * lookAtInterval;
-            _prevAngle = Random.Range(-70f, 70f);
-        }
-        enBeh.IdelLookAround_Animation(true, _prevAngle, rotSpeed);
-
-    }
     public override void OnExit()
     {
         base.OnExit();
-        enBeh.IdelLookAround_Animation(false, 0f, 0f);
     }
 }
 
-public class IdleState : SuperState_Alpha
+public class IdleState : BaseState
 {
+    float _maxTimerLookAt;
 
-    public IdleState(EnemyRef eref, List<BaseState> allStates, float roamRadius) : base(eref, allStates, roamRadius)
+    public IdleState(EnemyRef eref, List<BaseState> allStates) : base(eref, allStates)
     {
     }
     public override void OnEnter()
@@ -207,14 +181,19 @@ public class IdleState : SuperState_Alpha
         base.OnEnter();
         enBeh.SetSpeed_Animation(MoveType.Stationary);
         enBeh.attackTarget = null;
-        justIdeling = true;
-        lookAtInterval = 5f;
-        rotSpeed = 2f;
     }
 
     public override void UpdateLoop()
     {
         base.UpdateLoop();
+        timer += Time.deltaTime;
+        if (timer > _maxTimerLookAt)
+        {
+            timer = 0f;
+            _maxTimerLookAt = Random.Range(20f, 60f);
+            eRef.anim.SetTrigger("idleLook");
+        }
+
     }
     public override void OnExit()
     {
@@ -264,7 +243,6 @@ public class RoamState : SuperState_Alpha
         base.OnEnter();
         moveTypeMobile = MoveType.Walk;
         enBeh.attackTarget = null;
-        justIdeling = false;
         lookAtInterval = 3f;
         stopInterval = 4f;
     }
@@ -282,7 +260,6 @@ public class SearchState : SuperState_Alpha
         center = enBeh.movePoint.position;
         moveTypeMobile = MoveType.Run;
         enBeh.hasSearched = true;
-        justIdeling = false;
         lookAtInterval = 1f;
         stopInterval = 2f;
     }
@@ -350,10 +327,6 @@ public class ScanState : SuperState_Alpha
 
         enBeh.movePoint.position = enBeh.attackTarget.MyTransform.position;
         Vector3 lookVector = enBeh.movePoint.position - enBeh.MyTransform.position;
-        float angle = Vector3.SignedAngle(enBeh.MyHead.forward, lookVector.normalized, Vector3.up);
-        enBeh.IdelLookAround_Animation(true, angle, rotSpeed);
-      //  Debug.Log(angle);
-
 
         _awareness += Time.deltaTime / CONST_TIMETORECONGINZETARGET;
         if (Vector3.SqrMagnitude(lookVector) < _autoFinishDistanceSquared) _awareness = Mathf.Infinity;
@@ -368,7 +341,6 @@ public class ScanState : SuperState_Alpha
     {
         base.OnExit();
         _visibleSprite.color = Color.clear;
-       // enBeh.IdelLookAround_Animation(false, 0);
     }
 }
 public class AttackState : BaseState
@@ -423,7 +395,6 @@ public class AttackState : BaseState
 
         if (!eRef.fov.TargetVisible(enBeh.attackTarget.MyTransform, enBeh.attackTarget.MyCollider, gm.layFOV_Ray))
         {
-            enBeh.Attack_Animation(false);
             enBeh.TrackMovingTarget();
            // if (CanThrowGreande()) eRef.anim.SetTrigger("throw");
             if (eRef.agent.remainingDistance < 1f)
@@ -445,7 +416,6 @@ public class AttackState : BaseState
         }
         else
         {
-            enBeh.Attack_Animation(false);
             enBeh.TrackMovingTarget();
         }
 

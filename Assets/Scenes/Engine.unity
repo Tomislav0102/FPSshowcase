@@ -308,13 +308,14 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4978657017169241282, guid: 36997a5b0d08e1d4ca1f18cf1adc87c7, type: 3}
+      propertyPath: beginState
+      value: 2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6637545074373570810, guid: 36997a5b0d08e1d4ca1f18cf1adc87c7, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 36997a5b0d08e1d4ca1f18cf1adc87c7, type: 3}
 --- !u!1 &56699359
 GameObject:
