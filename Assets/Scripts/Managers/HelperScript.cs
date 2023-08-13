@@ -111,141 +111,148 @@ public class HelperScript
 }
 #region//ENUMS
 public enum Faction
-    {
-        Player,
-        Enemy,
-        Ally
-    }
-    public enum EnemyState
-    {
-        Idle,
-        Patrol,
-        Roam,
-        Search,
-        Attack,
-        Follow,
-        Immobile,
-        Flee,
-        MoveToPoint
-    }
-    public enum BodyPartRagdoll
-    {
-        Head,
-        Torso,
-        LeftArm,
-        RightArm,
-        LeftLeg,
-        RightLeg
-    }
-    public enum EnemyWeaponUsed
-    {
-        Melee,
-        Pistol,
-        Rifle
-    }
-    public enum ElementType
-    {
-        Normal,
-        Fire,
-        Explosion,
-        Cold,
-        Electricity,
-        Poison
-    }
-    public enum ExplosionType
-    {
-        Big,
-        Small
-    }
-    public enum MoveType
-    {
-        Stationary,
-        Walk,
-        Run
-    }
-    public enum GenPhasePos
-    {
-        Begin,
-        Middle,
-        End
-    }
-    public enum PuType
-    {
-        Weapon,
-        Ammo,
-        Health,
-        Armor,
-        Key
-    }
-    public enum KeyType
-    {
-        Blue,
-        Red,
-        Green
-    }
-    public enum WeaponMechanics
-    {
-        Melee, //all melee - spherecast
-        Gun, //standard ranged - raycast
-        Shotgun, //ranged with spread - multiple raycasts
-        BreathWeapon, //ranged - trigger collider with ray that detects obstacles
-        Thrown //ranged - physcal object moving (bow, grenade, bazooka)
-    }
-    public enum AmmoType
-    {
-        None,
-        //ray
-        _9mm,
-        _44cal,
-        _762mm,
-        _303REM,
-        _12gauge,
-        //ray
-        Rocket,
-        HandGrenade,
-        Bolt,
-        Fuel,
-        HealShot
-    }
-    public enum MatType //used for hit particles
-    {
-        Blood,
-        Brick,
-        Concrete,
-        Dirt,
-        Foliage,
-        Glass,
-        Metal,
-        Plaster,
-        Rock,
-        Water,
-        Wood,
-        NoMaterial
-    }
-    #endregion
+{
+    Player,
+    Enemy,
+    Ally
+}
+public enum EnemyState
+{
+    Idle,
+    Patrol,
+    Roam,
+    Search,
+    Attack,
+    Follow,
+    Immobile,
+    Flee,
+    MoveToPoint
+}
+public enum BodyPartRagdoll
+{
+    Head,
+    Torso,
+    LeftArm,
+    RightArm,
+    LeftLeg,
+    RightLeg
+}
+public enum EnemyWeaponUsed
+{
+    Melee,
+    Pistol,
+    Rifle
+}
+public enum ElementType
+{
+    Normal,
+    Fire,
+    Explosion,
+    Cold,
+    Electricity,
+    Poison
+}
+public enum ExplosionType
+{
+    Big,
+    Small
+}
+public enum MoveType
+{
+    Stationary,
+    Walk,
+    Run
+}
+public enum GenPhasePos
+{
+    Begin,
+    Middle,
+    End
+}
+public enum PuType
+{
+    Weapon,
+    Ammo,
+    Health,
+    Armor,
+    Key
+}
+public enum KeyType
+{
+    Blue,
+    Red,
+    Green
+}
+public enum WeaponMechanics
+{
+    Melee, //all melee - spherecast
+    Gun, //standard ranged - raycast
+    Shotgun, //ranged with spread - multiple raycasts
+    BreathWeapon, //ranged - trigger collider with ray that detects obstacles
+    Thrown //ranged - physcal object moving (bow, grenade, bazooka)
+}
+public enum AmmoType
+{
+    None,
+    //ray
+    _9mm,
+    _44cal,
+    _762mm,
+    _303REM,
+    _12gauge,
+    //ray
+    Rocket,
+    HandGrenade,
+    Bolt,
+    Fuel,
+    HealShot
+}
+public enum MatType //used for hit particles
+{
+    Blood,
+    Brick,
+    Concrete,
+    Dirt,
+    Foliage,
+    Glass,
+    Metal,
+    Plaster,
+    Rock,
+    Water,
+    Wood,
+    NoMaterial
+}
+public enum RecoilAmmount
+{
+    None,
+    Light,
+    Medium,
+    Heavy
+}
+#endregion
 
-    #region//INTERFACES
-    public interface IFaction 
-    {
-        Transform MyTransform { get; set; }
-        Transform MyHead { get; set; }
-        Collider MyCollider { get; set; }
-        Faction Fact { get; set; }
-    }
+#region//INTERFACES
+public interface IFaction 
+{
+    Transform MyTransform { get; set; }
+    Transform MyHead { get; set; }
+    Collider MyCollider { get; set; }
+    Faction Fact { get; set; }
+}
 
-    public interface IMaterial
-    {
-        MatType MaterialType { get; set; }
-    }
-    public interface IActivation
-    {
-        bool IsActive { get; set; }
-    }
-    public interface ITakeDamage
-    {
-        void TakeDamage(ElementType elementType, int damage, Transform attackerTransform, DamageOverTime damageOverTime);
-        bool IsDead { get; set; }
-        EnemyRef EnRef { get; set; }
-    }
-    #endregion
+public interface IMaterial
+{
+    MatType MaterialType { get; set; }
+}
+public interface IActivation
+{
+    bool IsActive { get; set; }
+}
+public interface ITakeDamage
+{
+    void TakeDamage(ElementType elementType, int damage, Transform attackerTransform, DamageOverTime damageOverTime);
+    bool IsDead { get; set; }
+    EnemyRef EnRef { get; set; }
+}
+#endregion
 

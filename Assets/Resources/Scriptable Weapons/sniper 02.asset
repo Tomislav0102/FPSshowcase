@@ -20,6 +20,7 @@ MonoBehaviour:
   animEventForShooting: 0
   canAim: 1
   partialReload: 0
+  recoilAmmount: 3
   hasCrosshair: 1
   startSpread: 100
   damage: {x: 30, y: 50}

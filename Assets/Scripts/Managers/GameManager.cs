@@ -1094,7 +1094,7 @@ public class Offense
                 }
                 break;
         }
-        
+
     }
 
     public void BeginReloadAnimation()

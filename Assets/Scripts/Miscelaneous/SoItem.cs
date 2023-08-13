@@ -19,6 +19,8 @@ public class SoItem : ScriptableObject
     public bool animEventForShooting;
     public bool canAim = true;
     public bool partialReload; //used only for grenade gun
+    [HideIf("MeleeOrThrownOrBreath")]
+    public RecoilAmmount recoilAmmount;
     public bool hasCrosshair = true;
     [ShowIf("hasCrosshair")]
     public float startSpread = 50f;
@@ -43,6 +45,10 @@ public class SoItem : ScriptableObject
     bool MeleeOrThrown() //don't delete, it is being used
     {
         return weaponType == WeaponMechanics.Melee || weaponType == WeaponMechanics.Thrown;
+    }
+    bool MeleeOrThrownOrBreath() //don't delete, it is being used
+    {
+        return weaponType == WeaponMechanics.Melee || weaponType == WeaponMechanics.Thrown || weaponType == WeaponMechanics.BreathWeapon;
     }
 
 }

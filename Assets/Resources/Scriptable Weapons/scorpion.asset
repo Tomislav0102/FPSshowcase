@@ -20,9 +20,14 @@ MonoBehaviour:
   animEventForShooting: 0
   canAim: 1
   partialReload: 0
+  recoilAmmount: 1
   hasCrosshair: 1
   startSpread: 50
   damage: {x: 8, y: 12}
+  damageOverTime:
+    elementType: 0
+    damagePerTick: 0
+    effectDuration: 0
   range: 20
   rofModifier: 1
   noOfPelletsPerShot: 1
@@ -31,6 +36,6 @@ MonoBehaviour:
   weaponDetail:
     flameArrester: 0
     flashlight: 0
-    frame: 0
     scope: 0
     silencer: 0
+  enemyWeaponUsed: 0

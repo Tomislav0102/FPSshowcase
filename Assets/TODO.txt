@@ -1,9 +1,13 @@
 
 ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+- eventually get rid of all mixamo animations
+
 - attack behaviour is too simple - add cover, throwing grenades etc...
 
-- Animation rigging for rifle while shooting looks bad. Needs to change, check pistol too.
+- Pistol animations - animation rigging (left hand grabbing weapon) needs to be removed on some anmation
+
+- Look around anim - problem when target is facing enemy and he is turning his head the other way
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

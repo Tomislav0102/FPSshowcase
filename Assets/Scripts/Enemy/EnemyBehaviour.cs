@@ -301,11 +301,11 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     }
     public void SetAim_Animation()
     {
-        _aimIK.position = attackTarget.MyHead.position;
+        _aimIK.position = attackTarget.MyHead.position - 0.1f * Vector3.up;
         if (weaponUsed.enemyWeaponUsed == EnemyWeaponUsed.Melee) return;
 
-        multiAimConstraintRightHand.data.offset =
-            Vector3.Lerp(multiAimConstraintRightHand.data.offset, _offsetTar, 0.3f * Time.deltaTime);
+        //multiAimConstraintRightHand.data.offset =
+        //    Vector3.Lerp(multiAimConstraintRightHand.data.offset, _offsetTar, 0.3f * Time.deltaTime);
 
     }
     public void SetSpeed_Animation(MoveType movetype) => _eRef.anim.SetInteger("movePhase", (int)movetype);

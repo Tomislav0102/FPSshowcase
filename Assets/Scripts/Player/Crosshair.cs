@@ -5,6 +5,7 @@ using DG.Tweening;
 
 public class Crosshair : MonoBehaviour, IActivation
 {
+    GameManager _gm;
     [SerializeField] RectTransform[] _lineTransforms;
     public float Spread
     {
@@ -60,6 +61,11 @@ public class Crosshair : MonoBehaviour, IActivation
     }
     bool _isActive;
 
+    void Awake()
+    {
+        _gm = GameManager.Instance;
+    }
+
     void Update()
     {
         if (_timer > 0)
@@ -76,6 +82,8 @@ public class Crosshair : MonoBehaviour, IActivation
     {
         DOTween.To(() => _shootSpread, x => _shootSpread = x, _shootSpread + 10f, 0.05f);
         _timer = 0.5f;
+        _gm.cameraBehaviour.Recoil(_weapon.recoilAmmount);
+
     }
     public void Move(float newMoveSpread)
     {
