@@ -296,7 +296,7 @@ public class ScanState : SuperState_Alpha
     Transform _visibleTransform;
 
     float _awareness;
-    const float CONST_TIMETORECONGINZETARGET = 1f;
+    const float CONST_TIMETORECONGINZETARGET = 5f;
     const float CONST_AUTOFINISHDISTANCE = 5f;
     float _autoFinishDistanceSquared;
     readonly Color _startCol = new Color(0f, 1f, 0f, 0f);
@@ -325,6 +325,7 @@ public class ScanState : SuperState_Alpha
             return;
         }
 
+        enBeh.SetIK_LookAt(true);
         enBeh.movePoint.position = enBeh.attackTarget.MyTransform.position;
         Vector3 lookVector = enBeh.movePoint.position - enBeh.MyTransform.position;
 
@@ -341,6 +342,7 @@ public class ScanState : SuperState_Alpha
     {
         base.OnExit();
         _visibleSprite.color = Color.clear;
+        enBeh.SetIK_LookAt(false);
     }
 }
 public class AttackState : BaseState

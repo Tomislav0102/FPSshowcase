@@ -8591,8 +8591,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RigLayers:
-  - m_Rig: {fileID: 0}
-    m_Active: 1
   - m_Rig: {fileID: 5310640610033313771}
     m_Active: 1
   - m_Rig: {fileID: 1369932270968800905}

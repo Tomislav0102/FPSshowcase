@@ -75,7 +75,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     [SerializeField] Rig rigLeftHand;
     [BoxGroup("Animations")]
     [GUIColor("blue")]
-    [SerializeField] MultiAimConstraint multiAimConstraintRightHand; //needed for accuracy (together with '_spreadWeapon')
+    [SerializeField] MultiAimConstraint multiAimConstraintRightHand; 
     Transform _aimIK;
     float _spreadWeapon = 50f;
     Vector3 _offsetTar;
@@ -101,7 +101,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     ///////////////////////////////////////////////////////////////////////////
 
     #region INITIALIZATION AND UNITY CALLBACKS
-    public void InitAwake(EnemyRef eRef, Transform moveP, TextMeshPro displayT, out HashSet<Collider> hs/*, out DetectableObject detectObject*/)
+    public void InitAwake(EnemyRef eRef, Transform moveP, TextMeshPro displayT, out HashSet<Collider> hs)
     {
         _gm = GameManager.Instance;
         _cam = _gm.mainCam;
@@ -123,11 +123,21 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         hs = colls;
         _eRef.anim.SetFloat("rof", weaponUsed.rofModifier);
         ragToAnimTransition = new RagToAnimTranstions(_eRef, ragdollTransform);
+
+        switch (weaponUsed.enemyWeaponUsed)
+        {
+            case EnemyWeaponUsed.Pistol:
+                SetIK_HoldWeapon(false);
+                break;
+            case EnemyWeaponUsed.Rifle:
+                SetIK_HoldWeapon(true);
+                break;
+        }
+        SetIK_AimWeapon(false);
     }
     void OnEnable()
     {
         InvokeRepeating(nameof(CanUpdateFOVMethod), Random.Range(0.3f, 1f), 0.3f);
-
     }
     void OnDisable()
     {
@@ -273,28 +283,27 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     #endregion
 
     #region ANIMATIONS
-    void GetIK_Animation(bool attak)
+    bool CantChangeIK() => isHit || weaponUsed.enemyWeaponUsed == EnemyWeaponUsed.Melee;
+    void SetIK_HoldWeapon(bool hold)
     {
-        _weightRightHandAim = _weightLeftHand = 0f;
-        if (isHit) return;
-
-        switch (weaponUsed.enemyWeaponUsed)
-        {
-            case EnemyWeaponUsed.Melee:
-                _weightRightHandAim = attak ? 1f : 0f;
-                break;
-            case EnemyWeaponUsed.Pistol:
-                _weightRightHandAim = _weightLeftHand = attak ? 1f : 0f;
-                break;
-            case EnemyWeaponUsed.Rifle:
-                _weightRightHandAim = attak ? 1f : 0f;
-                _weightLeftHand = 1f;
-                break;
-        }
+        if (CantChangeIK()) return;
+        _weightLeftHand = hold ? 1f : 0f;
+    }
+    public void SetIK_LookAt(bool look)
+    {
+        if (CantChangeIK()) return;
+        _weightRightHandAim = look ? 1f : 0f;
+        multiAimConstraintRightHand.weight = 0f;
+        if (look && attackTarget != null) _aimIK.position = attackTarget.MyHead.position;
+    }
+    void SetIK_AimWeapon(bool aim)
+    {
+        if (CantChangeIK()) return;
+        _weightRightHandAim = multiAimConstraintRightHand.weight = aim ? 1f : 0f;
     }
     public void Attack_Animation(bool isAttacking)
     {
-        GetIK_Animation(isAttacking);
+        SetIK_AimWeapon(isAttacking);
         _eRef.anim.SetBool("attack", isAttacking);
         if (weaponUsed.enemyWeaponUsed == EnemyWeaponUsed.Melee || !isAttacking) return;
         _offsetTar = new Vector3(Random.Range(-_spreadWeapon, _spreadWeapon), 0f, Random.Range(-_spreadWeapon, _spreadWeapon));
