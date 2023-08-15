@@ -9671,7 +9671,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6124109601703284778, guid: c219f946109e89f4ebb69a8372838652, type: 3}
       propertyPath: beginState
-      value: 0
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 6124109601703284778, guid: c219f946109e89f4ebb69a8372838652, type: 3}
       propertyPath: roamRadius

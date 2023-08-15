@@ -61,7 +61,7 @@ public class HealthEnemy : HealthMain
         TakeDamage(elementType, damage, attackerTransform, damageOverTime);
 
         if (!IsDead &&
-            Random.value < ParDamage(damage) && 
+            /*Random.value < ParDamage(damage) && */
             !OnFire &&
             elementType == ElementType.Normal &&
             _eRef.enemyBehaviour.sm.currentState != _eRef.enemyBehaviour.sm.immobileState)

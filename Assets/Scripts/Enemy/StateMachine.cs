@@ -16,12 +16,13 @@ public class StateMachine
     PatrolState _patrolState;
     RoamState _roamState;
     public SearchState searchState;
-    public ScanState scanState;
+    public DetectingEnemyState detectingEnemyState;
     public AttackState attackState;
     FollowState _followState;
     public ImmobileState immobileState;
     public FleeState _fleeState;
     public MoveToPointState moveToPointState;
+    CoverState _coverState;
 
     public StateMachine(TextMeshPro display, EnemyRef eref, Transform patrolparent, Transform[] patrolwaypoints, float roamradius, int indexOfStartingState, int grandes)
     {
@@ -31,15 +32,16 @@ public class StateMachine
         _patrolState = new PatrolState(eref, _allStates, patrolparent, patrolwaypoints);
         _roamState = new RoamState(eref, _allStates, roamradius);
         searchState = new SearchState(eref, _allStates, roamradius);
-        scanState = new ScanState(eref, _allStates, roamradius);
+        detectingEnemyState = new DetectingEnemyState(eref, _allStates, roamradius);
         attackState = new AttackState(eref, _allStates, grandes);
         _followState = new FollowState(eref, _allStates);
         immobileState = new ImmobileState(eref, _allStates);
         _fleeState = new FleeState(eref, _allStates);
         moveToPointState = new MoveToPointState(eref, _allStates);
+        _coverState = new CoverState(eref, _allStates);
+
         _startState = _allStates[indexOfStartingState];
         ChangeState(_startState);
-
     }
 
     public void ChangeToStartingState()
@@ -89,14 +91,7 @@ public class BaseState
     {
         timer = 0;
     }
-    public virtual void UpdateLoop()
-    {
-
-    }
-    public virtual void PhysicsUpdateLoop()
-    {
-
-    }
+    public virtual void UpdateLoop() { }
 }
 public class SuperState_Alpha : BaseState //roam, search, scann
 {
@@ -290,7 +285,7 @@ public class SearchState : SuperState_Alpha
         enBeh.hasSearched = false;
     }
 }
-public class ScanState : SuperState_Alpha
+public class DetectingEnemyState : SuperState_Alpha
 {
     SpriteRenderer _visibleSprite;
     Transform _visibleTransform;
@@ -302,7 +297,7 @@ public class ScanState : SuperState_Alpha
     readonly Color _startCol = new Color(0f, 1f, 0f, 0f);
     readonly Color _endCol = Color.red;
 
-    public ScanState(EnemyRef eref, List<BaseState> allStates, float roamRadius) : base(eref, allStates, roamRadius)
+    public DetectingEnemyState(EnemyRef eref, List<BaseState> allStates, float roamRadius) : base(eref, allStates, roamRadius)
     {
         _visibleSprite = eref.visibilityMark;
         _visibleTransform = _visibleSprite.transform;
@@ -500,12 +495,14 @@ public class ImmobileState : BaseState
     public override void OnEnter()
     {
         base.OnEnter();
-        enBeh.ResetHandsWeights();
+        enBeh.SetIK_ResetAll();
+        enBeh.SetSpeed_Animation(MoveType.Stationary);
     }
 
     public override void UpdateLoop()
     {
-        enBeh.ragToAnimTransition.RagdollStandingUp();
+        enBeh.ragToAnimTransition.RagdollUpdateLoop();
+        enBeh.isHit = false;
         eRef.agentTr.SetPositionAndRotation(new Vector3(eRef.animTr.position.x, eRef.agentTr.position.y, eRef.animTr.position.z), eRef.animTr.rotation);
     }
 
@@ -570,6 +567,37 @@ public class MoveToPointState : BaseState
         if (eRef.agent.remainingDistance < 0.1f) enBeh.sm.ChangeToStartingState();
     }
 
+}
+public class CoverState : BaseState
+{
+    float _detectRadius = 10f;
+    public CoverState(EnemyRef eref, List<BaseState> allStates) : base(eref, allStates)
+    {
+    }
+
+    public override void OnEnter()
+    {
+        base.OnEnter();
+    }
+    public override void OnExit()
+    {
+        base.OnExit();
+    }
+    public override void UpdateLoop()
+    {
+        base.UpdateLoop();
+    }
+
+    Transform ClosestCover()
+    {
+        Transform tr = null;
+        Vector3 myPos = eRef.agentTr.position;
+        Collider[] cols = Physics.OverlapSphere(myPos, _detectRadius, gm.layCover);
+
+
+
+        return tr;
+    }
 }
 
 

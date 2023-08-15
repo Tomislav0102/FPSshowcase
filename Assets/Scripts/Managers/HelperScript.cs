@@ -122,11 +122,13 @@ public enum EnemyState
     Patrol,
     Roam,
     Search,
+    DetectingEnemy,
     Attack,
     Follow,
     Immobile,
     Flee,
-    MoveToPoint
+    MoveToPoint,
+    CoverMode
 }
 public enum BodyPartRagdoll
 {
@@ -168,6 +170,20 @@ public enum GenPhasePos
     Begin,
     Middle,
     End
+}
+public enum GenDirection
+{
+    Up,
+    Down,
+    Left,
+    Right
+}
+public enum GenAmmount
+{
+    None,
+    Light,
+    Medium,
+    Heavy
 }
 public enum PuType
 {
@@ -221,13 +237,6 @@ public enum MatType //used for hit particles
     Water,
     Wood,
     NoMaterial
-}
-public enum RecoilAmmount
-{
-    None,
-    Light,
-    Medium,
-    Heavy
 }
 #endregion
 

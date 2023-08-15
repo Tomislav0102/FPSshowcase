@@ -96,6 +96,8 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     public float remainDistance;
     [FoldoutGroup("Debugs")]
     public string nameOfTarget;
+    [FoldoutGroup("Debugs")]
+    public string animName;
     #endregion
 
     ///////////////////////////////////////////////////////////////////////////
@@ -154,17 +156,19 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         Debugs();
 
         sm.currentState.UpdateLoop();
+
         if (sm.currentState == sm.immobileState) return;
-        
-        speedAnimRoot = _eRef.anim.velocity.magnitude;
-        if (speedAnimRoot < 0.05f) speedAnimRoot = 0f;
-        _eRef.agent.speed = speedAnimRoot;
-        _eRef.animTr.SetPositionAndRotation(_eRef.agentTr.position - 0.06152725f * Vector3.up, _eRef.agentTr.rotation);
 
         rigAiming.weight = Mathf.MoveTowards(rigAiming.weight, _weightRightHandAim, 4f * Time.deltaTime);
         rigLeftHand.weight = Mathf.MoveTowards(rigLeftHand.weight, _weightLeftHand, 4f * Time.deltaTime);
         _weightHit = Mathf.MoveTowards(_weightHit, isHit ? 1f : 0f, 5f * Time.deltaTime);
         _eRef.anim.SetLayerWeight(1, _weightHit);
+
+        speedAnimRoot = _eRef.anim.velocity.magnitude;
+        if (speedAnimRoot < 0.05f) speedAnimRoot = 0f;
+        _eRef.agent.speed = speedAnimRoot;
+        _eRef.animTr.SetPositionAndRotation(_eRef.agentTr.position - 0.06152725f * Vector3.up, _eRef.agentTr.rotation);
+
 
         if (!_canUpdateFOV ||
             sm.currentState == sm.attackState ||
@@ -177,7 +181,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
             movePoint.position = attackTarget.MyTransform.position;
             if (sm.currentState == sm.searchState) sm.ChangeState(sm.attackState);
             else if (frienDetectsEnemy) sm.ChangeState(sm.searchState);
-            else sm.ChangeState(sm.scanState);
+            else sm.ChangeState(sm.detectingEnemyState);
                 
         }
         else if (detectObject != null)
@@ -204,6 +208,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         remainDistance = _eRef.agent.remainingDistance;
         speedAgent = _eRef.agent.velocity.magnitude;
         nameOfTarget = attackTarget == null ? "no target" : attackTarget.MyTransform.name.ToString();
+
     }
     void CanUpdateFOVMethod() => _canUpdateFOV = _canUpdateDestination = true;
 
@@ -301,6 +306,11 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         if (CantChangeIK()) return;
         _weightRightHandAim = multiAimConstraintRightHand.weight = aim ? 1f : 0f;
     }
+    public void SetIK_ResetAll()
+    {
+        _weightRightHandAim = _weightLeftHand = rigAiming.weight = rigLeftHand.weight = multiAimConstraintRightHand.weight = 0f;
+        _eRef.anim.SetLayerWeight(1, 0);
+    }
     public void Attack_Animation(bool isAttacking)
     {
         SetIK_AimWeapon(isAttacking);
@@ -319,7 +329,6 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     }
     public void SetSpeed_Animation(MoveType movetype) => _eRef.anim.SetInteger("movePhase", (int)movetype);
 
-    public void ResetHandsWeights() => rigAiming.weight = rigLeftHand.weight = 0f;
     #endregion
 
 

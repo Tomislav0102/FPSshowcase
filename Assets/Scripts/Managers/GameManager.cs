@@ -1373,9 +1373,12 @@ public class FieldOvView
         tarDetectable = detect;
     }
 }
+
+[System.Serializable] //debug onlly
 public class RagToAnimTranstions
 {
-    struct BoneTransforms
+    [System.Serializable] //debug onlly
+    public struct BoneTransforms
     {
         public Vector3 pos;
         public Quaternion rot;
@@ -1384,7 +1387,7 @@ public class RagToAnimTranstions
     EnemyRef _eRef;
     Transform _myTransform;
     Animator _anim;
-    readonly string[] _clipNames = { "Stand Up", "Zombie Stand Up" };
+    readonly string[] _clipNames = { "GetBackUpBack", "GetBackUpFront", "GetBackUpLeft", "GetBackUpRight" }; //clip and state should have the same name - somwhere in a code clip is needed and somewhere its the state
     string _currentClip;
     Rigidbody[] _ragdollRigids;
     Transform _hipsBone;
@@ -1392,10 +1395,26 @@ public class RagToAnimTranstions
     List<Transform> _bones = new List<Transform>();
     BoneTransforms[] _standingFaceUpBones;
     BoneTransforms[] _standingFaceDownBones;
+    BoneTransforms[] _standingFaceLeftBones;
+    BoneTransforms[] _standingFaceRightBones;
     BoneTransforms[] _standingCurrent;
     BoneTransforms[] _ragdollBones;
 
-    bool FacingUp() => _hipsBone.forward.y > 0f;
+    GenDirection LayingDownFaceDirection()
+    {
+        float dotUp = Vector3.Dot(_hipsBone.forward, Vector3.up);
+        float dotRight = Vector3.Dot(_hipsBone.forward, Vector3.right);
+        if (Mathf.Abs(dotUp) > Mathf.Abs(dotRight))
+        {
+            if (dotUp > 0) return GenDirection.Up;
+            else return GenDirection.Down;
+        }
+        else 
+        {
+            if (dotRight > 0) return GenDirection.Right;
+            else return GenDirection.Left;
+        }
+    }
     bool _readyToStandUp;
     const float CONST_TIMETOSTANDUP = 1f;
     float _timer;
@@ -1422,14 +1441,18 @@ public class RagToAnimTranstions
         }
         _standingFaceUpBones = new BoneTransforms[_bones.Count];
         _standingFaceDownBones = new BoneTransforms[_bones.Count];
+        _standingFaceLeftBones = new BoneTransforms[_bones.Count];
+        _standingFaceRightBones = new BoneTransforms[_bones.Count];
         _ragdollBones = new BoneTransforms[_bones.Count];
 
-        PopulateAnimationBones(true);
-        PopulateAnimationBones(false);
+        PopulateAnimationBones(GenDirection.Up);
+        PopulateAnimationBones(GenDirection.Down);
+        PopulateAnimationBones(GenDirection.Left);
+        PopulateAnimationBones(GenDirection.Right);
 
     }
 
-    public void RagdollStandingUp()
+    public void RagdollUpdateLoop()
     {
         if (!_readyToStandUp) return;
 
@@ -1444,9 +1467,9 @@ public class RagToAnimTranstions
         if (_elapsedPercentage >= 1f)
         {
             _readyToStandUp = false;
+            _anim.enabled = true;
             _anim.Play(_currentClip, 0, 0);
             _timer = 0f;
-            _anim.enabled = true;
             for (int i = 0; i < _ragdollRigids.Length; i++)
             {
                 _ragdollRigids[i].isKinematic = true;
@@ -1475,39 +1498,32 @@ public class RagToAnimTranstions
     async void BeginStandUp()
     {
         await Task.Delay(2000);
-        _readyToStandUp = true;
-        _standingCurrent = FacingUp() ? _standingFaceUpBones : _standingFaceDownBones;
+        switch (LayingDownFaceDirection())
+        {
+            case GenDirection.Up:
+                _standingCurrent = _standingFaceUpBones;
+                _currentClip = _clipNames[0];
+                break;
+            case GenDirection.Down:
+                _standingCurrent = _standingFaceDownBones;
+                _currentClip = _clipNames[1];
+                break;
+            case GenDirection.Left:
+                _standingCurrent = _standingFaceLeftBones;
+                _currentClip = _clipNames[2];
+                break;
+            case GenDirection.Right:
+                _standingCurrent = _standingFaceRightBones;
+                _currentClip = _clipNames[3];
+                break;
+        }
         AlignRotationToHips();
         AlignPositionToHips();
         PopulateBones(_ragdollBones);
-        _currentClip = FacingUp() ? _clipNames[0] : _clipNames[1];
 
+        _readyToStandUp = true;
     }
 
-    //void ActivateRagdoll(bool activ)
-    //{
-    //    for (int i = 0; i < _ragdollRigids.Length; i++)
-    //    {
-    //        _ragdollRigids[i].isKinematic = !activ;
-    //    }
-    //    if (activ)
-    //    {
-    //        if (!_readyToStandUp)
-    //        {
-    //            _ragdollRigids[8].AddForce(-40f * Vector3.forward, ForceMode.VelocityChange);
-    //            _anim.enabled = false;
-    //        }
-    //    }
-    //    else
-    //    {
-    //        _standingCurrent = FacingUp() ? _standingFaceUpBones : _standingFaceDownBones;
-    //        AlignRotationToHips();
-    //        AlignPositionToHips();
-    //        PopulateBones(_ragdollBones);
-    //        _readyToStandUp = true;
-    //        _currentClip = FacingUp() ? _clipNames[0] : _clipNames[1];
-    //    }
-    //}
     void PopulateBones(BoneTransforms[] bon)
     {
         for (int i = 0; i < _bones.Count; i++)
@@ -1516,19 +1532,33 @@ public class RagToAnimTranstions
             bon[i].rot = _bones[i].localRotation;
         }
     }
-    void PopulateAnimationBones(bool isFacingUp)
+    void PopulateAnimationBones(GenDirection dir)
     {
         Vector3 posBeforeSampling = _myTransform.position;
         Quaternion rotBeforeSampling = _myTransform.rotation;
 
-        _currentClip = isFacingUp ? _clipNames[0] : _clipNames[1];
+        _currentClip = _clipNames[(int)dir];
 
         foreach (AnimationClip item in _anim.runtimeAnimatorController.animationClips)
         {
             if (item.name == _currentClip)
             {
                 item.SampleAnimation(_myTransform.gameObject, 0f);
-                PopulateBones(isFacingUp ? _standingFaceUpBones : _standingFaceDownBones);
+                switch (dir)
+                {
+                    case GenDirection.Up:
+                        PopulateBones(_standingFaceUpBones);
+                        break;
+                    case GenDirection.Down:
+                        PopulateBones(_standingFaceDownBones);
+                        break;
+                    case GenDirection.Left:
+                        PopulateBones(_standingFaceLeftBones);
+                        break;
+                    case GenDirection.Right:
+                        PopulateBones(_standingFaceRightBones);
+                        break;
+                }
                 break;
             }
         }
@@ -1543,7 +1573,7 @@ public class RagToAnimTranstions
         Quaternion originalHipsRotation = _hipsBone.rotation;
 
         Vector3 desiredDirection = _hipsBone.up * -1;
-        if (!FacingUp()) desiredDirection *= -1f;
+        if (_hipsBone.forward.y < 0f) desiredDirection *= -1f;
         desiredDirection.y = 0;
         desiredDirection.Normalize();
 

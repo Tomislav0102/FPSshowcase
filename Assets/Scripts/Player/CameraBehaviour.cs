@@ -39,22 +39,22 @@ public class CameraBehaviour : GlobalEventManager
         _myTransform.localEulerAngles = _recoilAngle * Vector3.right;
     }
 
-    public void Recoil(RecoilAmmount recoilAmmount)
+    public void Recoil(GenAmmount recoilAmmount)
     {
         if (!_active) return;
 
         float intensity = 0;
         switch (recoilAmmount)
         {
-            case RecoilAmmount.None:
+            case GenAmmount.None:
                 break;
-            case RecoilAmmount.Light:
+            case GenAmmount.Light:
                 intensity = 4f;
                 break;
-            case RecoilAmmount.Medium:
+            case GenAmmount.Medium:
                 intensity = 5f;
                 break;
-            case RecoilAmmount.Heavy:
+            case GenAmmount.Heavy:
                 intensity = 10f;
                 break;
         }

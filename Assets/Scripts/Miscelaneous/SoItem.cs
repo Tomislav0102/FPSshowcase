@@ -20,7 +20,7 @@ public class SoItem : ScriptableObject
     public bool canAim = true;
     public bool partialReload; //used only for grenade gun
     [HideIf("MeleeOrThrownOrBreath")]
-    public RecoilAmmount recoilAmmount;
+    public GenAmmount recoilAmmount;
     public bool hasCrosshair = true;
     [ShowIf("hasCrosshair")]
     public float startSpread = 50f;

@@ -48,7 +48,6 @@ public class TestScript : MonoBehaviour
     //    if ((layerMask & (1 << layerIndex)) != 0) print($"Layer {LayerMask.LayerToName(layerIndex)} is in mask");
     //    else print($"Layer {LayerMask.LayerToName(layerIndex)}  is not in the mask");
     //}
-
     private void Awake()
     {
         _cam = Camera.main;
@@ -62,6 +61,8 @@ public class TestScript : MonoBehaviour
     {
         angl = Vector3.Angle(Vector3.one, otherTransform.localScale);
         signAngle = Vector3.SignedAngle(Vector3.one, otherTransform.localScale, Vector3.up);
+    
+        
     }
 }
 
