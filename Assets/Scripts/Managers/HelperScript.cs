@@ -96,6 +96,7 @@ public class HelperScript
     {
         float distance = Mathf.Infinity;
         int index = 0;
+        if (list == null || list.Count == 0) return null;
         for (int i = 0; i < list.Count; i++)
         {
             float d = Vector3.Distance(myPos, list[i].position);

@@ -24,10 +24,9 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     [HideInInspector] public bool hasSearched;
     public IFaction attackTarget;
     [HideInInspector] public DetectableObject detectObject;
-    float _weightHit;
     [PropertySpace(SpaceAfter = 10, SpaceBefore = 0)]
     public ParticleSystem psOnFire;
-    GameObject _coverObj;
+    public bool animFollowsAgent = true;
 
     #region BEHAVIOUR SPECIFIC
     [BoxGroup("Behaviour")]
@@ -54,6 +53,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     #endregion
 
     #region ANIMATIONS
+    float _weightHit;
     [BoxGroup("Animations")]
     [GUIColor("blue")]
     [SerializeField] Transform[] ragdollTransform;
@@ -147,7 +147,6 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         detectObject = null;
         CancelInvoke();
         _displayState.text = "Dead";
-        _coverObj = null;
     }
 
     private void Update()
@@ -167,11 +166,12 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         speedAnimRoot = _eRef.anim.velocity.magnitude;
         if (speedAnimRoot < 0.05f) speedAnimRoot = 0f;
         _eRef.agent.speed = speedAnimRoot;
-        _eRef.animTr.SetPositionAndRotation(_eRef.agentTr.position - 0.06152725f * Vector3.up, _eRef.agentTr.rotation);
+        if(animFollowsAgent) _eRef.animTr.SetPositionAndRotation(_eRef.agentTr.position - 0.06152725f * Vector3.up, _eRef.agentTr.rotation);
 
 
         if (!_canUpdateFOV ||
             sm.currentState == sm.attackState ||
+            sm.currentState == sm._coverState ||
             sm.currentState == sm._fleeState) return;
 
         bool frienDetectsEnemy = false;

@@ -1259,24 +1259,6 @@ public class FieldOvView
 
         _enemyBehaviour.sm.attackState.InitAttackRange(_sightRange);
     }
-    public Transform Cover()
-    {
-        Collider[] colls = new Collider[10];
-        int num = Physics.OverlapSphereNonAlloc(_myTransform.position, 10f, colls, _gm.layCover);
-        List<Transform> lista = new List<Transform>();
-
-        if (_enemyBehaviour.attackTarget == null) return null;
-        Vector3 attackerPos = _enemyBehaviour.attackTarget.MyTransform.position;
-
-        for (int i = 0; i < num; i++)
-        {
-            Transform colTr = colls[i].transform;
-            if (Vector3.Dot(colTr.forward, (colTr.position - attackerPos).normalized) > 0.7) lista.Add(colTr);
-        }
-        if (lista.Count == 0) return null;
-
-        return HelperScript.GetClosestMember(_myTransform.position, lista);
-    }
     float EffectiveRange(Vector3 targetPos)
     {
         float r = _sightRange;

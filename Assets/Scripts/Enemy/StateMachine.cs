@@ -22,7 +22,7 @@ public class StateMachine
     public ImmobileState immobileState;
     public FleeState _fleeState;
     public MoveToPointState moveToPointState;
-    CoverState _coverState;
+    public CoverState _coverState;
 
     public StateMachine(TextMeshPro display, EnemyRef eref, Transform patrolparent, Transform[] patrolwaypoints, float roamradius, int indexOfStartingState, int grandes)
     {
@@ -86,6 +86,8 @@ public class BaseState
     {
         eRef.agent.ResetPath();
         enBeh.Attack_Animation(false);
+        eRef.agent.updatePosition = true;
+        eRef.agent.updateRotation = true;
     }
     public virtual void OnExit()
     {
@@ -291,7 +293,7 @@ public class DetectingEnemyState : SuperState_Alpha
     Transform _visibleTransform;
 
     float _awareness;
-    const float CONST_TIMETORECONGINZETARGET = 5f;
+    const float CONST_TIMETORECONGINZETARGET = 1f;
     const float CONST_AUTOFINISHDISTANCE = 5f;
     float _autoFinishDistanceSquared;
     readonly Color _startCol = new Color(0f, 1f, 0f, 0f);
@@ -330,7 +332,8 @@ public class DetectingEnemyState : SuperState_Alpha
         _visibleTransform.LookAt(gm.camTr.position);
         if (_awareness >= 1f)
         {
-            enBeh.sm.ChangeState(enBeh.sm.attackState);
+          //  enBeh.sm.ChangeState(enBeh.sm.attackState);
+            enBeh.sm.ChangeState(enBeh.sm._coverState);
         }
     }
     public override void OnExit()
@@ -571,6 +574,8 @@ public class MoveToPointState : BaseState
 public class CoverState : BaseState
 {
     float _detectRadius = 10f;
+    Cover _cover;
+    bool _inCover;
     public CoverState(EnemyRef eref, List<BaseState> allStates) : base(eref, allStates)
     {
     }
@@ -578,26 +583,67 @@ public class CoverState : BaseState
     public override void OnEnter()
     {
         base.OnEnter();
+        Transform cov = Cover();
+        if (cov != null)
+        {
+            _cover = cov.GetComponent<Cover>();
+            enBeh.movePoint.position = cov.position;
+            enBeh.SetSpeed_Animation(MoveType.Run);
+        }
     }
     public override void OnExit()
     {
         base.OnExit();
+        _cover = null;
+        _inCover = false;
+        eRef.anim.SetBool("inCover", false);
+        enBeh.animFollowsAgent = true;
     }
     public override void UpdateLoop()
     {
         base.UpdateLoop();
+
+        eRef.anim.SetBool("inCover", _inCover);
+        if (_inCover)
+        {
+            enBeh.SetSpeed_Animation(MoveType.Stationary);
+            return;
+        }
+
+        enBeh.TrackMovingTarget();
+        if (Vector3.Distance(eRef.animTr.position, enBeh.movePoint.position) < 0.5f)
+        {
+            _inCover = true;
+            eRef.agentTr.forward = -_cover.transform.forward;
+            eRef.agent.updateRotation = false;
+            enBeh.animFollowsAgent = false;
+        }
+        else _inCover = false;
     }
 
-    Transform ClosestCover()
+    Transform Cover()
     {
-        Transform tr = null;
-        Vector3 myPos = eRef.agentTr.position;
-        Collider[] cols = Physics.OverlapSphere(myPos, _detectRadius, gm.layCover);
+        Collider[] colls = new Collider[10];
+        int num = Physics.OverlapSphereNonAlloc(enBeh.MyTransform.position, 10f, colls, gm.layCover);
+        List<Transform> lista = new List<Transform>();
 
+        if (enBeh.attackTarget == null) return null;
+        Vector3 attackerPos = enBeh.attackTarget.MyTransform.position;
 
+        for (int i = 0; i < num; i++)
+        {
+            Transform colTr = colls[i].transform;
+            if (Vector3.Dot(colTr.forward, (colTr.position - attackerPos).normalized) > 0.7 &&
+                colTr.GetComponent<Cover>().resident == null)
+            {
+                lista.Add(colTr);
+            }
+        }
+        if (lista.Count == 0) return null;
 
-        return tr;
+        return HelperScript.GetClosestMember(enBeh.MyTransform.position, lista);
     }
+
 }
 
 
