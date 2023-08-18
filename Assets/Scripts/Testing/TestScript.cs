@@ -4,14 +4,15 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Threading;
 using System.Threading.Tasks;
+using Sirenix.OdinInspector;
 
 public class TestScript : MonoBehaviour
 {
     Camera _cam;
-    public Transform otherTransform;
+  //  public Transform otherTransform;
     public float angl, signAngle;
-    public CapsuleCollider capsuleCollider;
-    bool _ducked;
+  //  public CapsuleCollider capsuleCollider;
+   // bool _ducked;
     //public NavMeshAgent agent;
     //public Transform movePoint;
     //RaycastHit _hit;
@@ -22,7 +23,10 @@ public class TestScript : MonoBehaviour
     //float _ver, _hor;
     //public LayerMask layerMask;
     //public bool isPlayer;
-    // public Animator anim;
+     public Animator anim;
+    public Transform targetMatchL, targetMatchR;
+    MatchTargetWeightMask weightMask = new MatchTargetWeightMask(Vector3.one, 1f);
+
     //public int maska;
 
     //[System.Flags]
@@ -59,10 +63,14 @@ public class TestScript : MonoBehaviour
 
     private void Update()
     {
-        angl = Vector3.Angle(Vector3.one, otherTransform.localScale);
-        signAngle = Vector3.SignedAngle(Vector3.one, otherTransform.localScale, Vector3.up);
-    
-        
+        //angl = Vector3.Angle(Vector3.one, otherTransform.localScale);
+        //signAngle = Vector3.SignedAngle(Vector3.one, otherTransform.localScale, Vector3.up);
+
+        //anim.MatchTarget(targetMatchL.position, targetMatchL.rotation, AvatarTarget.LeftFoot, weightMask, 0f, 1f);
+        //anim.MatchTarget(targetMatchR.position, targetMatchR.rotation, AvatarTarget.RightFoot, weightMask, 0f, 1f);
+        // anim.MatchTarget(targetMatchR.position, targetMatchR.rotation, AvatarTarget.Root, weightMask, 0f, 1f);
+
+
     }
 }
 

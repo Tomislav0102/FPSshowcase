@@ -561,7 +561,6 @@ public class PoolManager
         T obj = arr[count];
         count = (1 + count) % arr.Length;
 
-        Coroutine kor = null;
         if (miliSecondsDelayEnd > 0) End(obj, miliSecondsDelayEnd);
         return obj;
     }

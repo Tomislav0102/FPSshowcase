@@ -1,10 +1,14 @@
+using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Cover : MonoBehaviour
 {
-    public List<GenDirection> openSides = new List<GenDirection>();
+    [HorizontalGroup]
+    [LabelWidth(80)]
+    public bool leftOpening, rightOpening;
+    [Space]
     public Transform myTransform;
     public IFaction resident;
 
@@ -12,10 +16,7 @@ public class Cover : MonoBehaviour
     {
         Gizmos.color = Color.yellow;
 
-        for (int i = 0; i < openSides.Count; i++)
-        {
-            if (openSides[i] == GenDirection.Left) Gizmos.DrawWireSphere(myTransform.position - myTransform.right, 0.2f);
-            if (openSides[i] == GenDirection.Right) Gizmos.DrawWireSphere(myTransform.position + myTransform.right, 0.2f);
-        }
+        if (leftOpening) Gizmos.DrawWireSphere(myTransform.position - myTransform.right, 0.2f);
+        if (rightOpening) Gizmos.DrawWireSphere(myTransform.position + myTransform.right, 0.2f);
     }
 }

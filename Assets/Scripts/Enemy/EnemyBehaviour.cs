@@ -50,6 +50,9 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
     [BoxGroup("Behaviour")]
     [GUIColor("green")]
     [SerializeField] int handGrenadeCount = 3;
+    [BoxGroup("Behaviour")]
+    [GUIColor("green")]
+    /*[HideInInspector]*/ public Cover coverObject;
     #endregion
 
     #region ANIMATIONS
@@ -171,8 +174,8 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
 
         if (!_canUpdateFOV ||
             sm.currentState == sm.attackState ||
-            sm.currentState == sm._coverState ||
-            sm.currentState == sm._fleeState) return;
+            sm.currentState == sm.coverState ||
+            sm.currentState == sm.fleeState) return;
 
         bool frienDetectsEnemy = false;
         _eRef.fov.GetAllTargets(out attackTarget, out detectObject, ref frienDetectsEnemy);
@@ -208,7 +211,6 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         remainDistance = _eRef.agent.remainingDistance;
         speedAgent = _eRef.agent.velocity.magnitude;
         nameOfTarget = attackTarget == null ? "no target" : attackTarget.MyTransform.name.ToString();
-
     }
     void CanUpdateFOVMethod() => _canUpdateFOV = _canUpdateDestination = true;
 
@@ -225,13 +227,13 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
 
     public void PassFromHealth_Attacked(Transform attackerTr, bool switchAgro, bool lowHp)
     {
-        if (sm.currentState == sm.immobileState || sm.currentState == sm._fleeState || attackerTr == null) return;
+        if (sm.currentState == sm.immobileState || sm.currentState == sm.fleeState || attackerTr == null) return;
         if (lowHp)
         {
             if (attackerTr.TryGetComponent(out IFaction target) && EnemyRef.HostileFaction(Fact, target.Fact))
             {
                 attackTarget = target;
-                sm.ChangeState(sm._fleeState);
+                sm.ChangeState(sm.fleeState);
             }
             return;
         }

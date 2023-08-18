@@ -42,4 +42,19 @@ public class SMB_MainEnemy : StateMachineBehaviour
             eRef = animator.transform.parent.GetComponent<EnemyRef>();
         }
     }
+    public override void OnStateMove(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+        if (eRef == null)
+        {
+            eRef = animator.transform.parent.GetComponent<EnemyRef>();
+        }
+
+    }
+    public override void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+        if (eRef == null)
+        {
+            eRef = animator.transform.parent.GetComponent<EnemyRef>();
+        }
+    }
 }

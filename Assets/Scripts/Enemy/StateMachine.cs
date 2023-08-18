@@ -12,7 +12,7 @@ public class StateMachine
     List<BaseState> _allStates = new List<BaseState>();
     public BaseState currentState;
     BaseState _startState;
-    public IdleState _idleState;
+    IdleState idleState;
     PatrolState _patrolState;
     RoamState _roamState;
     public SearchState searchState;
@@ -20,15 +20,15 @@ public class StateMachine
     public AttackState attackState;
     FollowState _followState;
     public ImmobileState immobileState;
-    public FleeState _fleeState;
+    public FleeState fleeState;
     public MoveToPointState moveToPointState;
-    public CoverState _coverState;
+    public CoverState coverState;
 
     public StateMachine(TextMeshPro display, EnemyRef eref, Transform patrolparent, Transform[] patrolwaypoints, float roamradius, int indexOfStartingState, int grandes)
     {
         _display = display;
 
-        _idleState = new IdleState(eref, _allStates);
+        idleState = new IdleState(eref, _allStates);
         _patrolState = new PatrolState(eref, _allStates, patrolparent, patrolwaypoints);
         _roamState = new RoamState(eref, _allStates, roamradius);
         searchState = new SearchState(eref, _allStates, roamradius);
@@ -36,9 +36,9 @@ public class StateMachine
         attackState = new AttackState(eref, _allStates, grandes);
         _followState = new FollowState(eref, _allStates);
         immobileState = new ImmobileState(eref, _allStates);
-        _fleeState = new FleeState(eref, _allStates);
+        fleeState = new FleeState(eref, _allStates);
         moveToPointState = new MoveToPointState(eref, _allStates);
-        _coverState = new CoverState(eref, _allStates);
+        coverState = new CoverState(eref, _allStates);
 
         _startState = _allStates[indexOfStartingState];
         ChangeState(_startState);
@@ -333,7 +333,7 @@ public class DetectingEnemyState : SuperState_Alpha
         if (_awareness >= 1f)
         {
           //  enBeh.sm.ChangeState(enBeh.sm.attackState);
-            enBeh.sm.ChangeState(enBeh.sm._coverState);
+            enBeh.sm.ChangeState(enBeh.sm.coverState);
         }
     }
     public override void OnExit()
@@ -574,7 +574,6 @@ public class MoveToPointState : BaseState
 public class CoverState : BaseState
 {
     float _detectRadius = 10f;
-    Cover _cover;
     bool _inCover;
     public CoverState(EnemyRef eref, List<BaseState> allStates) : base(eref, allStates)
     {
@@ -586,7 +585,7 @@ public class CoverState : BaseState
         Transform cov = Cover();
         if (cov != null)
         {
-            _cover = cov.GetComponent<Cover>();
+            enBeh.coverObject = cov.GetComponent<Cover>();
             enBeh.movePoint.position = cov.position;
             enBeh.SetSpeed_Animation(MoveType.Run);
         }
@@ -594,11 +593,12 @@ public class CoverState : BaseState
     public override void OnExit()
     {
         base.OnExit();
-        _cover = null;
+        enBeh.coverObject = null;
         _inCover = false;
         eRef.anim.SetBool("inCover", false);
         enBeh.animFollowsAgent = true;
     }
+
     public override void UpdateLoop()
     {
         base.UpdateLoop();
@@ -614,7 +614,7 @@ public class CoverState : BaseState
         if (Vector3.Distance(eRef.animTr.position, enBeh.movePoint.position) < 0.5f)
         {
             _inCover = true;
-            eRef.agentTr.forward = -_cover.transform.forward;
+            eRef.agentTr.forward = -enBeh.coverObject.transform.forward;
             eRef.agent.updateRotation = false;
             enBeh.animFollowsAgent = false;
         }
@@ -624,7 +624,7 @@ public class CoverState : BaseState
     Transform Cover()
     {
         Collider[] colls = new Collider[10];
-        int num = Physics.OverlapSphereNonAlloc(enBeh.MyTransform.position, 10f, colls, gm.layCover);
+        int num = Physics.OverlapSphereNonAlloc(enBeh.MyTransform.position, _detectRadius, colls, gm.layCover);
         List<Transform> lista = new List<Transform>();
 
         if (enBeh.attackTarget == null) return null;
