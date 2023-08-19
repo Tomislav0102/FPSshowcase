@@ -21,11 +21,11 @@ public class SMB_MatchTarget : SMB_MainEnemy
         base.OnStateMove(animator, stateInfo, layerIndex);
         if (!animator.IsInTransition(0))
         {
-            //Vector3 pos = new Vector3(Tar().position.x, animator.transform.position.y, Tar().position.z);
-            //Quaternion rot = Quaternion.LookRotation(-Tar().forward, Vector3.up);
+            Vector3 pos = new Vector3(Tar().position.x, animator.transform.position.y, Tar().position.z);
+            Quaternion rot = Quaternion.LookRotation(-Tar().forward, Vector3.up);
 
-            //animator.MatchTarget(pos, rot, AvatarTarget.Root, _weightMask, 0.25f, 0.5f);
-            //animator.ApplyBuiltinRootMotion();
+            animator.MatchTarget(pos, rot, AvatarTarget.Root, _weightMask, 0f, 1f);
+           // animator.ApplyBuiltinRootMotion();
         }
     }
 }

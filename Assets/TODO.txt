@@ -5,7 +5,13 @@ ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 - get better SWAT GUY model
 
+- cover - aiming raycast not good enough with 'Peek' animation
+        - finish shooting logic (can't be attack animation)
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1
 	mouse sensitivity should be dependant of zoom (especially for sniper and maybe only for sniper)

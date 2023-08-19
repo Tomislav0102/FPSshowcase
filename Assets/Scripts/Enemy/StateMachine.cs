@@ -88,6 +88,7 @@ public class BaseState
         enBeh.Attack_Animation(false);
         eRef.agent.updatePosition = true;
         eRef.agent.updateRotation = true;
+        enBeh.animFollowsAgent = true;
     }
     public virtual void OnExit()
     {
@@ -596,7 +597,6 @@ public class CoverState : BaseState
         enBeh.coverObject = null;
         _inCover = false;
         eRef.anim.SetBool("inCover", false);
-        enBeh.animFollowsAgent = true;
     }
 
     public override void UpdateLoop()
@@ -614,9 +614,16 @@ public class CoverState : BaseState
         if (Vector3.Distance(eRef.animTr.position, enBeh.movePoint.position) < 0.5f)
         {
             _inCover = true;
-            eRef.agentTr.forward = -enBeh.coverObject.transform.forward;
-            eRef.agent.updateRotation = false;
+
             enBeh.animFollowsAgent = false;
+            Quaternion rot = Quaternion.Euler(enBeh.coverObject.transform.eulerAngles + 180f * Vector3.up);
+            eRef.animTr.SetPositionAndRotation(enBeh.coverObject.transform.position, rot);
+            //eRef.animTr.position = Vector3.MoveTowards(eRef.animTr.position, enBeh.coverObject.transform.position, 3f * Time.deltaTime);
+            //eRef.animTr.rotation = Quaternion.Lerp(eRef.animTr.rotation, rot, 3f * Time.deltaTime);
+            //eRef.agent.updateRotation = false;
+            //eRef.agentTr.forward = -enBeh.coverObject.transform.forward;
+            //Quaternion rot = Quaternion.Euler(enBeh.coverObject.transform.eulerAngles + 180f * Vector3.up);
+            //eRef.agentTr.rotation = Quaternion.Lerp(eRef.agentTr.rotation, rot, 3f * Time.deltaTime);
         }
         else _inCover = false;
     }

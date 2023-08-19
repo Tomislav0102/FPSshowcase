@@ -374,13 +374,14 @@ public class UImanager
 [System.Serializable]
 public class PoolManager
 {
-    [SerializeField] Transform poolDetectables, poolFloatDamage, poolLineRenderers, poolRockets, poolExplosionBig, poolExplosionSmall, poolGreandes, 
+    [SerializeField]
+    Transform poolDetectables, poolFloatDamage, poolLineRenderers, poolRockets, poolExplosionBig, poolExplosionSmall, poolGreandes,
         poolSleeveAutomatic, poolSleeveShotgun, poolSleeveSniper, poolSleeve9mm, poolBolts, poolDecalsBlood, poolWildfire,
         poolImpactBlood, poolImpactBrick, poolImpactDirt, poolImpactPlaster, poolImpactRock, poolImpactWater;
 
     DetectableObject[] _detectables;
     int _cDetectables;
-    GameObject[] _floatingDamage;
+    FloatingDamage[] _floatingDamage;
     int _cFloatDam;
     Transform[] _impBlood;
     int _cImpBlood;
@@ -423,7 +424,7 @@ public class PoolManager
     public void Init()
     {
         _detectables = poolDetectables.GetComponentsInChildren<DetectableObject>();
-        _floatingDamage = HelperScript.AllChildrenGameObjects(poolFloatDamage);
+        _floatingDamage = poolFloatDamage.GetComponentsInChildren<FloatingDamage>();
         _impBlood = HelperScript.AllChildren(poolImpactBlood);
         _impBrick = HelperScript.AllChildren(poolImpactBrick);
         _impDirt = HelperScript.AllChildren(poolImpactDirt);
@@ -445,19 +446,19 @@ public class PoolManager
     }
     public void GetDetecable(Vector3 pos, float size, IFaction ownerInterface)
     {
-        DetectableObject detectable = GetGenericObject<DetectableObject>(_detectables, ref _cDetectables, 0);
+        DetectableObject detectable = GetGenericObject<DetectableObject>(_detectables, ref _cDetectables);
         detectable.PositionMe(pos, size, ownerInterface);
     }
-    public void GetFloatingDamage(Vector3 position, string st, ElementType elementType)
+    public void GetFloatingDamage(Vector3 position, string st, ElementType elementType = ElementType.Normal, bool headShot = false)
     {
         int dur = 5000;
-        GameObject g = GetGenericObject<GameObject>(_floatingDamage, ref _cFloatDam, dur);
-        g.GetComponent<FloatingDamage>().FloatingDisplay(position, st, dur/1000, elementType);
-        g.SetActive(true);
+        FloatingDamage g = GetGenericObject<FloatingDamage>(_floatingDamage, ref _cFloatDam, dur);
+        g.FloatingDisplay(position, st, dur / 1000, elementType);
+        g.gameObject.SetActive(true);
     }
     public Transform GetWildFire()
     {
-        return GetGenericObject<Transform>(_wildFire, ref _cWildFire, 0);
+        return GetGenericObject<Transform>(_wildFire, ref _cWildFire);
     }
     public GameObject GetBloodDecals()
     {
@@ -476,7 +477,7 @@ public class PoolManager
         line.enabled = true;
     }
 
-    public void GetImpactObject(MatType matType, RaycastHit hit, bool showBulletHole)
+    public void GetImpactObject(MatType matType, RaycastHit hit, bool showBulletHole = false)
     {
         Transform tr = null;
         switch (matType)
@@ -522,19 +523,19 @@ public class PoolManager
         tr.GetChild(2).gameObject.SetActive(showBulletHole);
         tr.gameObject.SetActive(true);
     }
-    public GameObject GetProjectile(AmmoType ammoType) 
+    public GameObject GetProjectile(AmmoType ammoType)
     {
         GameObject g = null;
         switch (ammoType)
         {
             case AmmoType.Rocket:
-                g = GetGenericObject<GameObject>(_rockets, ref _cRockets, 0);
+                g = GetGenericObject<GameObject>(_rockets, ref _cRockets);
                 break;
             case AmmoType.HandGrenade:
-                g = GetGenericObject<GameObject>(_grenades, ref _cGrenades, 0);
+                g = GetGenericObject<GameObject>(_grenades, ref _cGrenades);
                 break;
             case AmmoType.Bolt:
-                g = GetGenericObject<GameObject>(_bolts, ref _cBolts, 0);
+                g = GetGenericObject<GameObject>(_bolts, ref _cBolts);
                 break;
         }
         return g;
@@ -556,7 +557,7 @@ public class PoolManager
         currentPs.SetActive(true);
     }
 
-    T GetGenericObject<T>(T[] arr, ref int count, int miliSecondsDelayEnd)
+    T GetGenericObject<T>(T[] arr, ref int count, int miliSecondsDelayEnd = 0)
     {
         T obj = arr[count];
         count = (1 + count) % arr.Length;
@@ -589,7 +590,7 @@ public class PoolManager
                 break;
         }
 
-        
+
     }
     async void End<T>(T tip, int miliSecondsDelay)
     {
@@ -603,6 +604,11 @@ public class PoolManager
         {
             Transform tr = tip as Transform;
             tr.gameObject.SetActive(false);
+        }
+        else if (tip.GetType() == typeof(FloatingDamage))
+        {
+            FloatingDamage fl = tip as FloatingDamage;
+            fl.gameObject.SetActive(false);
         }
         else if (tip.GetType() == typeof(ParticleSystem))
         {

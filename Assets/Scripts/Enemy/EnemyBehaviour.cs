@@ -174,11 +174,12 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
 
         if (!_canUpdateFOV ||
             sm.currentState == sm.attackState ||
-            sm.currentState == sm.coverState ||
+          //  sm.currentState == sm.coverState ||
             sm.currentState == sm.fleeState) return;
 
         bool frienDetectsEnemy = false;
         _eRef.fov.GetAllTargets(out attackTarget, out detectObject, ref frienDetectsEnemy);
+        if (sm.currentState == sm.coverState) return;
         if (attackTarget != null)
         {
             movePoint.position = attackTarget.MyTransform.position;
