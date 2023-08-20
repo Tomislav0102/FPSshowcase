@@ -423,15 +423,15 @@ public class PoolManager
 
     public void Init()
     {
-        _detectables = poolDetectables.GetComponentsInChildren<DetectableObject>();
-        _floatingDamage = poolFloatDamage.GetComponentsInChildren<FloatingDamage>();
-        _impBlood = HelperScript.AllChildren(poolImpactBlood);
-        _impBrick = HelperScript.AllChildren(poolImpactBrick);
-        _impDirt = HelperScript.AllChildren(poolImpactDirt);
-        _impPlaster = HelperScript.AllChildren(poolImpactPlaster);
-        _impRock = HelperScript.AllChildren(poolImpactRock);
-        _impWater = HelperScript.AllChildren(poolImpactWater);
-        _lrs = poolLineRenderers.GetComponentsInChildren<LineRenderer>();
+        _detectables = HelperScript.AllChildren<DetectableObject>(poolDetectables);
+        _floatingDamage = HelperScript.AllChildren<FloatingDamage>(poolFloatDamage);
+        _impBlood = HelperScript.AllChildren<Transform>(poolImpactBlood);
+        _impBrick = HelperScript.AllChildren<Transform>(poolImpactBrick);
+        _impDirt = HelperScript.AllChildren<Transform>(poolImpactDirt);
+        _impPlaster = HelperScript.AllChildren<Transform>(poolImpactPlaster);
+        _impRock = HelperScript.AllChildren<Transform>(poolImpactRock);
+        _impWater = HelperScript.AllChildren<Transform>(poolImpactWater);
+        _lrs = HelperScript.AllChildren<LineRenderer>(poolLineRenderers);
         _explosionBig = HelperScript.AllChildrenGameObjects(poolExplosionBig);
         _explosionSmall = HelperScript.AllChildrenGameObjects(poolExplosionSmall);
         _rockets = HelperScript.AllChildrenGameObjects(poolRockets);
@@ -442,7 +442,7 @@ public class PoolManager
         _sleeves9mm = HelperScript.AllChildrenGameObjects(poolSleeve9mm);
         _bolts = HelperScript.AllChildrenGameObjects(poolBolts);
         _decalsBlood = HelperScript.AllChildrenGameObjects(poolDecalsBlood);
-        _wildFire = HelperScript.AllChildren(poolWildfire);
+        _wildFire = HelperScript.AllChildren<Transform>(poolWildfire);
     }
     public void GetDetecable(Vector3 pos, float size, IFaction ownerInterface)
     {

@@ -56,14 +56,14 @@ public class HelperScript
         }
         return gos;
     }
-    public static Transform[] AllChildren(Transform parTransform)
+    public static T[] AllChildren<T>(Transform parTransform) where T : Component
     {
-        Transform[] childTransforms = new Transform[parTransform.childCount];
-        for (int i = 0; i < childTransforms.Length; ++i)
+        T[] children = new T[parTransform.childCount];
+        for (int i = 0; i < children.Length; ++i)
         {
-            childTransforms[i] = parTransform.GetChild(i);
+            children[i] = parTransform.GetChild(i).GetComponent<T>();
         }
-        return childTransforms;
+        return children;
     }
     public static List<int> RandomList(int size)
     {

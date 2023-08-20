@@ -162,7 +162,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         if (sm.currentState == sm.immobileState) return;
 
         rigAiming.weight = Mathf.MoveTowards(rigAiming.weight, _weightRightHandAim, 4f * Time.deltaTime);
-        rigLeftHand.weight = Mathf.MoveTowards(rigLeftHand.weight, _weightLeftHand, 4f * Time.deltaTime);
+      //  rigLeftHand.weight = Mathf.MoveTowards(rigLeftHand.weight, _weightLeftHand, 4f * Time.deltaTime);
         _weightHit = Mathf.MoveTowards(_weightHit, isHit ? 1f : 0f, 5f * Time.deltaTime);
         _eRef.anim.SetLayerWeight(1, _weightHit);
 
@@ -304,7 +304,7 @@ public class EnemyBehaviour : MonoBehaviour, IFaction
         multiAimConstraintRightHand.weight = 0f;
         if (look && attackTarget != null) _aimIK.position = attackTarget.MyHead.position;
     }
-    void SetIK_AimWeapon(bool aim)
+    void SetIK_AimWeapon(bool aim) 
     {
         if (CantChangeIK()) return;
         _weightRightHandAim = multiAimConstraintRightHand.weight = aim ? 1f : 0f;

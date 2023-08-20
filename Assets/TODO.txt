@@ -6,6 +6,7 @@ ENEMIES AI %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 - get better SWAT GUY model
 
 - cover - aiming raycast not good enough with 'Peek' animation
+        - 'Peek' animation kicks in regulary. Thats how enemy detects player. When detected switches to 'OutOfCover' animation. 
         - finish shooting logic (can't be attack animation)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

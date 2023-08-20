@@ -388,6 +388,26 @@ PrefabInstance:
       propertyPath: m_Weight
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8270898804522328217, guid: 36997a5b0d08e1d4ca1f18cf1adc87c7, type: 3}
+      propertyPath: m_Data.m_OverrideRotation.x
+      value: 22.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 8270898804522328217, guid: 36997a5b0d08e1d4ca1f18cf1adc87c7, type: 3}
+      propertyPath: m_Data.m_OverrideRotation.y
+      value: 47.28
+      objectReference: {fileID: 0}
+    - target: {fileID: 8832332715935762592, guid: 36997a5b0d08e1d4ca1f18cf1adc87c7, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.537
+      objectReference: {fileID: 0}
+    - target: {fileID: 8832332715935762592, guid: 36997a5b0d08e1d4ca1f18cf1adc87c7, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.157
+      objectReference: {fileID: 0}
+    - target: {fileID: 8832332715935762592, guid: 36997a5b0d08e1d4ca1f18cf1adc87c7, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.082
+      objectReference: {fileID: 0}
     - target: {fileID: 8959153140476270062, guid: 36997a5b0d08e1d4ca1f18cf1adc87c7, type: 3}
       propertyPath: m_Weight
       value: 0
